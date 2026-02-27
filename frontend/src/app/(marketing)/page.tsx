@@ -32,23 +32,35 @@ function useScrollReveal() {
     useEffect(() => {
         const el = ref.current;
         if (!el) return;
+
+        const revealTarget = (t: Element) => {
+            t.classList.add("revealed");
+            t.querySelectorAll(".sales-reveal").forEach((c) => c.classList.add("revealed"));
+        };
+
         const observer = new IntersectionObserver(
             (entries) => {
                 entries.forEach((e) => {
-                    if (e.isIntersecting) {
-                        e.target.classList.add("revealed");
-                        // reveal children with delay classes too
-                        e.target.querySelectorAll(".sales-reveal").forEach((child) => child.classList.add("revealed"));
-                    }
+                    if (e.isIntersecting) revealTarget(e.target);
                 });
             },
-            { threshold: 0.12, rootMargin: "0px 0px -60px 0px" }
+            { threshold: 0.08, rootMargin: "0px 0px -40px 0px" }
         );
-        // observe self and all children with sales-reveal
+
         const targets = el.querySelectorAll(".sales-reveal");
         targets.forEach((t) => observer.observe(t));
         if (el.classList.contains("sales-reveal")) observer.observe(el);
-        return () => observer.disconnect();
+
+        // Failsafe: reveal all after 1.5s in case IntersectionObserver misses
+        const timer = setTimeout(() => {
+            targets.forEach((t) => revealTarget(t));
+            if (el.classList.contains("sales-reveal")) revealTarget(el);
+        }, 1500);
+
+        return () => {
+            observer.disconnect();
+            clearTimeout(timer);
+        };
     }, []);
     return ref;
 }
