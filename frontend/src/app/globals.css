@@ -137,70 +137,330 @@ body {
   overflow-x: hidden;
 }
 
-/* ─── Sales Landing ───────────────────────────────────────── */
+/* ─── Sales Landing — World-Class SaaS ────────────────────── */
 
 .sales-landing {
   font-family: 'Manrope', -apple-system, sans-serif;
   color: #e8eef9;
-  background:
-    radial-gradient(1100px 700px at 2% -8%, rgba(30, 200, 255, 0.2), transparent 55%),
-    radial-gradient(980px 640px at 98% -18%, rgba(53, 89, 255, 0.25), transparent 58%),
-    linear-gradient(165deg, #071022 0%, #08101f 43%, #050a14 100%);
+  background: #050a14;
+  position: relative;
+  overflow-x: hidden;
 }
 
 .sales-title {
   font-family: 'Space Grotesk', 'Manrope', sans-serif;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
 }
 
-.sales-nav {
-  background: linear-gradient(to bottom, rgba(5, 12, 24, 0.9), rgba(5, 12, 24, 0.72));
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+/* Gradient Text — the signature premium look */
+.sales-gradient-text {
+  background: linear-gradient(135deg, #ffffff 0%, #67ddff 40%, #3359ff 80%, #a855f7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.sales-chip {
-  border: 1px solid rgba(103, 221, 255, 0.36);
-  border-radius: 9999px;
-  padding: 0.45rem 0.85rem;
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #b8f3ff;
-  background: rgba(103, 221, 255, 0.12);
+.sales-gradient-text-warm {
+  background: linear-gradient(135deg, #ffffff 0%, #67ddff 50%, #a855f7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.sales-panel {
-  border-radius: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.11);
-  background:
-    linear-gradient(165deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.015)),
-    rgba(5, 13, 27, 0.74);
-  backdrop-filter: blur(6px);
-  box-shadow: 0 12px 34px rgba(3, 7, 16, 0.42);
+/* Floating Gradient Orbs — animated ambient light */
+.sales-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  pointer-events: none;
+  opacity: 0.5;
+  will-change: transform;
 }
 
-.sales-soft-box {
-  border: 1px solid rgba(255, 255, 255, 0.11);
-  border-radius: 0.75rem;
-  background: rgba(255, 255, 255, 0.04);
-  padding: 0.8rem 0.92rem;
+.sales-orb-1 {
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle, rgba(30, 200, 255, 0.25), transparent 70%);
+  top: -200px;
+  left: -200px;
+  animation: orbFloat1 20s ease-in-out infinite;
 }
 
-.sales-rise {
-  animation: salesRise 0.7s ease-out both;
+.sales-orb-2 {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(53, 89, 255, 0.3), transparent 70%);
+  top: -100px;
+  right: -150px;
+  animation: orbFloat2 25s ease-in-out infinite;
 }
 
-@keyframes salesRise {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
+.sales-orb-3 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.2), transparent 70%);
+  top: 40%;
+  left: 30%;
+  animation: orbFloat3 18s ease-in-out infinite;
+}
+
+@keyframes orbFloat1 {
+
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
   }
 
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  33% {
+    transform: translate(80px, 40px) scale(1.1);
+  }
+
+  66% {
+    transform: translate(-40px, 80px) scale(0.95);
+  }
+}
+
+@keyframes orbFloat2 {
+
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  33% {
+    transform: translate(-60px, 50px) scale(1.05);
+  }
+
+  66% {
+    transform: translate(40px, -30px) scale(0.9);
+  }
+}
+
+@keyframes orbFloat3 {
+
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate(60px, -60px) scale(1.15);
+  }
+}
+
+/* Navigation — glass with precision */
+.sales-nav {
+  background: linear-gradient(to bottom, rgba(5, 10, 20, 0.92), rgba(5, 10, 20, 0.7));
+  backdrop-filter: blur(16px) saturate(1.3);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Badge chip */
+.sales-chip {
+  border: 1px solid rgba(103, 221, 255, 0.28);
+  border-radius: 9999px;
+  padding: 0.5rem 1rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #b8f3ff;
+  background: rgba(103, 221, 255, 0.08);
+  backdrop-filter: blur(4px);
+}
+
+/* Panel — primary card element with glow hover */
+.sales-panel {
+  border-radius: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(165deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01)),
+    rgba(8, 16, 32, 0.8);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  transition: border-color 0.4s ease, box-shadow 0.4s ease, transform 0.4s ease;
+}
+
+.sales-panel:hover {
+  border-color: rgba(103, 221, 255, 0.2);
+  box-shadow: 0 8px 40px rgba(30, 200, 255, 0.08), 0 4px 24px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+}
+
+/* Subtle inner card */
+.sales-soft-box {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.875rem;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.9rem 1rem;
+  transition: border-color 0.3s ease, background 0.3s ease;
+}
+
+.sales-soft-box:hover {
+  border-color: rgba(103, 221, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Primary CTA button */
+.sales-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.9rem 2rem;
+  border-radius: 0.875rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #050a14;
+  background: linear-gradient(135deg, #1ec8ff 0%, #3359ff 100%);
+  box-shadow: 0 0 0 0 rgba(30, 200, 255, 0), 0 8px 24px rgba(30, 200, 255, 0.25);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.sales-btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.25), transparent);
+  opacity: 0;
+  transition: opacity 0.35s;
+}
+
+.sales-btn-primary:hover {
+  box-shadow: 0 0 30px rgba(30, 200, 255, 0.3), 0 12px 36px rgba(30, 200, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.sales-btn-primary:hover::before {
+  opacity: 1;
+}
+
+/* Ghost button */
+.sales-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.9rem 2rem;
+  border-radius: 0.875rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #e8eef9;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.04);
+  transition: all 0.35s ease;
+}
+
+.sales-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+/* Scroll Reveal Animation */
+.sales-reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sales-reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.sales-reveal-delay-1 {
+  transition-delay: 0.1s;
+}
+
+.sales-reveal-delay-2 {
+  transition-delay: 0.2s;
+}
+
+.sales-reveal-delay-3 {
+  transition-delay: 0.3s;
+}
+
+.sales-reveal-delay-4 {
+  transition-delay: 0.4s;
+}
+
+.sales-reveal-delay-5 {
+  transition-delay: 0.5s;
+}
+
+.sales-reveal-delay-6 {
+  transition-delay: 0.6s;
+}
+
+/* Section divider gradient */
+.sales-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(103, 221, 255, 0.2) 50%, transparent 100%);
+}
+
+/* Icon glow container */
+.sales-icon-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.875rem;
+  background: rgba(103, 221, 255, 0.1);
+  border: 1px solid rgba(103, 221, 255, 0.15);
+  color: #8be7ff;
+  transition: all 0.3s ease;
+}
+
+.sales-panel:hover .sales-icon-box {
+  background: rgba(103, 221, 255, 0.15);
+  box-shadow: 0 0 20px rgba(103, 221, 255, 0.1);
+}
+
+/* Animated grid background */
+.sales-grid-bg {
+  background-image:
+    linear-gradient(rgba(103, 221, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(103, 221, 255, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* Pulse dot for "Live" indicators */
+.sales-pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #34d399;
+  animation: salesPulse 2s ease-in-out infinite;
+}
+
+@keyframes salesPulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.4);
+  }
+
+  50% {
+    box-shadow: 0 0 0 6px rgba(52, 211, 153, 0);
+  }
+}
+
+/* Section spacing */
+.sales-section {
+  padding-top: 6rem;
+  padding-bottom: 6rem;
+}
+
+@media (max-width: 768px) {
+  .sales-section {
+    padding-top: 3.5rem;
+    padding-bottom: 3.5rem;
   }
 }
 
