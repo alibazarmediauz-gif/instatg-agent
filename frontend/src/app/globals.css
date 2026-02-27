@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
 
 @import "tailwindcss";
 
@@ -134,6 +135,72 @@ body {
   line-height: 1.5;
   transition: var(--transition-theme);
   overflow-x: hidden;
+}
+
+/* ─── Sales Landing ───────────────────────────────────────── */
+
+.sales-landing {
+  font-family: 'Manrope', -apple-system, sans-serif;
+  color: #e8eef9;
+  background:
+    radial-gradient(1200px 800px at 8% -12%, rgba(38, 217, 255, 0.16), transparent 60%),
+    radial-gradient(1000px 700px at 95% -18%, rgba(47, 93, 255, 0.2), transparent 62%),
+    linear-gradient(165deg, #061022 0%, #070d1a 45%, #040812 100%);
+}
+
+.sales-title {
+  font-family: 'Space Grotesk', 'Manrope', sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.sales-nav {
+  background: linear-gradient(to bottom, rgba(5, 11, 22, 0.94), rgba(5, 11, 22, 0.7));
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sales-chip {
+  border: 1px solid rgba(38, 217, 255, 0.3);
+  border-radius: 9999px;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #9beeff;
+  background: rgba(38, 217, 255, 0.08);
+}
+
+.sales-panel {
+  border-radius: 1.1rem;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  background:
+    linear-gradient(155deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
+    rgba(5, 11, 22, 0.78);
+  backdrop-filter: blur(4px);
+}
+
+.sales-soft-box {
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 0.82rem;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.8rem 0.92rem;
+}
+
+.sales-rise {
+  animation: salesRise 0.7s ease-out both;
+}
+
+@keyframes salesRise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ─── Premium Utilities ────────────────────────────────────── */
