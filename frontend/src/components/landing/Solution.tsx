@@ -10,50 +10,49 @@ const Solution: React.FC = () => {
     const features = [
         {
             title: t('landing.solution.f1'),
-            desc: "Human-like chat interactions on Telegram and Instagram with instant conversion potential.",
-            icon: <MessageSquare size={24} />,
+            desc: t('landing.solution.f1_d'),
+            icon: <MessageSquare size={28} />,
         },
         {
             title: t('landing.solution.f2'),
-            desc: "Voice agents capable of natural conversations in Uzbek and Russian for automated outbound calls.",
-            icon: <Phone size={24} />,
+            desc: t('landing.solution.f2_d'),
+            icon: <Phone size={28} />,
         },
         {
             title: t('landing.solution.f3'),
-            desc: "Scale your reach with Celery-powered multi-channel automated sales funnels.",
-            icon: <Rocket size={24} />,
+            desc: t('landing.solution.f3_d'),
+            icon: <Rocket size={28} />,
         },
         {
             title: t('landing.solution.f4'),
-            desc: "Deeper than integration. A 2-way native sync that makes AI act as a perfect CRM operator.",
-            icon: <Database size={24} />,
+            desc: t('landing.solution.f4_d'),
+            icon: <Database size={28} />,
         }
     ];
 
     return (
-        <section id="features" className="py-24 bg-bg-body border-y border-border/50">
-            <div className="container max-w-6xl">
-                <div className="text-center mb-16">
-                    <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
+        <section id="features" className="py-32 relative overflow-hidden">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-accent/5 blur-[150px] pointer-events-none rounded-full"></div>
+
+            <div className="container max-w-7xl px-6 relative z-10">
+                <div className="text-center mb-24 animate-entrance">
+                    <h2 className="text-5xl md:text-6xl font-black tracking-tightest mb-8 text-text-primary">
                         {t('landing.solution.title')}
                     </h2>
-                    <p className="text-text-secondary max-w-2xl mx-auto">
+                    <p className="text-xl text-text-secondary max-w-3xl mx-auto leading-relaxed font-medium">
                         {t('landing.solution.desc')}
                     </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                     {features.map((feature, idx) => (
-                        <div key={idx} className="p-8 rounded-2xl bg-bg-card border border-border/60 hover:border-accent/40 transition-all group">
-                            <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center text-accent mb-6 group-hover:scale-110 transition-transform">
+                        <div key={idx} className={`glass-card p-10 rounded-[32px] border border-white/5 hover:border-accent/40 transition-all group animate-entrance stagger-${idx + 1}`}>
+                            <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center text-accent mb-8 group-hover:scale-110 group-hover:bg-accent group-hover:text-white transition-all shadow-xl shadow-accent/5">
                                 {feature.icon}
                             </div>
-                            <h3 className="text-lg font-bold mb-3">{feature.title}</h3>
-                            <p className="text-sm text-text-secondary leading-relaxed">
-                                {idx === 0 && t('landing.solution.f1_d')}
-                                {idx === 1 && t('landing.solution.f2_d')}
-                                {idx === 2 && t('landing.solution.f3_d')}
-                                {idx === 3 && t('landing.solution.f4_d')}
+                            <h3 className="text-2xl font-black mb-4 tracking-tight">{feature.title}</h3>
+                            <p className="text-base text-text-secondary leading-relaxed font-medium">
+                                {feature.desc}
                             </p>
                         </div>
                     ))}

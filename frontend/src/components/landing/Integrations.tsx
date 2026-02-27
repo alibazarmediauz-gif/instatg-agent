@@ -15,15 +15,15 @@ const Integrations: React.FC = () => {
     ];
 
     return (
-        <section id="integrations" className="py-24 bg-bg-body">
-            <div className="container max-w-4xl text-center">
-                <h3 className="text-2xl font-bold mb-12 opacity-80 uppercase tracking-widest text-text-muted">
+        <section id="integrations" className="py-24 relative z-10 animate-entrance stagger-1">
+            <div className="container max-w-5xl text-center px-6">
+                <h3 className="text-sm font-black mb-16 opacity-40 uppercase tracking-[0.3em] text-text-secondary">
                     {t('landing.integrations_section.title')}
                 </h3>
 
-                <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16 grayscale opacity-60 hover:grayscale-0 transition-all duration-700">
+                <div className="flex flex-wrap items-center justify-center gap-10 md:gap-20 opacity-40 hover:opacity-100 transition-all duration-1000">
                     {logos.map((logo, idx) => (
-                        <div key={idx} className={`px-6 py-2 rounded-lg border border-border/40 font-black text-xl italic uppercase ${logo.color}`}>
+                        <div key={idx} className={`px-10 py-3 rounded-full border border-white/5 font-black text-2xl italic uppercase tracking-tighter glass-card hover:scale-110 hover:border-accent/40 transition-all cursor-crosshair ${logo.color}`}>
                             {logo.name}
                         </div>
                     ))}
