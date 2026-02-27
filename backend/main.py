@@ -54,6 +54,10 @@ from app.api.routes.campaigns import router as campaigns_router
 from app.api.routes.ivr import router as ivr_router
 from app.api.routes.billing import router as billing_router
 from app.api.websockets import router as websockets_router
+# analytics router previously provided a `/dashboard` endpoint that duplicated
+# `/api/dashboard/stats`.  That route is now deprecated and removed, so the
+# analytics router is no longer mounted by default.  Keeping the import here
+# in case new analytics endpoints are added later.
 from app.api.routes.analytics import router as analytics_router
 from app.api.routes.telegram_webhooks import router as telegram_webhooks_router
 from app.api.routes.quality_monitoring import router as quality_monitoring_router
@@ -243,7 +247,8 @@ app.include_router(campaigns_router)
 app.include_router(ivr_router)
 app.include_router(billing_router)
 app.include_router(websockets_router)
-app.include_router(analytics_router)
+# analytics router deliberately not registered; dashboard stats live under
+# /api/dashboard/stats and the old analytics.dashboard endpoint is gone.
 app.include_router(telegram_webhooks_router)
 app.include_router(quality_monitoring_router)
 

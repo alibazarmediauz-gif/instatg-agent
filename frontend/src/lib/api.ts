@@ -3,16 +3,28 @@
  * Centralized HTTP client for all backend API calls.
  */
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/+$/, '');
 
 interface FetchOptions extends RequestInit {
     params?: Record<string, string>;
 }
 
+function normalizeEndpoint(endpoint: string): string {
+    const normalized = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+
+    // Preserve non-API health endpoint, enforce /api for all other calls.
+    if (normalized === '/health' || normalized.startsWith('/api/')) {
+        return normalized;
+    }
+
+    return `/api${normalized}`;
+}
+
 async function apiClient<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
     const { params, ...fetchOptions } = options;
+    const normalizedEndpoint = normalizeEndpoint(endpoint);
 
-    let url = `${API_URL}${endpoint}`;
+    let url = `${API_BASE_URL}${normalizedEndpoint}`;
     if (params) {
         const searchParams = new URLSearchParams(params);
         url += `?${searchParams.toString()}`;
@@ -105,7 +117,8 @@ export async function uploadKnowledgeDoc(tenantId: string, file: File) {
     formData.append('file', file);
 
     const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
-    const response = await fetch(`${API_URL}/api/knowledge-base/upload?tenant_id=${tenantId}`, {
+    const uploadUrl = `${API_BASE_URL}/api/knowledge-base/upload?tenant_id=${tenantId}`;
+    const response = await fetch(uploadUrl, {
         method: 'POST',
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formData,
