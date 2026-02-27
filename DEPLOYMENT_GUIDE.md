@@ -18,7 +18,7 @@ InstaTG Agent is a comprehensive AI-powered sales automation platform for Telegr
 - ✅ Voice transcription (Whisper) & analysis
 - ✅ Vision analysis (Claude Vision) for images/videos
 - ✅ AmoCRM CRM integration
-- ✅ SQLite/PostgreSQL support
+- ✅ PostgreSQL support
 - ✅ Redis for conversation memory (fallback: in-memory)
 - ✅ Celery for background tasks
 - ✅ Multi-tenant architecture
@@ -65,8 +65,8 @@ APP_ENV=development
 DEBUG=true
 SECRET_KEY=your-32-char-secret-key-here
 
-# Database (SQLite for dev, PostgreSQL for prod)
-DATABASE_URL=sqlite+aiosqlite:///./demo.db
+# Database (PostgreSQL)
+DATABASE_URL=postgresql://user:password@host:5432/database
 DATABASE_ECHO=false
 
 # Redis (optional for dev; falls back to in-memory)
@@ -235,12 +235,11 @@ Create `.env` file and pass to container:
 ```bash
 docker run -p 8000:8000 \
   --env-file backend/.env \
-  -v $(pwd)/demo.db:/app/demo.db \
   instatg-agent:latest
 ```
 
 ### Production Checklist
-- [ ] Use PostgreSQL (not SQLite)
+- [ ] Use PostgreSQL
 - [ ] Enable Redis (Upstash or self-hosted)
 - [ ] Set `APP_ENV=production`
 - [ ] Enable Sentry (`SENTRY_DSN=`)
@@ -374,7 +373,7 @@ backend/
 
 ## 🚢 Next Steps for Production
 
-1. **Database:** Migrate from SQLite to PostgreSQL
+1. **Database:** Use PostgreSQL in all environments
    ```bash
    alembic upgrade head
    ```

@@ -3,7 +3,7 @@ InstaTG Agent — SQLAlchemy ORM Models
 
 All database models for the multi-tenant sales automation platform.
 Each model includes tenant_id for data isolation.
-Works with both PostgreSQL and SQLite.
+Works with PostgreSQL.
 """
 
 import uuid

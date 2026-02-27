@@ -12,7 +12,7 @@
 1. **Backend FastAPI Server**
    - Starts cleanly on `http://127.0.0.1:8000`
    - All imports resolve correctly (Python 3.9 compatible)
-   - Database initialization works (SQLite demo.db created)
+   - Database initialization works with configured PostgreSQL
    - Startup logging shows zero errors
 
 2. **All Required Dependencies Installed**
@@ -161,7 +161,7 @@ curl http://127.0.0.1:8000/
 │                      ↓                            │
 │ ┌──────────────────────────────────────────────┐ │
 │ │  Data Layer                                  │ │
-│ │  - SQLite (dev) / PostgreSQL (prod)          │ │
+│ │  - PostgreSQL                                 │ │
 │ │  - Pinecone (RAG vectors)                    │ │
 │ │  - Redis (conversation memory)               │ │
 │ └──────────────────────────────────────────────┘ │

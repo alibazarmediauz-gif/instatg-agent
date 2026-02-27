@@ -12,8 +12,10 @@ from contextlib import asynccontextmanager
 # Initialize structured logging
 setup_logging()
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 import sentry_sdk
@@ -26,7 +28,7 @@ if settings.sentry_dsn:
         integrations=[FastApiIntegration(), SqlalchemyIntegration()],
         traces_sample_rate=1.0 if not settings.is_production else 0.1,
     )
-from app.database import init_db, close_db
+from app.database import close_db, get_db, init_db
 from app.memory.context import memory
 
 # Import route routers
@@ -279,7 +281,6 @@ async def health():
     # Check Database
     try:
         from app.database import async_session_factory
-        from sqlalchemy import text
         async with async_session_factory() as db:
             await db.execute(text("SELECT 1"))
             health_status["database"] = "ok"
@@ -296,3 +297,9 @@ async def health():
         health_status["celery"] = "error"
 
     return health_status
+
+
+@app.get("/health/db")
+async def db_health(db: AsyncSession = Depends(get_db)):
+    await db.execute(text("SELECT 1"))
+    return {"status": "ok"}

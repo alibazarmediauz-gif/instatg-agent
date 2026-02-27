@@ -6,6 +6,8 @@ All secrets are read from .env file in the backend root.
 """
 
 from functools import lru_cache
+import os
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -27,7 +29,7 @@ class Settings(BaseSettings):
     sentry_dsn: str = ""
 
     # --- Database ---
-    database_url: str = "sqlite+aiosqlite:///./demo.db"
+    database_url: str = ""
     database_echo: bool = False
 
     # --- Redis ---
@@ -81,6 +83,20 @@ class Settings(BaseSettings):
     supabase_url: str = ""
     supabase_anon_key: str = ""
     supabase_service_role_key: str = ""
+
+    @field_validator("database_url", mode="before")
+    @classmethod
+    def validate_database_url(cls, value: str) -> str:
+        database_url = value or os.getenv("DATABASE_URL")
+        if not database_url:
+            raise RuntimeError("DATABASE_URL not set")
+        if database_url.startswith("postgresql://"):
+            database_url = database_url.replace(
+                "postgresql://",
+                "postgresql+asyncpg://",
+                1,
+            )
+        return database_url
 
     @property
     def is_production(self) -> bool:

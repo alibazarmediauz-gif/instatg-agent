@@ -1,5 +1,5 @@
 """
-Seed Script — Populate demo.db with realistic demo data.
+Seed Script — Populate database with realistic demo data.
 
 Run: python seed_demo_data.py
 """

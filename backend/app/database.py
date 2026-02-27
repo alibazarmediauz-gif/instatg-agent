@@ -1,63 +1,55 @@
 """
 InstaTG Agent — Database Engine & Session
 
-Async SQLAlchemy engine and session factory.
-Supports PostgreSQL (asyncpg) and SQLite (aiosqlite) for demo mode.
+Async SQLAlchemy engine and session factory for PostgreSQL on Railway.
 """
 
+import os
+
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import declarative_base
 
-from app.config import settings
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Detect database type and configure engine accordingly
-_is_sqlite = settings.database_url.startswith("sqlite")
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL not set")
 
-if _is_sqlite:
-    # SQLite — no pool settings, enable check_same_thread=False
-    engine = create_async_engine(
-        settings.database_url,
-        echo=settings.database_echo,
-        connect_args={"check_same_thread": False},
-    )
-else:
-    # PostgreSQL — full pool configuration
-    engine = create_async_engine(
-        settings.database_url,
-        echo=settings.database_echo,
-        pool_size=20,
-        max_overflow=10,
-        pool_pre_ping=True,
-        pool_recycle=300,
+if DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace(
+        "postgresql://",
+        "postgresql+asyncpg://",
+        1,
     )
 
-async_session_factory = async_sessionmaker(
+engine = create_async_engine(
+    DATABASE_URL,
+    echo=False,
+    future=True,
+    pool_pre_ping=True,
+)
+
+AsyncSessionLocal = async_sessionmaker(
     engine,
     class_=AsyncSession,
     expire_on_commit=False,
 )
 
+# Backwards-compatible alias used in existing imports.
+async_session_factory = AsyncSessionLocal
 
-class Base(DeclarativeBase):
-    """Base class for all ORM models."""
-    pass
+Base = declarative_base()
 
 
-async def get_db() -> AsyncSession:
-    """FastAPI dependency — yields a database session."""
-    async with async_session_factory() as session:
+async def get_db():
+    async with AsyncSessionLocal() as session:
         try:
             yield session
-            await session.commit()
-        except Exception:
-            await session.rollback()
-            raise
         finally:
             await session.close()
 
 
 async def init_db() -> None:
-    """Create all tables on startup (dev convenience)."""
+    """Create all tables on startup."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
