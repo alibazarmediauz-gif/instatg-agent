@@ -3,8 +3,10 @@
 
 @import "tailwindcss";
 
+@source ".";
 @source "../components";
 @source "../lib";
+@source "../context";
 
 @theme {
   --color-bg-primary: #0b0e14;
