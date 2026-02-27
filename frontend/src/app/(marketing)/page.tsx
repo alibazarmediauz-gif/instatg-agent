@@ -109,6 +109,7 @@ export default function LandingPage() {
                         <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-8">
                             {t('cta_final.title')}
                         </h2>
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                             <Link href="/dashboard" className="btn-primary px-12 py-5 text-xl font-bold min-w-[280px] shadow-2xl shadow-accent/20 flex items-center justify-center">
                                 {t('cta_final.book')}
                             </Link>
