@@ -10,20 +10,37 @@ const Pricing: React.FC = () => {
 
     const plans = [
         {
-            name: "Basic",
+            name: t('landing.pricing.basic_name'),
             price: "$49",
-            features: ["1 AI Agent", "1,000 Chats/mo", "CRM Sync", "Telegram Channel"]
+            features: [
+                t('landing.pricing.f_1_agent'),
+                t('landing.pricing.f_1k_chats'),
+                t('landing.pricing.f_crm_sync'),
+                t('landing.pricing.f_tg_channel')
+            ]
         },
         {
-            name: "Pro",
+            name: t('landing.pricing.pro_name'),
             price: "$199",
-            features: ["5 AI Agents", "10,000 Chats/mo", "Voice AI Support", "SIP Telephony", "Advanced Analytics"],
+            features: [
+                t('landing.pricing.f_5_agents'),
+                t('landing.pricing.f_10k_chats'),
+                t('landing.pricing.f_voice_ai'),
+                t('landing.pricing.f_sip'),
+                t('landing.pricing.f_analytics')
+            ],
             popular: true
         },
         {
-            name: "Enterprise",
-            price: "Custom",
-            features: ["Unlimited Agents", "Unlimited Usage", "Custom LLM Fine-tuning", "Dedicated Support", "SLA Guarantee"]
+            name: t('landing.pricing.ent_name'),
+            price: t('landing.pricing.custom'),
+            features: [
+                t('landing.pricing.f_unlimited_agents'),
+                t('landing.pricing.f_unlimited_usage'),
+                t('landing.pricing.f_finetuning'),
+                t('landing.pricing.f_dedicated'),
+                t('landing.pricing.f_sla')
+            ]
         }
     ];
 
@@ -31,8 +48,8 @@ const Pricing: React.FC = () => {
         <section id="pricing" className="py-24 bg-bg-body">
             <div className="container max-w-6xl">
                 <div className="text-center mb-16">
-                    <h2 className="text-4xl font-bold tracking-tight mb-4">Infrastructure That Scales With You</h2>
-                    <p className="text-text-secondary">Simple plans for serious sales teams.</p>
+                    <h2 className="text-4xl font-bold tracking-tight mb-4">{t('landing.pricing.title')}</h2>
+                    <p className="text-text-secondary">{t('landing.pricing.desc')}</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -40,7 +57,7 @@ const Pricing: React.FC = () => {
                         <div key={idx} className={`p-8 rounded-3xl border flex flex-col ${plan.popular ? 'border-accent bg-accent/5 ring-1 ring-accent/20' : 'border-border bg-bg-card'}`}>
                             {plan.popular && (
                                 <div className="bg-accent text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full self-start mb-4">
-                                    Most Popular
+                                    {t('landing.pricing.popular')}
                                 </div>
                             )}
                             <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
@@ -59,7 +76,7 @@ const Pricing: React.FC = () => {
                             </ul>
 
                             <Link href="/dashboard" className={`w-full py-4 rounded-xl font-bold transition-all text-center flex items-center justify-center ${plan.popular ? 'bg-accent text-white shadow-lg shadow-accent/20' : 'bg-bg-body border border-border hover:border-accent'}`}>
-                                Get Started
+                                {t('landing.pricing.get_started')}
                             </Link>
                         </div>
                     ))}

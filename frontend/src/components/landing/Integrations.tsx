@@ -18,7 +18,7 @@ const Integrations: React.FC = () => {
         <section id="integrations" className="py-24 bg-bg-body">
             <div className="container max-w-4xl text-center">
                 <h3 className="text-2xl font-bold mb-12 opacity-80 uppercase tracking-widest text-text-muted">
-                    Deep Integrations, Not Surface-Level Automations
+                    {t('landing.integrations_section.title')}
                 </h3>
 
                 <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16 grayscale opacity-60 hover:grayscale-0 transition-all duration-700">

@@ -41,32 +41,32 @@ export default function LandingPage() {
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                             <div>
                                 <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-8">
-                                    {t('security.title')}
+                                    {t('landing.security.title')}
                                 </h2>
                                 <p className="text-lg text-text-secondary mb-10 leading-relaxed">
-                                    {t('security.desc')}
+                                    {t('landing.security.desc')}
                                 </p>
 
                                 <div className="space-y-6">
                                     <div className="flex gap-4 p-4 rounded-xl bg-bg-body/50 border border-border/40">
                                         <div className="text-accent shrink-0 mt-1"><Server size={20} /></div>
                                         <div>
-                                            <h4 className="font-bold mb-1">FastAPI Backend</h4>
-                                            <p className="text-xs text-text-muted">High-performance asynchronous core built for speed and reliability at scale.</p>
+                                            <h4 className="font-bold mb-1">{t('landing.security.f1_t')}</h4>
+                                            <p className="text-xs text-text-muted">{t('landing.security.f1_d')}</p>
                                         </div>
                                     </div>
                                     <div className="flex gap-4 p-4 rounded-xl bg-bg-body/50 border border-border/40">
                                         <div className="text-accent shrink-0 mt-1"><Shield size={20} /></div>
                                         <div>
-                                            <h4 className="font-bold mb-1">Nginx Perimeter</h4>
-                                            <p className="text-xs text-text-muted">Enterprise routing with secure reverse proxy and WebSocket optimization.</p>
+                                            <h4 className="font-bold mb-1">{t('landing.security.f2_t')}</h4>
+                                            <p className="text-xs text-text-muted">{t('landing.security.f2_d')}</p>
                                         </div>
                                     </div>
                                     <div className="flex gap-4 p-4 rounded-xl bg-bg-body/50 border border-border/40">
                                         <div className="text-accent shrink-0 mt-1"><Lock size={20} /></div>
                                         <div>
-                                            <h4 className="font-bold mb-1">Encrypted Core</h4>
-                                            <p className="text-xs text-text-muted">End-to-end data safety in sync with CIS data protection standards.</p>
+                                            <h4 className="font-bold mb-1">{t('landing.security.f3_t')}</h4>
+                                            <p className="text-xs text-text-muted">{t('landing.security.f3_d')}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -107,7 +107,7 @@ export default function LandingPage() {
                 <section className="py-24 bg-bg-body border-t border-border">
                     <div className="container max-w-4xl text-center">
                         <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-8">
-                            {t('cta_final.title')}
+                            {t('landing.cta_final.title')}
                         </h2>
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                             <Link href="/dashboard" className="btn-primary px-12 py-5 text-xl font-bold min-w-[280px] shadow-2xl shadow-accent/20 flex items-center justify-center">

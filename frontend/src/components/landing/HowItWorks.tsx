@@ -8,20 +8,20 @@ const HowItWorks: React.FC = () => {
     const { t } = useLanguage();
 
     const steps = [
-        { title: "Connect amoCRM", icon: <Link2 size={20} /> },
-        { title: "Connect Channels", icon: <MessageSquarePlus size={20} /> },
-        { title: "Create AI Agent", icon: <UserPlus size={20} /> },
-        { title: "Train with Data", icon: <GraduationCap size={20} /> },
-        { title: "Launch Campaigns", icon: <PlayCircle size={20} /> },
-        { title: "Monitor Revenue", icon: <BarChart size={20} /> },
+        { title: t('landing.how_it_works.s1'), icon: <Link2 size={20} /> },
+        { title: t('landing.how_it_works.s2'), icon: <MessageSquarePlus size={20} /> },
+        { title: t('landing.how_it_works.s3'), icon: <UserPlus size={20} /> },
+        { title: t('landing.how_it_works.s4'), icon: <GraduationCap size={20} /> },
+        { title: t('landing.how_it_works.s5'), icon: <PlayCircle size={20} /> },
+        { title: t('landing.how_it_works.s6'), icon: <BarChart size={20} /> },
     ];
 
     return (
         <section className="py-24 bg-bg-body overflow-hidden">
             <div className="container max-w-6xl">
                 <div className="text-center mb-16">
-                    <h2 className="text-4xl font-bold tracking-tight mb-4">Enterprise Implementation Flow</h2>
-                    <p className="text-text-secondary">Deploy a complete AI sales department in days, not months.</p>
+                    <h2 className="text-4xl font-bold tracking-tight mb-4">{t('landing.how_it_works.title')}</h2>
+                    <p className="text-text-secondary">{t('landing.how_it_works.desc')}</p>
                 </div>
 
                 <div className="relative">

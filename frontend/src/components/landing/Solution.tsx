@@ -9,22 +9,22 @@ const Solution: React.FC = () => {
 
     const features = [
         {
-            title: t('solution.f1'),
+            title: t('landing.solution.f1'),
             desc: "Human-like chat interactions on Telegram and Instagram with instant conversion potential.",
             icon: <MessageSquare size={24} />,
         },
         {
-            title: t('solution.f2'),
+            title: t('landing.solution.f2'),
             desc: "Voice agents capable of natural conversations in Uzbek and Russian for automated outbound calls.",
             icon: <Phone size={24} />,
         },
         {
-            title: t('solution.f3'),
+            title: t('landing.solution.f3'),
             desc: "Scale your reach with Celery-powered multi-channel automated sales funnels.",
             icon: <Rocket size={24} />,
         },
         {
-            title: t('solution.f4'),
+            title: t('landing.solution.f4'),
             desc: "Deeper than integration. A 2-way native sync that makes AI act as a perfect CRM operator.",
             icon: <Database size={24} />,
         }
@@ -35,10 +35,10 @@ const Solution: React.FC = () => {
             <div className="container max-w-6xl">
                 <div className="text-center mb-16">
                     <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
-                        {t('solution.title')}
+                        {t('landing.solution.title')}
                     </h2>
                     <p className="text-text-secondary max-w-2xl mx-auto">
-                        We don&apos;t just automate chats. We build infrastructure that thinks, talks, and sells like your best manager.
+                        {t('landing.solution.desc')}
                     </p>
                 </div>
 
@@ -50,7 +50,10 @@ const Solution: React.FC = () => {
                             </div>
                             <h3 className="text-lg font-bold mb-3">{feature.title}</h3>
                             <p className="text-sm text-text-secondary leading-relaxed">
-                                {feature.desc}
+                                {idx === 0 && t('landing.solution.f1_d')}
+                                {idx === 1 && t('landing.solution.f2_d')}
+                                {idx === 2 && t('landing.solution.f3_d')}
+                                {idx === 3 && t('landing.solution.f4_d')}
                             </p>
                         </div>
                     ))}

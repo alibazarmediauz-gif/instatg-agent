@@ -79,14 +79,14 @@ async def lifespan(app: FastAPI):
     # 2. Connect Redis
     await memory.connect()
 
-    # 3. Start Telegram clients for all active accounts
-    await _start_telegram_clients()
+    # # 3. Start Telegram clients for all active accounts
+    # await _start_telegram_clients()
 
-    # 4. Register Instagram accounts for webhook handling
-    await _register_instagram_accounts()
+    # # 4. Register Instagram accounts for webhook handling
+    # await _register_instagram_accounts()
 
-    # 5. Register Facebook accounts for webhook handling
-    await _register_facebook_accounts()
+    # # 5. Register Facebook accounts for webhook handling
+    # await _register_facebook_accounts()
 
     logger.info("application_ready", app_name=settings.app_name)
 

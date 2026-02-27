@@ -127,7 +127,12 @@
             "title": "Butun sotuv bo'limingizni AI Agentlari bilan almashtiring",
             "subtitle": "Malaka oshirish, kuzatuv, chiqish kampaniyalari, CRM sinxronizatsiyasi va ovozli qo'ng'iroqlarni avtomatlashtiradigan korporativ AI platformasi — O'zbek va rus tillari uchun to'liq moslashtirilgan.",
             "cta_primary": "Demoniy bron qilish",
-            "cta_secondary": "Bepul sinab ko'rish"
+            "cta_secondary": "Bepul sinab ko'rish",
+            "badge": "Korporativ AI Sotuv Platformasi",
+            "check1": "amoCRM Native",
+            "check2": "Voice & Chat AI",
+            "check3": "Auto Dialer",
+            "check4": "UZ/RU Qo'llab-quvvatlash"
         },
         "problem": {
             "title": "Sizning sotuv bo'limingiz daromadni yo'qotmoqda",
@@ -139,19 +144,88 @@
         },
         "solution": {
             "title": "Sizning CRM ichida 24/7 ishlaydigan AI agentlari",
+            "desc": "Biz shunchaki chatlarni avtomatlashtirmaymiz. Biz sizning eng yaxshi menejeringiz kabi o'ylaydigan, gapiradigan va sotadigan infratuzilmani quramiz.",
             "f1": "AI Chat sotuv agentlari",
+            "f1_d": "Telegram va Instagram orqali mijozlar bilan muloqot va lidlarni saralash.",
             "f2": "AI Ovozli agentlar",
+            "f2_d": "O'zbek va rus tillarida tabiiy muloqot qiluvchi ovozli agentlar.",
             "f3": "Avtomatlashtirilgan kampaniya dvigateli",
-            "f4": "CRM sinxronizatsiya infratuzilmasi"
+            "f3_d": "Celery yordamida ko'p kanalli avtomatlashtirilgan sotuv voronkalari.",
+            "f4": "CRM sinxronizatsiya infratuzilmasi",
+            "f4_d": "AI-ni mukammal CRM operatoriga aylantiruvchi chuqur ikki tomonlama sinxronizatsiya."
         },
         "security": {
             "title": "Infratuzilma kabi qurilgan. Shunchaki vosita emas.",
-            "desc": "FastAPI backend, Celery worker arxitekturasi va Nginx marshrutizatsiyasi bilan korporativ darajadagi xavfsizlik va masshtablanuvchanlik."
+            "desc": "FastAPI backend, Celery worker arxitekturasi va Nginx marshrutizatsiyasi bilan korporativ darajadagi xavfsizlik va masshtablanuvchanlik.",
+            "f1_t": "FastAPI Backend",
+            "f1_d": "Katta hajmdagi ishlar uchun mo'ljallangan yuqori samarali asinxron yadro.",
+            "f2_t": "Nginx Perimeter",
+            "f2_d": "Xavfsiz reverse proxy va WebSocket optimallashtirilgan korporativ marshrutlash.",
+            "f3_t": "Encrypted Core",
+            "f3_d": "CIS ma'lumotlarni himoya qilish standartlari asosida to'liq xavfsizlik."
         },
         "cta_final": {
             "title": "Butun sotuv bo'limingizni avtomatlashtirishga tayyormisiz?",
             "book": "Korporativ demoni bron qilish",
             "start": "Bepul sinashni boshlash"
+        },
+        "features": {
+            "title": "Infratuzilma kabi qurilgan",
+            "desc": "Yuqori samarali sotuv bo'limlari uchun korporativ darajadagi imkoniyatlar.",
+            "f1_t": "Real vaqtda CRM sinxronizatsiyasi",
+            "f1_d": "amoCRM voronkalari va vazifalari bilan chuqur ikki tomonlama sinxronizatsiya.",
+            "f2_t": "Ko'p tilli AI",
+            "f2_d": "Mahalliy bozor uchun o'zbek va rus tillarini mukammal tushunish va muloqot qilish.",
+            "f3_t": "SIP Telefoniya",
+            "f3_d": "Ovozli sotuvlar uchun mahalliy SIP provayderlari bilan uzluksiz integratsiya.",
+            "f4_t": "Sifat nazorati (QA)",
+            "f4_d": "Har bir muloqot uchun AI asosidagi aniqlik reytingi va audit.",
+            "f5_t": "Celery avtomatizatsiyasi",
+            "f5_d": "Katta hajmdagi chiquvchi kampaniyalar uchun taqsimlangan ishlov berish tizimi.",
+            "f6_t": "Visual Flow Builder",
+            "f6_d": "Murakkab sotuv ssenariylarini loyihalash uchun vizual tahrirlovchi."
+        },
+        "how_it_works": {
+            "title": "Korporativ joriy etish jarayoni",
+            "desc": "To'liq AI sotuv bo'limini oylar emas, kunlar ichida ishga tushiring.",
+            "s1": "amoCRM ulanishi",
+            "s2": "Kanallarni ulash",
+            "s3": "AI Agentni yaratish",
+            "s4": "Ma'lumotlar bilan o'qitish",
+            "s5": "Kampaniyalarni boshlash",
+            "s6": "Daromadni kuzatish"
+        },
+        "pricing": {
+            "title": "Siz bilan birga o'sadigan infratuzilma",
+            "desc": "Jiddiy sotuv jamoalari uchun oddiy tariflar.",
+            "basic_name": "Boshlang'ich",
+            "pro_name": "Professional",
+            "ent_name": "Korporativ",
+            "popular": "Eng ommabop",
+            "get_started": "Boshlash",
+            "custom": "Individual",
+            "f_1_agent": "1 ta AI Agent",
+            "f_1k_chats": "Oyiga 1,000 chat",
+            "f_crm_sync": "CRM sinxronizatsiyasi",
+            "f_tg_channel": "Telegram kanali",
+            "f_5_agents": "5 ta AI Agent",
+            "f_10k_chats": "Oyiga 10,000 chat",
+            "f_voice_ai": "Ovozli AI yordami",
+            "f_sip": "SIP Telefoniya",
+            "f_analytics": "Kengaytirilgan tahlil",
+            "f_unlimited_agents": "Cheksiz agentlar",
+            "f_unlimited_usage": "Cheksiz foydalanish",
+            "f_finetuning": "Individual AI o'qitish",
+            "f_dedicated": "Maxsus qo'llab-quvvatlash",
+            "f_sla": "SLA kafolati"
+        },
+        "header": {
+            "features": "Imkoniyatlar",
+            "integrations": "Integratsiyalar",
+            "pricing": "Tariflar"
+        },
+        "integrations_section": {
+            "title": "Chuqur integratsiyalar, yuzaki emas"
         }
     }
 }

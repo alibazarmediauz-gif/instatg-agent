@@ -25,9 +25,9 @@ const Header: React.FC = () => {
                 </div>
 
                 <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-text-secondary">
-                    <a href="#features" className="hover:text-text-primary transition-colors">Features</a>
-                    <a href="#integrations" className="hover:text-text-primary transition-colors">Integrations</a>
-                    <a href="#pricing" className="hover:text-text-primary transition-colors">Pricing</a>
+                    <a href="#features" className="hover:text-text-primary transition-colors">{t('landing.header.features')}</a>
+                    <a href="#integrations" className="hover:text-text-primary transition-colors">{t('landing.header.integrations')}</a>
+                    <a href="#pricing" className="hover:text-text-primary transition-colors">{t('landing.header.pricing')}</a>
                 </nav>
 
                 <div className="flex items-center gap-4">

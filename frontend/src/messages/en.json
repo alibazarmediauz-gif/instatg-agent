@@ -128,7 +128,12 @@
             "title": "Replace Your Entire Sales Department with AI Agents",
             "subtitle": "Enterprise AI platform that automates qualification, follow-ups, outbound campaigns, CRM synchronization, and voice calls — fully localized for Uzbek & Russian markets.",
             "cta_primary": "Book Demo",
-            "cta_secondary": "Start Free Trial"
+            "cta_secondary": "Start Free Trial",
+            "badge": "Enterprise AI Sales Platform",
+            "check1": "amoCRM Native",
+            "check2": "Voice & Chat AI",
+            "check3": "Auto Dialer",
+            "check4": "UZ/RU Support"
         },
         "problem": {
             "title": "Your Sales Department Is Leaking Revenue",
@@ -140,19 +145,88 @@
         },
         "solution": {
             "title": "AI Agents That Work 24/7 Inside Your CRM",
+            "desc": "We don't just automate chats. We build infrastructure that thinks, talks, and sells like your best manager.",
             "f1": "AI Chat Sales Agents",
+            "f1_d": "Human-like chat interactions on Telegram and Instagram with instant conversion potential.",
             "f2": "AI Voice Agents",
+            "f2_d": "Voice agents capable of natural conversations in Uzbek and Russian for automated outbound calls.",
             "f3": "Automated Campaign Engine",
-            "f4": "CRM Sync Infrastructure"
+            "f3_d": "Scale your reach with Celery-powered multi-channel automated sales funnels.",
+            "f4": "CRM Sync Infrastructure",
+            "f4_d": "Deeper than integration. A 2-way native sync that makes AI act as a perfect CRM operator."
         },
         "security": {
             "title": "Built Like Infrastructure. Not a Tool.",
-            "desc": "Enterprise-grade security and scalability with a FastAPI backend, Celery worker architecture, and Nginx routing."
+            "desc": "Enterprise-grade security and scalability with a FastAPI backend, Celery worker architecture, and Nginx routing.",
+            "f1_t": "FastAPI Backend",
+            "f1_d": "High-performance asynchronous core built for speed and reliability at scale.",
+            "f2_t": "Nginx Perimeter",
+            "f2_d": "Enterprise routing with secure reverse proxy and WebSocket optimization.",
+            "f3_t": "Encrypted Core",
+            "f3_d": "End-to-end data safety in sync with CIS data protection standards."
         },
         "cta_final": {
             "title": "Ready to Automate Your Entire Sales Department?",
             "book": "Book Enterprise Demo",
             "start": "Start Free Trial"
+        },
+        "features": {
+            "title": "Built Like Infrastructure",
+            "desc": "Enterprise-grade features for high-performance sales departments.",
+            "f1_t": "Real-time CRM Sync",
+            "f1_d": "Deep bidirectional synchronization with amoCRM lead pipelines and task management.",
+            "f2_t": "Multi-language AI",
+            "f2_d": "Native understanding and generation of Uzbek and Russian for localized sales scripts.",
+            "f3_t": "SIP Telephony",
+            "f3_d": "Seamless integration with local SIP providers for automated voice sales and dialers.",
+            "f4_t": "QA Monitoring",
+            "f4_d": "AI-driven accuracy scoring and transcript auditing for every interaction.",
+            "f5_t": "Celery Automation",
+            "f5_d": "Distributed campaign processing engine built for massive outbound scale.",
+            "f6_t": "Visual Flow Builder",
+            "f6_d": "Node-based editor for designing complex sales funnels and logic trees."
+        },
+        "how_it_works": {
+            "title": "Enterprise Implementation Flow",
+            "desc": "Deploy a complete AI sales department in days, not months.",
+            "s1": "Connect amoCRM",
+            "s2": "Connect Channels",
+            "s3": "Create AI Agent",
+            "s4": "Train with Data",
+            "s5": "Launch Campaigns",
+            "s6": "Monitor Revenue"
+        },
+        "pricing": {
+            "title": "Infrastructure That Scales With You",
+            "desc": "Simple plans for serious sales teams.",
+            "basic_name": "Basic",
+            "pro_name": "Pro",
+            "ent_name": "Enterprise",
+            "popular": "Most Popular",
+            "get_started": "Get Started",
+            "custom": "Custom",
+            "f_1_agent": "1 AI Agent",
+            "f_1k_chats": "1,000 Chats/mo",
+            "f_crm_sync": "CRM Sync",
+            "f_tg_channel": "Telegram Channel",
+            "f_5_agents": "5 AI Agents",
+            "f_10k_chats": "10,000 Chats/mo",
+            "f_voice_ai": "Voice AI Support",
+            "f_sip": "SIP Telephony",
+            "f_analytics": "Advanced Analytics",
+            "f_unlimited_agents": "Unlimited Agents",
+            "f_unlimited_usage": "Unlimited Usage",
+            "f_finetuning": "Custom LLM Fine-tuning",
+            "f_dedicated": "Dedicated Support",
+            "f_sla": "SLA Guarantee"
+        },
+        "header": {
+            "features": "Features",
+            "integrations": "Integrations",
+            "pricing": "Pricing"
+        },
+        "integrations_section": {
+            "title": "Deep Integrations, Not Surface-Level Automations"
         }
     }
 }

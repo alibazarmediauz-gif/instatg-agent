@@ -13,7 +13,7 @@ const Hero: React.FC = () => {
             <div className="max-w-4xl text-center z-10">
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent/10 text-accent text-xs font-bold tracking-widest uppercase mb-6 border border-accent/20">
                     <span className="flex h-2 w-2 rounded-full bg-accent animate-pulse"></span>
-                    Enterprise AI Sales Platform
+                    {t('landing.hero.badge')}
                 </div>
 
                 <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-8 text-balance text-text-primary">
@@ -36,19 +36,19 @@ const Hero: React.FC = () => {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-text-muted text-sm font-medium border-t border-border/50 pt-8 mt-4">
                     <div className="flex items-center justify-center gap-2">
                         <CheckCircle size={16} className="text-accent" />
-                        amoCRM Native
+                        {t('landing.hero.check1')}
                     </div>
                     <div className="flex items-center justify-center gap-2">
                         <CheckCircle size={16} className="text-accent" />
-                        Voice & Chat AI
+                        {t('landing.hero.check2')}
                     </div>
                     <div className="flex items-center justify-center gap-2">
                         <CheckCircle size={16} className="text-accent" />
-                        Auto Dialer
+                        {t('landing.hero.check3')}
                     </div>
                     <div className="flex items-center justify-center gap-2">
                         <CheckCircle size={16} className="text-accent" />
-                        UZ/RU Support
+                        {t('landing.hero.check4')}
                     </div>
                 </div>
             </div>
