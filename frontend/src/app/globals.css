@@ -143,9 +143,9 @@ body {
   font-family: 'Manrope', -apple-system, sans-serif;
   color: #e8eef9;
   background:
-    radial-gradient(1200px 800px at 8% -12%, rgba(38, 217, 255, 0.16), transparent 60%),
-    radial-gradient(1000px 700px at 95% -18%, rgba(47, 93, 255, 0.2), transparent 62%),
-    linear-gradient(165deg, #061022 0%, #070d1a 45%, #040812 100%);
+    radial-gradient(1100px 700px at 2% -8%, rgba(30, 200, 255, 0.2), transparent 55%),
+    radial-gradient(980px 640px at 98% -18%, rgba(53, 89, 255, 0.25), transparent 58%),
+    linear-gradient(165deg, #071022 0%, #08101f 43%, #050a14 100%);
 }
 
 .sales-title {
@@ -154,36 +154,37 @@ body {
 }
 
 .sales-nav {
-  background: linear-gradient(to bottom, rgba(5, 11, 22, 0.94), rgba(5, 11, 22, 0.7));
-  backdrop-filter: blur(8px);
+  background: linear-gradient(to bottom, rgba(5, 12, 24, 0.9), rgba(5, 12, 24, 0.72));
+  backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .sales-chip {
-  border: 1px solid rgba(38, 217, 255, 0.3);
+  border: 1px solid rgba(103, 221, 255, 0.36);
   border-radius: 9999px;
   padding: 0.45rem 0.85rem;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #9beeff;
-  background: rgba(38, 217, 255, 0.08);
+  color: #b8f3ff;
+  background: rgba(103, 221, 255, 0.12);
 }
 
 .sales-panel {
-  border-radius: 1.1rem;
+  border-radius: 1rem;
   border: 1px solid rgba(255, 255, 255, 0.11);
   background:
-    linear-gradient(155deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
-    rgba(5, 11, 22, 0.78);
-  backdrop-filter: blur(4px);
+    linear-gradient(165deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.015)),
+    rgba(5, 13, 27, 0.74);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 12px 34px rgba(3, 7, 16, 0.42);
 }
 
 .sales-soft-box {
   border: 1px solid rgba(255, 255, 255, 0.11);
-  border-radius: 0.82rem;
-  background: rgba(255, 255, 255, 0.03);
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.04);
   padding: 0.8rem 0.92rem;
 }
 
