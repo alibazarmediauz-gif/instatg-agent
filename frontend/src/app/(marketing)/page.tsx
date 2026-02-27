@@ -111,10 +111,10 @@ export default function LandingPage() {
                         </h2>
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                             <Link href="/dashboard" className="btn-primary px-12 py-5 text-xl font-bold min-w-[280px] shadow-2xl shadow-accent/20 flex items-center justify-center">
-                                {t('cta_final.book')}
+                                {t('landing.cta_final.book')}
                             </Link>
                             <Link href="/dashboard" className="btn-secondary px-12 py-5 text-xl font-bold min-w-[280px] flex items-center justify-center">
-                                {t('cta_final.start')}
+                                {t('landing.cta_final.start')}
                             </Link>
                         </div>
                     </div>
