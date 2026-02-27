@@ -10,32 +10,7 @@ import {
 import { useTenant } from '@/lib/TenantContext';
 import { getQAFlagged } from '@/lib/api';
 
-const DEMO_FLAGS = [
-    {
-        id: 'f1', contact_name: 'Alexei Petrov', agent: 'Voice SDR Alpha',
-        flag_reason: 'Hallucination', is_toxic: false, has_hallucination: true,
-        score: 28, created_at: new Date(Date.now() - 1000 * 60 * 8).toISOString(),
-        transcript: 'Agent claimed a 90-day refund policy that does not exist in product docs.'
-    },
-    {
-        id: 'f2', contact_name: 'Sarah Johnson', agent: 'Chat IG Agent',
-        flag_reason: 'Toxic Language', is_toxic: true, has_hallucination: false,
-        score: 15, created_at: new Date(Date.now() - 1000 * 60 * 22).toISOString(),
-        transcript: 'Response classified as aggressive tone — sentiment score -0.91.'
-    },
-    {
-        id: 'f3', contact_name: 'David Kim', agent: 'Voice SDR Beta',
-        flag_reason: 'Script Deviation', is_toxic: false, has_hallucination: false,
-        score: 52, created_at: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
-        transcript: 'Agent skipped qualification step and jumped to close prematurely.'
-    },
-    {
-        id: 'f4', contact_name: 'Marina Russo', agent: 'Chat TG Agent',
-        flag_reason: 'Hallucination', is_toxic: false, has_hallucination: true,
-        score: 41, created_at: new Date(Date.now() - 1000 * 60 * 78).toISOString(),
-        transcript: 'Quoted incorrect price ($299 instead of $399) during sales pitch.'
-    },
-];
+// ── Constants ────────────────────────────────────────────────────────────
 
 const SEVERITY_CONFIG: Record<string, { label: string; bg: string; color: string; badge: string }> = {
     high: { label: 'HIGH', bg: 'rgba(239,68,68,0.08)', color: 'var(--danger)', badge: 'danger' },
@@ -65,7 +40,7 @@ const ALGORITHM_DOCS = [
 
 export default function QAControlCenterPage() {
     const { tenantId } = useTenant();
-    const [flags, setFlags] = useState<any[]>(DEMO_FLAGS);
+    const [flags, setFlags] = useState<any[]>([]);
     const [stats, setStats] = useState({ pending_reviews: 4, auto_passed: 2841, flag_rate: 0.14, avg_qa_score: 91.4 });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
@@ -77,7 +52,7 @@ export default function QAControlCenterPage() {
         try {
             const data = await getQAFlagged(tenantId) as any;
             if (data.status === 'success') {
-                if (data.data?.length > 0) setFlags(data.data);
+                if (data.data) setFlags(data.data);
                 if (data.stats) setStats(data.stats);
             }
             setError(false);
@@ -120,7 +95,7 @@ export default function QAControlCenterPage() {
             {error && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 10, marginBottom: 20, fontSize: 13, color: 'var(--warning)' }}>
                     <AlertCircle size={14} />
-                    Backend offline — showing demo QA data.
+                    Backend offline — could not load QA data.
                     <button onClick={fetchQA} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'var(--warning)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12 }}>
                         <RefreshCw size={12} /> Retry
                     </button>

@@ -85,7 +85,8 @@ export default function SettingsPage() {
             } catch (e) { console.error('Telegram load error:', e); }
 
             try {
-                const fbRes = await fetch(`http://localhost:8000/api/facebook-auth/status?tenant_id=${tenantId}`);
+                const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+                const fbRes = await fetch(`${API_URL}/api/facebook-auth/status?tenant_id=${tenantId}`);
                 if (fbRes.ok) {
                     setFbStatus(await fbRes.json());
                 }
@@ -138,10 +139,7 @@ export default function SettingsPage() {
             const res = await sendTelegramOTP(tenantId, tg.phoneNumber) as any;
             setTg(prev => ({ ...prev, status: 'entering_otp', phoneCodeHash: res.phone_code_hash }));
         } catch (e: any) {
-            // Fallback to demo simulation
-            setTimeout(() => {
-                setTg(prev => ({ ...prev, status: 'entering_otp', phoneCodeHash: 'demo_hash_' + Date.now() }));
-            }, 1500);
+            setTg(prev => ({ ...prev, status: 'error', errorMessage: e.message || 'Failed to send OTP' }));
         }
     };
 
@@ -153,18 +151,17 @@ export default function SettingsPage() {
             const res = await verifyTelegramOTP(tenantId, tg.phoneNumber, tg.otpCode, tg.phoneCodeHash) as any;
             setTg(prev => ({ ...prev, status: 'connected', displayName: res.display_name || 'Business Account', isPremium: res.is_premium || false }));
         } catch (e: any) {
-            // Fallback to demo
-            setTimeout(() => {
-                setTg(prev => ({ ...prev, status: 'connected', displayName: 'Business Account', isPremium: true }));
-            }, 2000);
+            setTg(prev => ({ ...prev, status: 'error', errorMessage: e.message || 'Failed to verify OTP' }));
         }
     };
 
     const handleDisconnect = async () => {
         try {
             await disconnectTelegram(tenantId);
-        } catch (e) { /* fallback to local reset */ }
-        setTg({ status: 'disconnected', phoneNumber: '', displayName: '', isPremium: false, otpCode: '', phoneCodeHash: '', errorMessage: '' });
+            setTg({ status: 'disconnected', phoneNumber: '', displayName: '', isPremium: false, otpCode: '', phoneCodeHash: '', errorMessage: '' });
+        } catch (e: any) {
+            setTg(prev => ({ ...prev, status: 'error', errorMessage: e.message || 'Failed to disconnect account' }));
+        }
     };
 
     const handleAddIg = async () => {
@@ -475,7 +472,10 @@ export default function SettingsPage() {
                                     </div>
                                     <button
                                         className="btn btn-primary"
-                                        onClick={() => window.location.href = `http://localhost:8000/api/facebook-auth/login?tenant_id=${tenantId}`}
+                                        onClick={() => {
+                                            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+                                            window.location.href = `${API_URL}/api/facebook-auth/login?tenant_id=${tenantId}`;
+                                        }}
                                         style={{ width: '100%', justifyContent: 'center', background: '#e2e8f0', color: '#0f172a' }}
                                     >
                                         <Link2 size={16} /> Re-Connect Pages
@@ -491,7 +491,10 @@ export default function SettingsPage() {
                                         </p>
                                         <button
                                             className="btn btn-primary"
-                                            onClick={() => window.location.href = `http://localhost:8000/api/facebook-auth/login?tenant_id=${tenantId}`}
+                                            onClick={() => {
+                                                const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+                                                window.location.href = `${API_URL}/api/facebook-auth/login?tenant_id=${tenantId}`;
+                                            }}
                                             style={{ margin: '0 auto' }}
                                         >
                                             <Facebook size={16} /> Connect with Facebook

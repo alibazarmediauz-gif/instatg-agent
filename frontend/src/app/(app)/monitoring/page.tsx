@@ -7,47 +7,10 @@ import {
     BarChart3, Brain, Flag
 } from 'lucide-react';
 
-const DEMO_INTERACTIONS = [
-    {
-        id: 'int_1',
-        lead_name: 'Alisher Usmanov',
-        channel: 'voice',
-        duration: '2:45',
-        grade: 92,
-        status: 'reviewed',
-        date: '2026-02-26 14:20',
-        summary: 'Customer asked about pricing for Uzbekistan region. AI correctly identified Beeline business plan.',
-        sentiment: 'positive',
-        objections: ['Price too high'],
-        transcript: [
-            { role: 'assistant', text: 'Assalomu alaykum! Men InstaTG Agent platformasidan qo\'ng\'iroq qilyapman. Ismim Malika.' },
-            { role: 'user', text: 'Vaalaykum assalom. Eshitaman, nima xizmat?' },
-            { role: 'assistant', text: 'Biz biznesingizni avtomatlashtirish bo\'yicha yangi yechimlarni taklif qilamiz. Sizda amoCRM integratsiyasi bormi?' },
-            { role: 'user', text: 'Ha, bor, lekin bizga hozircha kerak emas, narxi qanaqa buni?' },
-            { role: 'assistant', text: 'Bizda har bir lead uchun to\'lov tizimi mavjud. Uzbekistan bo\'yicha Beeline bilan hamkorlik qilamiz.' }
-        ]
-    },
-    {
-        id: 'int_2',
-        lead_name: 'Zarina Akramova',
-        channel: 'telegram',
-        grade: 45,
-        status: 'flagged',
-        date: '2026-02-26 13:10',
-        summary: 'AI failed to handle technical objection regarding API limits.',
-        sentiment: 'neutral',
-        objections: ['Technical constraints'],
-        transcript: [
-            { role: 'user', text: 'Telegram botda kuniga nechtagacha xabar jo\'natsa bo\'ladi?' },
-            { role: 'assistant', text: 'Men bu savolga aniq javob bera olmayman, lekin bizda juda yaxshi tizim bor.' },
-            { role: 'user', text: 'Menga aniq limitlar kerak edi.' }
-        ]
-    }
-];
-
 export default function MonitoringPage() {
     const [selected, setSelected] = useState<any | null>(null);
     const [filter, setFilter] = useState('all');
+    const [interactions, setInteractions] = useState<any[]>([]);
 
     return (
         <div className="page-container animate-in" style={{ padding: '28px 36px', height: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -101,7 +64,7 @@ export default function MonitoringPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {DEMO_INTERACTIONS.map(int => (
+                                {interactions.map(int => (
                                     <tr
                                         key={int.id}
                                         onClick={() => setSelected(int)}
@@ -131,7 +94,7 @@ export default function MonitoringPage() {
                                             </div>
                                         </td>
                                         <td style={{ padding: '16px 20px' }}>
-                                            {int.objections.map(obj => (
+                                            {int.objections?.map((obj: string) => (
                                                 <span key={obj} style={{ padding: '3px 10px', borderRadius: 20, fontSize: 10, fontWeight: 700, background: 'var(--bg-main)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>{obj}</span>
                                             ))}
                                         </td>

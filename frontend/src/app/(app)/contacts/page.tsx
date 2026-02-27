@@ -11,12 +11,7 @@ import { useTenant } from '@/lib/TenantContext';
 import { getLeads } from '@/lib/api';
 import { useLanguage } from '@/lib/LanguageContext';
 
-// ─── Demo / fallback contacts ─────────────────────────────────────────────────
-const DEMO_CONTACTS = [
-    { id: '1', name: 'Alisher Usmanov', phone: '+998 90 123 4567', email: 'alisher@corp.uz', channel: 'telegram', source: 'Telegram Bot', manager: 'Anvar', stage: 'Prospect', tags: ['VIP', 'Hot'], status: 'active', clv: 12400, score: 92, last_seen: '2 min ago', avatar: 'AU', plan: 'Enterprise' },
-    { id: '2', name: 'Svetlana Petrova', phone: '+998 91 987 6543', email: 'svetlana@mail.ru', channel: 'instagram', source: 'Instagram DM', manager: 'Dilnoza', stage: 'Negotiation', tags: ['Warm'], status: 'active', clv: 5800, score: 71, last_seen: '1 hr ago', avatar: 'SP', plan: 'Pro' },
-    { id: '3', name: 'Jahongir Ahmedov', phone: '+998 71 123 45 67', email: 'jahon@uztelecom.uz', channel: 'voice', source: 'Inbound Call', manager: 'Anvar', stage: 'Closed', tags: ['Cold'], status: 'inactive', clv: 1800, score: 34, last_seen: '3 days ago', avatar: 'JA', plan: 'Basic' },
-];
+// ─── Contacts ─────────────────────────────────────────────────
 
 const CHANNEL_CONFIG: Record<string, { label: string; bg: string; color: string }> = {
     telegram: { label: 'Telegram', bg: 'rgba(41,182,246,0.12)', color: '#29b6f6' },
@@ -51,7 +46,7 @@ function ScoreBadge({ score }: { score: number }) {
 export default function ContactsPage() {
     const { tenantId } = useTenant();
     const { t } = useLanguage();
-    const [contacts, setContacts] = useState<any[]>(DEMO_CONTACTS);
+    const [contacts, setContacts] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState('');
     const [channelFilter, setChannelFilter] = useState<string>('all');
@@ -66,7 +61,7 @@ export default function ContactsPage() {
         const load = async () => {
             try {
                 const data = await getLeads(tenantId) as any;
-                if (data.data && data.data.length > 0) {
+                if (data.data) {
                     const mapped = data.data.map((l: any) => ({
                         id: l.id,
                         name: l.contact_info?.name || l.contact_name || 'Unknown',
@@ -82,7 +77,7 @@ export default function ContactsPage() {
                     }));
                     setContacts(mapped);
                 }
-            } catch { /* use demo data as fallback */ }
+            } catch (err) { console.error("Failed to load contacts", err); }
         };
         load();
     }, [tenantId]);

@@ -82,6 +82,25 @@ async def update_voice_agent(
 
     return {"status": "success", "data": agent}
 
+@router.delete("/voice/{agent_id}")
+async def delete_voice_agent(
+    agent_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    tenant_id: UUID = Query(...)
+):
+    """Delete a Voice Agent."""
+    stmt = select(VoiceAgent).where(VoiceAgent.id == agent_id, VoiceAgent.tenant_id == tenant_id)
+    result = await db.execute(stmt)
+    agent = result.scalar_one_or_none()
+    
+    if not agent:
+        raise HTTPException(status_code=404, detail="Voice agent not found")
+        
+    await db.delete(agent)
+    await db.commit()
+    
+    return {"status": "success", "message": "Voice agent deleted"}
+
 # Chat Agents
 
 @router.get("/chat")
@@ -110,6 +129,49 @@ async def create_chat_agent(
     await db.commit()
     await db.refresh(new_agent)
     return {"status": "success", "data": new_agent}
+
+@router.patch("/chat/{agent_id}")
+async def update_chat_agent(
+    agent_id: UUID,
+    payload: Dict[str, Any],
+    db: AsyncSession = Depends(get_db),
+    tenant_id: UUID = Query(...)
+):
+    """Update a Chat Agent's configuration."""
+    stmt = select(ChatAgent).where(ChatAgent.id == agent_id, ChatAgent.tenant_id == tenant_id)
+    result = await db.execute(stmt)
+    agent = result.scalar_one_or_none()
+    
+    if not agent:
+        raise HTTPException(status_code=404, detail="Chat agent not found")
+        
+    for key, value in payload.items():
+        if hasattr(agent, key):
+            setattr(agent, key, value)
+            
+    await db.commit()
+    await db.refresh(agent)
+    
+    return {"status": "success", "data": agent}
+
+@router.delete("/chat/{agent_id}")
+async def delete_chat_agent(
+    agent_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    tenant_id: UUID = Query(...)
+):
+    """Delete a Chat Agent."""
+    stmt = select(ChatAgent).where(ChatAgent.id == agent_id, ChatAgent.tenant_id == tenant_id)
+    result = await db.execute(stmt)
+    agent = result.scalar_one_or_none()
+    
+    if not agent:
+        raise HTTPException(status_code=404, detail="Chat agent not found")
+        
+    await db.delete(agent)
+    await db.commit()
+    
+    return {"status": "success", "message": "Chat agent deleted"}
 
 # Utilities
 

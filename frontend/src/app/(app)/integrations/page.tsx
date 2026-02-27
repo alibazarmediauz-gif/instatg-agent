@@ -7,6 +7,7 @@ import {
     ArrowRight, Check, X, RefreshCw, Settings, Zap,
     AlertTriangle, CheckCircle, ChevronRight, Plus, AlertCircle, Loader2
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 /* ─── Types ───────────────────────────────────────────── */
 interface CRMStatusData {
@@ -56,6 +57,7 @@ const SOURCES = [
 export default function IntegrationsPage() {
     const { tenantId } = useTenant();
     const { t } = useLanguage();
+    const router = useRouter();
 
     const [status, setStatus] = useState<CRMStatusData | null>(null);
     const [leads, setLeads] = useState<CRMLead[]>([]);
@@ -105,50 +107,68 @@ export default function IntegrationsPage() {
 
             {/* ── Sources Grid Gallery ───────────────────────────────────── */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 20 }}>
-                {SOURCES.map(source => (
-                    <div
-                        key={source.id}
-                        onClick={() => setActiveIntegration(source.id)}
-                        style={{
-                            background: source.color,
-                            height: 140,
-                            borderRadius: 16,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer',
-                            position: 'relative',
-                            transition: 'all 0.2s',
-                            boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                            overflow: 'hidden'
-                        }}
-                        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-5px)'; e.currentTarget.style.boxShadow = '0 12px 30px rgba(0,0,0,0.2)'; }}
-                        onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.1)'; }}
-                    >
-                        {/* Status Dot */}
-                        <div style={{ position: 'absolute', top: 12, right: 12, width: 8, height: 8, borderRadius: '50%', background: '#fff', opacity: connectedStates[source.id] ? 1 : 0.4 }} />
+                {SOURCES.map(source => {
+                    const isImplemented = ['telegram', 'instagram', 'facebook'].includes(source.id);
+                    return (
+                        <div
+                            key={source.id}
+                            onClick={() => {
+                                if (isImplemented) {
+                                    router.push(`/settings?tab=${source.id}`);
+                                } else {
+                                    setActiveIntegration(source.id);
+                                }
+                            }}
+                            style={{
+                                background: source.color,
+                                height: 140,
+                                borderRadius: 16,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'pointer',
+                                position: 'relative',
+                                transition: 'all 0.2s',
+                                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                                overflow: 'hidden',
+                                opacity: isImplemented ? 1 : 0.65
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-5px)'; e.currentTarget.style.boxShadow = '0 12px 30px rgba(0,0,0,0.2)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.1)'; }}
+                        >
+                            {/* Status Dot */}
+                            {isImplemented && <div style={{ position: 'absolute', top: 12, right: 12, width: 8, height: 8, borderRadius: '50%', background: '#fff', opacity: connectedStates[source.id] ? 1 : 0.4 }} />}
 
-                        <div style={{ fontSize: 32, color: '#fff', marginBottom: 12, fontWeight: 900 }}>
-                            {source.iconText ? <span style={{ textTransform: 'uppercase' }}>{source.iconText}</span> : source.icon}
+                            {!isImplemented && (
+                                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '4px', background: 'rgba(0,0,0,0.4)', color: 'white', fontSize: 10, fontWeight: 800, textAlign: 'center', textTransform: 'uppercase' }}>
+                                    Coming Soon
+                                </div>
+                            )}
+
+                            <div style={{ fontSize: 32, color: '#fff', marginBottom: 12, fontWeight: 900 }}>
+                                {source.iconText ? <span style={{ textTransform: 'uppercase' }}>{source.iconText}</span> : source.icon}
+                            </div>
+                            <div style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{source.name}</div>
+
+                            {isImplemented && (
+                                <button style={{
+                                    marginTop: 12,
+                                    background: 'rgba(255,255,255,0.2)',
+                                    border: 'none',
+                                    borderRadius: 6,
+                                    padding: '4px 12px',
+                                    fontSize: 11,
+                                    fontWeight: 800,
+                                    color: '#fff',
+                                    cursor: 'pointer'
+                                }}>
+                                    {connectedStates[source.id] ? 'Settings' : 'Add'}
+                                </button>
+                            )}
                         </div>
-                        <div style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{source.name}</div>
-
-                        <button style={{
-                            marginTop: 12,
-                            background: 'rgba(255,255,255,0.2)',
-                            border: 'none',
-                            borderRadius: 6,
-                            padding: '4px 12px',
-                            fontSize: 11,
-                            fontWeight: 800,
-                            color: '#fff',
-                            cursor: 'pointer'
-                        }}>
-                            {connectedStates[source.id] ? 'Settings' : 'Add'}
-                        </button>
-                    </div>
-                ))}
+                    );
+                })}
 
                 {/* Custom Webhook / Empty slot */}
                 <div style={{
@@ -195,11 +215,11 @@ export default function IntegrationsPage() {
                             <div style={{ flex: 1 }} />
 
                             <button style={{
-                                padding: '16px 24px', background: 'var(--accent)', border: 'none',
-                                borderRadius: 12, color: '#fff', fontWeight: 800, fontSize: 15, cursor: 'pointer',
+                                padding: '16px 24px', background: 'var(--accent)', border: 'none', opacity: 0.5,
+                                borderRadius: 12, color: '#fff', fontWeight: 800, fontSize: 15, cursor: 'not-allowed',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10
-                            }} onClick={() => { setConnectedStates(p => ({ ...p, [activeIntegData.id]: true })); setActiveIntegration(null); }}>
-                                <Plus size={18} /> Install Integration
+                            }} disabled>
+                                Not Available Yet
                             </button>
                         </div>
 

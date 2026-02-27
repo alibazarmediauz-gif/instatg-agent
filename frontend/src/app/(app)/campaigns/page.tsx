@@ -10,24 +10,7 @@ import {
 import { useTenant } from '@/lib/TenantContext';
 import { getCampaigns, createCampaign, startCampaign, pauseCampaign } from '@/lib/api';
 
-// ── Demo data ─────────────────────────────────────────────────────────────────
-const DEMO_CAMPAIGNS = [
-    {
-        id: 'c1', name: 'Q1 Outbound — Enterprise', status: 'running', channel: 'voice',
-        total_contacts: 2400, called: 1820, connected: 644, conversions: 38,
-        agent_name: 'Voice SDR Alpha', scheduled_at: null,
-    },
-    {
-        id: 'c2', name: 'TG Promo — Bukhara Region', status: 'paused', channel: 'telegram',
-        total_contacts: 800, called: 620, connected: 188, conversions: 54,
-        agent_name: 'Chat Closer Pro', scheduled_at: '2026-03-01T09:00:00',
-    },
-    {
-        id: 'c3', name: 'Uztelecom SMS Survey', status: 'draft', channel: 'sms',
-        total_contacts: 3200, called: 0, connected: 0, conversions: 0,
-        agent_name: 'SMS Automator', scheduled_at: null,
-    },
-];
+// ── Constants ─────────────────────────────────────────────────────────────────
 
 const CHANNELS = [
     { id: 'voice', label: 'Voice Call', icon: <PhoneCall size={14} />, color: '#3b82f6' },
@@ -67,15 +50,14 @@ export default function CampaignsPage() {
     const fetchCampaigns = async () => {
         try {
             const data = await getCampaigns(tenantId) as any;
-            if (data.data?.length > 0) {
-                setCampaigns(data.data);
+            if (data.status === 'success') {
+                setCampaigns(data.data || []);
                 setOffline(false);
                 return;
             }
-            throw new Error('empty');
         } catch {
             setOffline(true);
-            setCampaigns(DEMO_CAMPAIGNS);
+            setCampaigns([]);
         } finally { setLoading(false); }
     };
 
@@ -131,7 +113,7 @@ export default function CampaignsPage() {
         <div className="page-container animate-in" style={{ padding: '28px 36px', display: 'flex', flexDirection: 'column', height: '100vh', gap: 0 }}>
             {offline && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 10, marginBottom: 20, fontSize: 13, color: 'var(--warning)' }}>
-                    <AlertCircle size={14} /> Backend offline — demo campaigns shown.
+                    <AlertCircle size={14} /> Backend offline — could not load campaigns.
                     <button onClick={fetchCampaigns} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'var(--warning)', cursor: 'pointer', fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}><RefreshCw size={12} /> Retry</button>
                 </div>
             )}

@@ -9,18 +9,7 @@ import {
 } from 'lucide-react';
 import { useTenant } from '@/lib/TenantContext';
 
-// ── Demo Admin Data ────────────────────────────────────────────────────────────
-const DEMO_USERS = [
-    { id: '1', name: 'Nazir E.', email: 'nazir@instatg.io', role: 'Owner', status: 'active', last_seen: '2 min ago', avatar: 'NE' },
-    { id: '2', name: 'Amir K.', email: 'amir@instatg.io', role: 'Admin', status: 'active', last_seen: '1h ago', avatar: 'AK' },
-    { id: '3', name: 'Dina S.', email: 'dina@instatg.io', role: 'Manager', status: 'active', last_seen: '3h ago', avatar: 'DS' },
-    { id: '4', name: 'Bot Monitor', email: 'monitor@instatg.io', role: 'Viewer', status: 'inactive', last_seen: '2d ago', avatar: 'BM' },
-];
-
-const DEMO_API_KEYS = [
-    { id: 'k1', name: 'Production Key', key: 'sk-live-a8f3...9d2c', created: '2025-01-15', last_used: '2 min ago', scopes: ['read', 'write'] },
-    { id: 'k2', name: 'Analytics Hook', key: 'sk-live-x1b7...3f8e', created: '2025-02-01', last_used: '1h ago', scopes: ['read'] },
-];
+// ── Admin Data ────────────────────────────────────────────────────────────
 
 const ROLE_COLORS: Record<string, { bg: string; color: string }> = {
     Owner: { bg: 'rgba(101,62,255,0.12)', color: '#8b5cf6' },
@@ -39,8 +28,8 @@ const TABS = [
 export default function AdminPage() {
     const { tenantId } = useTenant();
     const [tab, setTab] = useState('users');
-    const [users, setUsers] = useState(DEMO_USERS);
-    const [apiKeys, setApiKeys] = useState(DEMO_API_KEYS);
+    const [users, setUsers] = useState<any[]>([]);
+    const [apiKeys, setApiKeys] = useState<any[]>([]);
     const [sessions, setSessions] = useState([
         { id: 's1', user: 'Nazir E.', device: 'MacBook Pro — Chrome 121', ip: '84.201.142.xx', location: 'Tashkent, UZ', current: true },
         { id: 's2', user: 'Amir K.', device: 'iPhone 15 — Safari', ip: '192.168.1.xx', location: 'Almaty, KZ', current: false },
@@ -122,8 +111,8 @@ export default function AdminPage() {
             {/* KPI Strip */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 28 }}>
                 {[
-                    { label: 'Team Members', value: `${DEMO_USERS.length}`, sub: '3 active now', color: 'var(--accent)', icon: <Users size={16} /> },
-                    { label: 'API Keys', value: `${DEMO_API_KEYS.length}`, sub: 'All live', color: 'var(--success)', icon: <Key size={16} /> },
+                    { label: 'Team Members', value: `${users.length}`, sub: 'Active team members', color: 'var(--accent)', icon: <Users size={16} /> },
+                    { label: 'API Keys', value: `${apiKeys.length}`, sub: 'All live', color: 'var(--success)', icon: <Key size={16} /> },
                     { label: '2FA Enabled', value: '3/4', sub: '75% coverage', color: 'var(--warning)', icon: <Lock size={16} /> },
                     { label: 'System Uptime', value: '99.98%', sub: 'Last 30 days', color: 'var(--success)', icon: <Activity size={16} /> },
                 ].map(kpi => (
@@ -301,7 +290,7 @@ export default function AdminPage() {
                                 </button>
                             </div>
                             <div style={{ display: 'flex', gap: 8 }}>
-                                {k.scopes.map(sc => (
+                                {k.scopes?.map((sc: string) => (
                                     <span key={sc} style={{ padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: 'rgba(59,130,246,0.12)', color: 'var(--accent)' }}>{sc}</span>
                                 ))}
                             </div>

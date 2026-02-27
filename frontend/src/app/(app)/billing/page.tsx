@@ -10,18 +10,12 @@ import {
 import { useTenant } from '@/lib/TenantContext';
 import { getBillingWallet, getBillingUsageLogs, topUpWallet } from '@/lib/api';
 
-const DEMO_LOGS = [
-    { id: '1', service_type: 'chat', cost: 0.03, units_consumed: 840, created_at: new Date(Date.now() - 1000 * 60 * 5).toISOString() },
-    { id: '2', service_type: 'voice', cost: 0.14, units_consumed: 2, created_at: new Date(Date.now() - 1000 * 60 * 18).toISOString() },
-    { id: '3', service_type: 'chat', cost: 0.01, units_consumed: 320, created_at: new Date(Date.now() - 1000 * 60 * 42).toISOString() },
-    { id: '4', service_type: 'voice', cost: 0.28, units_consumed: 4, created_at: new Date(Date.now() - 1000 * 60 * 67).toISOString() },
-    { id: '5', service_type: 'chat', cost: 0.02, units_consumed: 560, created_at: new Date(Date.now() - 1000 * 60 * 95).toISOString() },
-];
+// ── Constants ────────────────────────────────────────────────────────────
 
 export default function BillingPage() {
     const { tenantId } = useTenant();
     const [balance, setBalance] = useState<number>(1250.00);
-    const [logs, setLogs] = useState<any[]>(DEMO_LOGS);
+    const [logs, setLogs] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
     const [topping, setTopping] = useState(false);
@@ -44,7 +38,7 @@ export default function BillingPage() {
                 getBillingUsageLogs(tenantId) as Promise<any>,
             ]);
             if (walletData.status === 'success') setBalance(walletData.balance);
-            if (logsData.status === 'success' && logsData.logs.length > 0) setLogs(logsData.logs);
+            if (logsData.status === 'success') setLogs(logsData.logs || []);
             setError(false);
         } catch {
             setError(true);
@@ -93,7 +87,7 @@ export default function BillingPage() {
                     borderRadius: 10, marginBottom: 20, fontSize: 13, color: 'var(--warning)'
                 }}>
                     <AlertCircle size={14} />
-                    Backend offline — showing cached data.
+                    Backend offline — could not load billing data.
                     <button onClick={fetchBillingData} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'var(--warning)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12 }}>
                         <RefreshCw size={12} /> Retry
                     </button>

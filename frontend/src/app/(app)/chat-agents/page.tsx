@@ -14,41 +14,7 @@ import {
     getKnowledgeDocs
 } from '@/lib/api';
 
-// ── Demo fallback agents ──────────────────────────────────────────────
-const DEMO_AGENTS = [
-    {
-        id: 'd1',
-        name: 'IG DM Closer',
-        channel: 'instagram',
-        is_active: true,
-        system_prompt: 'You are a friendly Instagram sales closer. Your goal is to qualify leads, answer questions, and book demo calls. Never send more than 2 messages without asking a question.',
-        settings: {
-            language: 'en',
-            persona: 'friendly',
-            handoff_on_price: true,
-            max_messages_before_handoff: 10,
-            greeting: 'Hey! 👋 Thanks for reaching out. How can I help you today?',
-            delay_ms: 1200,
-        },
-        stats: { conversations: 324, conversions: 41, handoffs: 18 },
-    },
-    {
-        id: 'd2',
-        name: 'Telegram Sales Bot',
-        channel: 'telegram',
-        is_active: true,
-        system_prompt: 'You are a professional Telegram sales assistant. Speak in Russian or Uzbek based on the user. Qualify budget before pitching.',
-        settings: {
-            language: 'ru',
-            persona: 'professional',
-            handoff_on_price: false,
-            max_messages_before_handoff: 20,
-            greeting: 'Salom! 🤖 Assalomu alaykum, qanday yordam bera olaman?',
-            delay_ms: 800,
-        },
-        stats: { conversations: 1840, conversions: 220, handoffs: 64 },
-    },
-];
+// ── Constants ──────────────────────────────────────────────
 
 const CHANNELS = [
     { id: 'instagram', label: 'Instagram', icon: <Instagram size={14} />, color: '#e91e63' },
@@ -98,18 +64,17 @@ export default function ChatAgentsPage() {
     const fetchAgents = async () => {
         try {
             const data = await getChatAgents(tenantId) as any;
-            if (data.status === 'success' && data.data?.length > 0) {
-                setAgents(data.data.map((a: any) => ({
+            if (data.status === 'success') {
+                setAgents((data.data || []).map((a: any) => ({
                     ...a,
                     stats: a.stats || { conversations: 0, conversions: 0, handoffs: 0 }
                 })));
                 setOffline(false);
                 return;
             }
-            throw new Error('empty');
         } catch {
             setOffline(true);
-            setAgents(DEMO_AGENTS);
+            setAgents([]);
         } finally {
             setLoading(false);
         }
