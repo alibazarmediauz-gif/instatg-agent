@@ -155,7 +155,7 @@
 
 **Dashboard**
 ```typescript
-GET /api/analytics/dashboard?tenant_id=...
+GET /api/dashboard/stats?tenant_id=...
 ```
 
 **Conversations**

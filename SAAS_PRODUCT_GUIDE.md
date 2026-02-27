@@ -836,7 +836,7 @@ PATCH  /api/leads/{id}/stage
 GET    /api/integrations/crm-status
 
 ANALYTICS
-GET    /api/analytics/dashboard?tenant_id=X&days=7
+GET    /api/dashboard/stats?tenant_id=X&days=7
 GET    /api/analytics/conversation-analysis/{id}
 GET    /api/reports?tenant_id=X&days=30
 

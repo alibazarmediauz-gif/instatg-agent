@@ -421,7 +421,7 @@ export async function getCampaignStats(tenantId: string, id: string) {
 // ─── Analytics ───────────────────────────────────────────────────
 
 export async function getAnalyticsDashboard(tenantId: string, days: number = 7) {
-    return apiClient('/api/analytics/dashboard', {
+    return apiClient('/api/dashboard/stats', {
         params: { tenant_id: tenantId, days: String(days) },
     });
 }
