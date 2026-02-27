@@ -3,7 +3,12 @@
  * Centralized HTTP client for all backend API calls.
  */
 
-const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/+$/, '');
+const API_BASE_URL = (
+    process.env.NEXT_PUBLIC_API_URL ||
+    (process.env.NODE_ENV === 'production'
+        ? 'https://instatg-agent-production.up.railway.app'
+        : 'http://localhost:8000')
+).replace(/\/+$/, '');
 
 interface FetchOptions extends RequestInit {
     params?: Record<string, string>;
