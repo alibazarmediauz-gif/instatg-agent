@@ -224,7 +224,7 @@ export default function CRMPage() {
                         <Search size={13} color="var(--text-muted)" />
                         <input
                             value={search} onChange={e => setSearch(e.target.value)}
-                            placeholder="Search leads…"
+                            placeholder="Search leads&hellip;"
                             style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: 13, color: 'var(--text-primary)', width: 180 }}
                         />
                         {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 0, display: 'flex' }}><X size={13} /></button>}
@@ -583,167 +583,172 @@ export default function CRMPage() {
                         </div>
                     </div>
                 </div>
-            )}
+            )
+            }
 
             {/* amoCRM Connect Modal */}
-            {connectModal && (
-                <Overlay onClose={() => setConnectModal(false)}>
-                    <div style={{ width: 440 }}>
-                        <ModalHeader
-                            title={t('integrations.connect_amo_btn')}
-                            onClose={() => setConnectModal(false)}
-                            icon={<RefreshCw size={18} />}
-                        />
-                        <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-                            <Field label="amoCRM Subdomain">
-                                <input
-                                    value={connectForm.subdomain}
-                                    onChange={e => setConnectForm(p => ({ ...p, subdomain: e.target.value }))}
-                                    placeholder="your-company"
-                                    style={inputStyle}
-                                />
-                                <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
-                                    e.g., if your URL is your-company.amocrm.ru, enter "your-company"
-                                </p>
-                            </Field>
+            {
+                connectModal && (
+                    <Overlay onClose={() => setConnectModal(false)}>
+                        <div style={{ width: 440 }}>
+                            <ModalHeader
+                                title={t('integrations.connect_amo_btn')}
+                                onClose={() => setConnectModal(false)}
+                                icon={<RefreshCw size={18} />}
+                            />
+                            <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <Field label="amoCRM Subdomain">
+                                    <input
+                                        value={connectForm.subdomain}
+                                        onChange={e => setConnectForm(p => ({ ...p, subdomain: e.target.value }))}
+                                        placeholder="your-company"
+                                        style={inputStyle}
+                                    />
+                                    <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
+                                        e.g., if your URL is your-company.amocrm.ru, enter "your-company"
+                                    </p>
+                                </Field>
 
-                            <button
-                                onClick={handleStartConnect}
-                                disabled={!connectForm.subdomain || refreshing}
-                                style={{ ...btnSec, width: '100%', height: 40, justifyContent: 'center' }}
-                            >
-                                {refreshing ? <Loader2 size={14} className="animate-spin" /> : "Step 1: Get Authorization Code"}
-                            </button>
+                                <button
+                                    onClick={handleStartConnect}
+                                    disabled={!connectForm.subdomain || refreshing}
+                                    style={{ ...btnSec, width: '100%', height: 40, justifyContent: 'center' }}
+                                >
+                                    {refreshing ? <Loader2 size={14} className="animate-spin" /> : "Step 1: Get Authorization Code"}
+                                </button>
 
-                            <div style={{ height: 1, background: 'var(--border)', margin: '8px 0' }} />
+                                <div style={{ height: 1, background: 'var(--border)', margin: '8px 0' }} />
 
-                            <Field label="Authorization Code">
-                                <input
-                                    value={connectForm.code}
-                                    onChange={e => setConnectForm(p => ({ ...p, code: e.target.value }))}
-                                    placeholder="Paste code from amoCRM here..."
-                                    style={inputStyle}
-                                />
-                            </Field>
+                                <Field label="Authorization Code">
+                                    <input
+                                        value={connectForm.code}
+                                        onChange={e => setConnectForm(p => ({ ...p, code: e.target.value }))}
+                                        placeholder="Paste code from amoCRM here..."
+                                        style={inputStyle}
+                                    />
+                                </Field>
+                            </div>
+                            <ModalFooter>
+                                <button onClick={() => setConnectModal(false)} style={btnSec}>Cancel</button>
+                                <button
+                                    onClick={handleFinishConnect}
+                                    disabled={!connectForm.code || saving}
+                                    style={{ ...btnPri, opacity: !connectForm.code || saving ? 0.6 : 1 }}
+                                >
+                                    {saving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
+                                    {saving ? 'Connecting...' : 'Finish Connection'}
+                                </button>
+                            </ModalFooter>
                         </div>
-                        <ModalFooter>
-                            <button onClick={() => setConnectModal(false)} style={btnSec}>Cancel</button>
-                            <button
-                                onClick={handleFinishConnect}
-                                disabled={!connectForm.code || saving}
-                                style={{ ...btnPri, opacity: !connectForm.code || saving ? 0.6 : 1 }}
-                            >
-                                {saving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
-                                {saving ? 'Connecting...' : 'Finish Connection'}
-                            </button>
-                        </ModalFooter>
-                    </div>
-                </Overlay>
-            )}
+                    </Overlay>
+                )
+            }
 
             {/* Automation Studio (Vo'ronka) - Visual Grid Layout */}
-            {automModal && (
-                <Overlay onClose={() => setAutomModal(false)}>
-                    <div style={{ width: 'calc(100vw - 160px)', maxWidth: 1100, height: '85vh', display: 'flex', flexDirection: 'column' }}>
-                        <ModalHeader
-                            title="Automation Studio"
-                            subtitle="Configure AI triggers and webhooks for each pipeline stage"
-                            icon={<Zap size={18} />}
-                            iconBg="rgba(99,102,241,.15)"
-                            iconColor="#818cf8"
-                            onClose={() => setAutomModal(false)}
-                        />
+            {
+                automModal && (
+                    <Overlay onClose={() => setAutomModal(false)}>
+                        <div style={{ width: 'calc(100vw - 160px)', maxWidth: 1100, height: '85vh', display: 'flex', flexDirection: 'column' }}>
+                            <ModalHeader
+                                title="Automation Studio"
+                                subtitle="Configure AI triggers and webhooks for each pipeline stage"
+                                icon={<Zap size={18} />}
+                                iconBg="rgba(99,102,241,.15)"
+                                iconColor="#818cf8"
+                                onClose={() => setAutomModal(false)}
+                            />
 
-                        <div style={{ flex: 1, padding: '32px', overflowX: 'auto', background: 'var(--bg-elevated)' }}>
-                            <div style={{ display: 'flex', gap: 24, height: '100%' }}>
-                                {displayStages.map(stage => {
-                                    const sc = stageColor(stage.name);
-                                    const stageAutomations = automations.filter(a => a.trigger.includes(stage.name));
+                            <div style={{ flex: 1, padding: '32px', overflowX: 'auto', background: 'var(--bg-elevated)' }}>
+                                <div style={{ display: 'flex', gap: 24, height: '100%' }}>
+                                    {displayStages.map(stage => {
+                                        const sc = stageColor(stage.name);
+                                        const stageAutomations = automations.filter(a => a.trigger.includes(stage.name));
 
-                                    return (
-                                        <div key={stage.id} style={{ width: 280, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                            {/* Stage Label */}
-                                            <div style={{ padding: '0 12px' }}>
-                                                <div style={{ fontSize: 12, fontWeight: 800, color: sc, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>{stage.name}</div>
-                                                <div style={{ height: 3, width: 40, background: sc, borderRadius: 2 }} />
-                                            </div>
+                                        return (
+                                            <div key={stage.id} style={{ width: 280, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                                {/* Stage Label */}
+                                                <div style={{ padding: '0 12px' }}>
+                                                    <div style={{ fontSize: 12, fontWeight: 800, color: sc, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>{stage.name}</div>
+                                                    <div style={{ height: 3, width: 40, background: sc, borderRadius: 2 }} />
+                                                </div>
 
-                                            {/* Trigger Column */}
-                                            <div style={{
-                                                flex: 1,
-                                                background: 'rgba(255,255,255,0.02)',
-                                                borderRadius: 16,
-                                                border: '1px dashed var(--border)',
-                                                padding: 12,
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                gap: 12
-                                            }}>
-                                                {stageAutomations.map(a => (
-                                                    <div key={a.id} style={{
-                                                        background: 'var(--bg-card)',
-                                                        border: '1px solid var(--border)',
-                                                        borderRadius: 12,
-                                                        padding: 16,
-                                                        boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-                                                        position: 'relative'
-                                                    }}>
-                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, color: 'var(--accent)' }}>
-                                                                <Zap size={12} /> AI ACTION
-                                                            </div>
-                                                            <Toggle
-                                                                on={a.enabled}
-                                                                onChange={() => setAutomations(prev => prev.map(x => x.id === a.id ? { ...x, enabled: !x.enabled } : x))}
-                                                            />
-                                                        </div>
-                                                        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.4 }}>{a.action}</div>
-                                                        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8, display: 'flex', alignItems: 'center', gap: 4 }}>
-                                                            <Clock size={10} /> Instant execution
-                                                        </div>
-                                                    </div>
-                                                ))}
-
-                                                {/* Add Trigger Placeholder */}
-                                                <button style={{
-                                                    width: '100%',
-                                                    padding: '16px',
-                                                    borderRadius: 12,
+                                                {/* Trigger Column */}
+                                                <div style={{
+                                                    flex: 1,
+                                                    background: 'rgba(255,255,255,0.02)',
+                                                    borderRadius: 16,
                                                     border: '1px dashed var(--border)',
-                                                    background: 'transparent',
-                                                    color: 'var(--text-muted)',
-                                                    cursor: 'pointer',
+                                                    padding: 12,
                                                     display: 'flex',
                                                     flexDirection: 'column',
-                                                    alignItems: 'center',
-                                                    gap: 8,
-                                                    transition: 'all 0.2s'
-                                                }} onMouseOver={e => e.currentTarget.style.borderColor = sc} onMouseOut={e => e.currentTarget.style.borderColor = 'var(--border)'}>
-                                                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--bg-card)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                        <Plus size={16} />
-                                                    </div>
-                                                    <span style={{ fontSize: 11, fontWeight: 700 }}>Add trigger</span>
-                                                </button>
-                                            </div>
+                                                    gap: 12
+                                                }}>
+                                                    {stageAutomations.map(a => (
+                                                        <div key={a.id} style={{
+                                                            background: 'var(--bg-card)',
+                                                            border: '1px solid var(--border)',
+                                                            borderRadius: 12,
+                                                            padding: 16,
+                                                            boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                                                            position: 'relative'
+                                                        }}>
+                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, color: 'var(--accent)' }}>
+                                                                    <Zap size={12} /> AI ACTION
+                                                                </div>
+                                                                <Toggle
+                                                                    on={a.enabled}
+                                                                    onChange={() => setAutomations(prev => prev.map(x => x.id === a.id ? { ...x, enabled: !x.enabled } : x))}
+                                                                />
+                                                            </div>
+                                                            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.4 }}>{a.action}</div>
+                                                            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8, display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                                <Clock size={10} /> Instant execution
+                                                            </div>
+                                                        </div>
+                                                    ))}
 
-                                            {/* Stage Hint */}
-                                            <div style={{ padding: '12px', background: 'var(--bg-card)', borderRadius: 12, border: '1px solid var(--border)', fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                                                TIP: Add an AI task to qualify leads automatically when they arrive.
+                                                    {/* Add Trigger Placeholder */}
+                                                    <button style={{
+                                                        width: '100%',
+                                                        padding: '16px',
+                                                        borderRadius: 12,
+                                                        border: '1px dashed var(--border)',
+                                                        background: 'transparent',
+                                                        color: 'var(--text-muted)',
+                                                        cursor: 'pointer',
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        alignItems: 'center',
+                                                        gap: 8,
+                                                        transition: 'all 0.2s'
+                                                    }} onMouseOver={e => e.currentTarget.style.borderColor = sc} onMouseOut={e => e.currentTarget.style.borderColor = 'var(--border)'}>
+                                                        <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--bg-card)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                            <Plus size={16} />
+                                                        </div>
+                                                        <span style={{ fontSize: 11, fontWeight: 700 }}>Add trigger</span>
+                                                    </button>
+                                                </div>
+
+                                                {/* Stage Hint */}
+                                                <div style={{ padding: '12px', background: 'var(--bg-card)', borderRadius: 12, border: '1px solid var(--border)', fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                                                    TIP: Add an AI task to qualify leads automatically when they arrive.
+                                                </div>
                                             </div>
-                                        </div>
-                                    );
-                                })}
+                                        );
+                                    })}
+                                </div>
                             </div>
-                        </div>
 
-                        <ModalFooter>
-                            <button onClick={() => setAutomModal(false)} style={btnSec}>Back to Pipeline</button>
-                            <button onClick={() => setAutomModal(false)} style={btnPri}><Save size={14} /> Save Configuration</button>
-                        </ModalFooter>
-                    </div>
-                </Overlay>
-            )}
-        </div>
+                            <ModalFooter>
+                                <button onClick={() => setAutomModal(false)} style={btnSec}>Back to Pipeline</button>
+                                <button onClick={() => setAutomModal(false)} style={btnPri}><Save size={14} /> Save Configuration</button>
+                            </ModalFooter>
+                        </div>
+                    </Overlay>
+                )
+            }
+        </div >
     );
 }
 

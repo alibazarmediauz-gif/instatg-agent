@@ -38,7 +38,7 @@ const Solution: React.FC = () => {
                         {t('solution.title')}
                     </h2>
                     <p className="text-text-secondary max-w-2xl mx-auto">
-                        We don't just automate chats. We build infrastructure that thinks, talks, and sells like your best manager.
+                        We don&apos;t just automate chats. We build infrastructure that thinks, talks, and sells like your best manager.
                     </p>
                 </div>
 

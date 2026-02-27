@@ -1,0 +1,419 @@
+
+> frontend@0.1.0 lint
+> eslint
+
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/app/(app)/admin/page.tsx
+   6:5   warning  'Bell' is defined but never used          @typescript-eslint/no-unused-vars
+   6:18  warning  'Zap' is defined but never used           @typescript-eslint/no-unused-vars
+   6:23  warning  'ChevronRight' is defined but never used  @typescript-eslint/no-unused-vars
+   8:30  warning  'Cpu' is defined but never used           @typescript-eslint/no-unused-vars
+  31:40  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  32:44  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/app/(app)/analytics/page.tsx
+    5:5   warning  'BarChart3' is defined but never used                                                                              @typescript-eslint/no-unused-vars
+    6:5   warning  'Users' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
+    6:62  warning  'PieChartIcon' is defined but never used                                                                           @typescript-eslint/no-unused-vars
+   10:22  warning  'BarChart' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+   11:5   warning  'PieChart' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+   11:15  warning  'Pie' is defined but never used                                                                                    @typescript-eslint/no-unused-vars
+   11:20  warning  'Cell' is defined but never used                                                                                   @typescript-eslint/no-unused-vars
+   16:7   warning  'DONUT_COLORS' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+   21:38  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+   25:70  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+   40:8   warning  React Hook useEffect has a missing dependency: 'fetchAnalytics'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   55:32  warning  'funnelData' is assigned a value but never used                                                                    @typescript-eslint/no-unused-vars
+   55:44  warning  'performanceData' is assigned a value but never used                                                               @typescript-eslint/no-unused-vars
+  106:51  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+  135:56  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+  173:66  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/app/(app)/billing/page.tsx
+    7:45  warning  'ArrowUpRight' is defined but never used                                                                             @typescript-eslint/no-unused-vars
+    8:39  warning  'BarChart3' is defined but never used                                                                                @typescript-eslint/no-unused-vars
+    8:50  warning  'Clock' is defined but never used                                                                                    @typescript-eslint/no-unused-vars
+   18:38  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+   37:55  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+   38:58  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+   55:8   warning  React Hook useEffect has a missing dependency: 'fetchBillingData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   60:70  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  355:80  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/app/(app)/campaigns/page.tsx
+    5:58   warning  'Users' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
+    6:5    warning  'BarChart2' is defined but never used                                                                              @typescript-eslint/no-unused-vars
+    6:30   warning  'Settings' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+    6:40   warning  'ChevronRight' is defined but never used                                                                           @typescript-eslint/no-unused-vars
+    6:62   warning  'X' is defined but never used                                                                                      @typescript-eslint/no-unused-vars
+    8:5    warning  'Clock' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
+    8:12   warning  'TrendingUp' is defined but never used                                                                             @typescript-eslint/no-unused-vars
+   40:48   error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+   43:46   error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+   46:38   error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+   52:58   error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+   64:121  warning  React Hook useEffect has a missing dependency: 'fetchCampaigns'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   67:43   error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+   72:15   warning  Expected an assignment or function call and instead saw an expression                                              @typescript-eslint/no-unused-expressions
+   80:24   error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+  227:82   error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+  317:65   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                    react/no-unescaped-entities
+  317:95   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                    react/no-unescaped-entities
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/app/(app)/chat-agents/page.tsx
+    5:29  warning  'Settings' is defined but never used                                                                                                   @typescript-eslint/no-unused-vars
+    6:38  warning  'FlaskConical' is defined but never used                                                                                               @typescript-eslint/no-unused-vars
+    8:29  warning  'Eye' is defined but never used                                                                                                        @typescript-eslint/no-unused-vars
+    8:34  warning  'Edit2' is defined but never used                                                                                                      @typescript-eslint/no-unused-vars
+    9:5   warning  'Copy' is defined but never used                                                                                                       @typescript-eslint/no-unused-vars
+    9:11  warning  'Activity' is defined but never used                                                                                                   @typescript-eslint/no-unused-vars
+   49:42  error    Unexpected any. Specify a different type                                                                                               @typescript-eslint/no-explicit-any
+   52:46  error    Unexpected any. Specify a different type                                                                                               @typescript-eslint/no-explicit-any
+   54:46  error    Unexpected any. Specify a different type                                                                                               @typescript-eslint/no-explicit-any
+   61:56  error    Unexpected any. Specify a different type                                                                                               @typescript-eslint/no-explicit-any
+   66:59  error    Unexpected any. Specify a different type                                                                                               @typescript-eslint/no-explicit-any
+   68:53  error    Unexpected any. Specify a different type                                                                                               @typescript-eslint/no-explicit-any
+   85:62  error    Unexpected any. Specify a different type                                                                                               @typescript-eslint/no-explicit-any
+   93:8   warning  React Hook useEffect has missing dependencies: 'fetchAgents' and 'fetchKnowledge'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+   96:40  error    Unexpected any. Specify a different type                                                                                               @typescript-eslint/no-explicit-any
+  133:71  error    Unexpected any. Specify a different type                                                                                               @typescript-eslint/no-explicit-any
+  295:78  error    Unexpected any. Specify a different type                                                                                               @typescript-eslint/no-explicit-any
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/app/(app)/contacts/page.tsx
+    5:19  warning  'Filter' is defined but never used                 @typescript-eslint/no-unused-vars
+    5:30  warning  'MoreHorizontal' is defined but never used         @typescript-eslint/no-unused-vars
+    7:5   warning  'Star' is defined but never used                   @typescript-eslint/no-unused-vars
+    7:11  warning  'ArrowUpRight' is defined but never used           @typescript-eslint/no-unused-vars
+    8:5   warning  'Calendar' is defined but never used               @typescript-eslint/no-unused-vars
+    8:15  warning  'Check' is defined but never used                  @typescript-eslint/no-unused-vars
+    8:29  warning  'Trash2' is defined but never used                 @typescript-eslint/no-unused-vars
+   49:46  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   50:21  warning  'setLoading' is assigned a value but never used    @typescript-eslint/no-unused-vars
+   53:23  warning  'setTagFilter' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   54:60  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   63:58  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   65:54  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   85:11  warning  'allTags' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  219:58  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  279:57  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  347:60  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/app/(app)/conversations/page.tsx
+  68:47  error    Unexpected any. Specify a different type                                                                                        @typescript-eslint/no-explicit-any
+  92:8   warning  React Hook useEffect has missing dependencies: 'loadDetail' and 'selected'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/app/(app)/crm-sync/page.tsx
+  5:38  warning  'Clock' is defined but never used         @typescript-eslint/no-unused-vars
+  6:5   warning  'ArrowUpRight' is defined but never used  @typescript-eslint/no-unused-vars
+  7:5   warning  'Play' is defined but never used          @typescript-eslint/no-unused-vars
+  7:11  warning  'Pause' is defined but never used         @typescript-eslint/no-unused-vars
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/app/(app)/crm/page.tsx
+    3:31   warning  'useCallback' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+    3:44   warning  'useRef' is defined but never used                                                                            @typescript-eslint/no-unused-vars
+    6:37   warning  'AlertCircle' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+    7:17   warning  'Activity' is defined but never used                                                                          @typescript-eslint/no-unused-vars
+    7:40   warning  'ChevronDown' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+    8:5    warning  'LayoutGrid' is defined but never used                                                                        @typescript-eslint/no-unused-vars
+    8:17   warning  'List' is defined but never used                                                                              @typescript-eslint/no-unused-vars
+    8:23   warning  'SlidersHorizontal' is defined but never used                                                                 @typescript-eslint/no-unused-vars
+    8:42   warning  'ChevronRight' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+    9:37   warning  'Users' is defined but never used                                                                             @typescript-eslint/no-unused-vars
+    9:44   warning  'TrendingUp' is defined but never used                                                                        @typescript-eslint/no-unused-vars
+    9:72   warning  'Circle' is defined but never used                                                                            @typescript-eslint/no-unused-vars
+    9:80   warning  'ArrowRight' is defined but never used                                                                        @typescript-eslint/no-unused-vars
+    9:92   warning  'Filter' is defined but never used                                                                            @typescript-eslint/no-unused-vars
+   37:42   error    Unexpected any. Specify a different type                                                                      @typescript-eslint/no-explicit-any
+   38:40   error    Unexpected any. Specify a different type                                                                      @typescript-eslint/no-explicit-any
+   68:12   warning  'amoSubdomain' is assigned a value but never used                                                             @typescript-eslint/no-unused-vars
+   76:71   error    Unexpected any. Specify a different type                                                                      @typescript-eslint/no-explicit-any
+  109:51   error    Unexpected any. Specify a different type                                                                      @typescript-eslint/no-explicit-any
+  110:47   error    Unexpected any. Specify a different type                                                                      @typescript-eslint/no-explicit-any
+  111:51   error    Unexpected any. Specify a different type                                                                      @typescript-eslint/no-explicit-any
+  127:67   error    Unexpected any. Specify a different type                                                                      @typescript-eslint/no-explicit-any
+  141:111  warning  React Hook useEffect has a missing dependency: 'fetchData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  171:19   error    Unexpected any. Specify a different type                                                                      @typescript-eslint/no-explicit-any
+  606:88   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                               react/no-unescaped-entities
+  606:101  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                               react/no-unescaped-entities
+  752:78   error    Unexpected any. Specify a different type                                                                      @typescript-eslint/no-explicit-any
+  850:77   error    Unexpected any. Specify a different type                                                                      @typescript-eslint/no-explicit-any
+  895:40   error    Unexpected any. Specify a different type                                                                      @typescript-eslint/no-explicit-any
+  907:10   warning  'StatusPill' is defined but never used                                                                        @typescript-eslint/no-unused-vars
+  913:10   warning  'Timeline' is defined but never used                                                                          @typescript-eslint/no-unused-vars
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/app/(app)/dashboard/page.tsx
+    7:35  warning  'Network' is defined but never used                                                                                @typescript-eslint/no-unused-vars
+    7:58  warning  'XCircle' is defined but never used                                                                                @typescript-eslint/no-unused-vars
+   10:22  warning  'XAxis' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
+   10:29  warning  'YAxis' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
+   10:36  warning  'Tooltip' is defined but never used                                                                                @typescript-eslint/no-unused-vars
+   23:38  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+   27:70  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+   42:8   warning  React Hook useEffect has a missing dependency: 'fetchDashboard'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  238:74  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+  265:67  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+  276:47  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+  289:50  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/app/(app)/integrations/page.tsx
+   7:5   warning  'ArrowRight' is defined but never used                   @typescript-eslint/no-unused-vars
+   7:17  warning  'Check' is defined but never used                        @typescript-eslint/no-unused-vars
+   7:27  warning  'RefreshCw' is defined but never used                    @typescript-eslint/no-unused-vars
+   7:38  warning  'Settings' is defined but never used                     @typescript-eslint/no-unused-vars
+   8:5   warning  'AlertTriangle' is defined but never used                @typescript-eslint/no-unused-vars
+   8:33  warning  'ChevronRight' is defined but never used                 @typescript-eslint/no-unused-vars
+   8:53  warning  'AlertCircle' is defined but never used                  @typescript-eslint/no-unused-vars
+  32:7   warning  'STAGE_COLORS' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  59:13  warning  't' is assigned a value but never used                   @typescript-eslint/no-unused-vars
+  62:12  warning  'status' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  63:12  warning  'leads' is assigned a value but never used               @typescript-eslint/no-unused-vars
+  65:12  warning  'offline' is assigned a value but never used             @typescript-eslint/no-unused-vars
+  66:12  warning  'saveMsg' is assigned a value but never used             @typescript-eslint/no-unused-vars
+  66:21  warning  'setSaveMsg' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  67:29  warning  'setConnectedStates' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  71:12  warning  'subdomain' is assigned a value but never used           @typescript-eslint/no-unused-vars
+  71:23  warning  'setSubdomain' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  72:12  warning  'accessToken' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  72:25  warning  'setAccessToken' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  73:12  warning  'connecting' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  73:24  warning  'setConnecting' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  74:12  warning  'errorMsg' is assigned a value but never used            @typescript-eslint/no-unused-vars
+  74:22  warning  'setErrorMsg' is assigned a value but never used         @typescript-eslint/no-unused-vars
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/app/(app)/ivr-builder/page.tsx
+   5:30  warning  'Plus' is defined but never used               @typescript-eslint/no-unused-vars
+   6:5   warning  'MousePointer2' is defined but never used      @typescript-eslint/no-unused-vars
+   7:31  warning  'UserCheck' is defined but never used          @typescript-eslint/no-unused-vars
+   8:5   warning  'ArrowRight' is defined but never used         @typescript-eslint/no-unused-vars
+   8:17  warning  'Clock' is defined but never used              @typescript-eslint/no-unused-vars
+   8:74  warning  'HandMetal' is defined but never used          @typescript-eslint/no-unused-vars
+  12:19  warning  'setNodes' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  18:54  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/app/(app)/knowledge-base/page.tsx
+    7:19   warning  'Trash2' is defined but never used                                                                                                                  @typescript-eslint/no-unused-vars
+    7:49   warning  'Clock' is defined but never used                                                                                                                   @typescript-eslint/no-unused-vars
+    7:128  warning  'Users' is defined but never used                                                                                                                   @typescript-eslint/no-unused-vars
+   28:12   warning  'loading' is assigned a value but never used                                                                                                        @typescript-eslint/no-unused-vars
+   37:46   error    Unexpected any. Specify a different type                                                                                                            @typescript-eslint/no-explicit-any
+   38:50   error    Unexpected any. Specify a different type                                                                                                            @typescript-eslint/no-explicit-any
+   41:12   warning  'showManualForm' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+   54:8    warning  React Hook useEffect has missing dependencies: 'loadDocs', 'loadExtraData', and 'loadSettings'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+   58:61   error    Unexpected any. Specify a different type                                                                                                            @typescript-eslint/no-explicit-any
+   60:63   error    Unexpected any. Specify a different type                                                                                                            @typescript-eslint/no-explicit-any
+   69:60   error    Unexpected any. Specify a different type                                                                                                            @typescript-eslint/no-explicit-any
+   82:21   error    Unexpected any. Specify a different type                                                                                                            @typescript-eslint/no-explicit-any
+   94:21   error    Unexpected any. Specify a different type                                                                                                            @typescript-eslint/no-explicit-any
+  109:21   error    Unexpected any. Specify a different type                                                                                                            @typescript-eslint/no-explicit-any
+  123:21   error    Unexpected any. Specify a different type                                                                                                            @typescript-eslint/no-explicit-any
+  139:23   error    Unexpected any. Specify a different type                                                                                                            @typescript-eslint/no-explicit-any
+  151:23   error    Unexpected any. Specify a different type                                                                                                            @typescript-eslint/no-explicit-any
+  164:23   error    Unexpected any. Specify a different type                                                                                                            @typescript-eslint/no-explicit-any
+  174:8    warning  React Hook useCallback has a missing dependency: 'handleUpload'. Either include it or remove the dependency array                                   react-hooks/exhaustive-deps
+  176:11   warning  'formatSize' is assigned a value but never used                                                                                                     @typescript-eslint/no-unused-vars
+  182:11   warning  'fileIcon' is assigned a value but never used                                                                                                       @typescript-eslint/no-unused-vars
+  199:11   warning  'navItemStyle' is assigned a value but never used                                                                                                   @typescript-eslint/no-unused-vars
+  506:80   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                     react/no-unescaped-entities
+  506:88   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                     react/no-unescaped-entities
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/app/(app)/monitoring/page.tsx
+    5:54   warning  'Star' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
+    5:60   warning  'AlertTriangle' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+    6:5    warning  'CheckCircle' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+   11:46   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+   13:26   warning  'setInteractions' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-unused-vars
+   13:54   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+  154:62   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+  184:109  error    Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/app/(app)/monitoring/page.tsx:184:109
+  182 |                                         <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', gap: 3 }}>
+  183 |                                             {Array.from({ length: 40 }).map((_, i) => (
+> 184 |                                                 <div key={i} style={{ flex: 1, minWidth: 2, height: `${20 + Math.random() * 60}%`, background: 'var(--accent)', opacity: 0.3, borderRadius: 1 }} />
+      |                                                                                                             ^^^^^^^^^^^^^ Cannot call impure function
+  185 |                                             ))}
+  186 |                                         </div>
+  187 |                                     </div>  react-hooks/purity
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/app/(app)/prompts/page.tsx
+   5:5   warning  'BookOpen' is defined but never used                                                                             @typescript-eslint/no-unused-vars
+   7:5   warning  'MoreHorizontal' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  14:44  error    Unexpected any. Specify a different type                                                                         @typescript-eslint/no-explicit-any
+  15:58  error    Unexpected any. Specify a different type                                                                         @typescript-eslint/no-explicit-any
+  41:8   warning  React Hook useEffect has a missing dependency: 'fetchPrompts'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/app/(app)/qa/page.tsx
+   6:5   warning  'ChevronRight' is defined but never used                                                                    @typescript-eslint/no-unused-vars
+   6:19  warning  'UserCheck' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  21:28  error    Unexpected any. Specify a different type                                                                    @typescript-eslint/no-explicit-any
+  43:40  error    Unexpected any. Specify a different type                                                                    @typescript-eslint/no-explicit-any
+  47:46  error    Unexpected any. Specify a different type                                                                    @typescript-eslint/no-explicit-any
+  53:58  error    Unexpected any. Specify a different type                                                                    @typescript-eslint/no-explicit-any
+  70:8   warning  React Hook useEffect has a missing dependency: 'fetchQA'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  77:43  warning  'action' is defined but never used                                                                          @typescript-eslint/no-unused-vars
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/app/(app)/reports/page.tsx
+    8:21  warning  'Share2' is defined but never used                                                                             @typescript-eslint/no-unused-vars
+    8:29  warning  'ArrowUpRight' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+    8:43  warning  'ArrowDownRight' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+    9:15  warning  'ChevronLeft' is defined but never used                                                                        @typescript-eslint/no-unused-vars
+    9:28  warning  'ChevronRight' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+   29:22  error    Unexpected any. Specify a different type                                                                       @typescript-eslint/no-explicit-any
+   65:8   warning  React Hook useEffect has a missing dependency: 'loadReport'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  200:37  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                react/no-unescaped-entities
+  200:59  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                react/no-unescaped-entities
+  207:37  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                react/no-unescaped-entities
+  207:60  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                react/no-unescaped-entities
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/app/(app)/settings/page.tsx
+   51:50   error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+   57:65   error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+   66:64   error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+   76:69   error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+   98:8    warning  React Hook useEffect has a missing dependency: 'loadIgAccounts'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  124:60   error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+  127:21   error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+  139:76   error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+  141:21   error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+  151:108  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+  153:21   error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+  162:21   error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+  174:21   error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+  186:21   error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+  337:61   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                    react/no-unescaped-entities
+  337:74   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                    react/no-unescaped-entities
+  470:88   error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/app/(app)/voice-agents/page.tsx
+    5:36  warning  'MoreVertical' is defined but never used                                                                        @typescript-eslint/no-unused-vars
+    6:38  warning  'BarChart3' is defined but never used                                                                           @typescript-eslint/no-unused-vars
+   12:62  warning  'Globe' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+   22:42  error    Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+   26:13  warning  't' is assigned a value but never used                                                                          @typescript-eslint/no-unused-vars
+   27:52  error    Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+   40:60  error    Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+   53:8   warning  React Hook useEffect has a missing dependency: 'fetchAgents'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   70:38  error    Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+  150:44  error    Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+  338:69  error    Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+  359:59  error    Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/app/(app)/voice-analysis/page.tsx
+   8:11  warning  'ChevronRight' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  26:19  error    Unexpected any. Specify a different type                                                                       @typescript-eslint/no-explicit-any
+  53:8   warning  React Hook useEffect has a missing dependency: 'loadDetail'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/app/(marketing)/page.tsx
+  85:120  error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/app/(marketing)/page.tsx:85:120
+  83 |                                             <div key={i} className="flex items-center gap-4">
+  84 |                                                 <div className="w-24 h-2 bg-border/40 rounded overflow-hidden">
+> 85 |                                                     <div className="h-full bg-accent animate-pulse" style={{ width: `${Math.random() * 60 + 40}%` }}></div>
+     |                                                                                                                        ^^^^^^^^^^^^^ Cannot call impure function
+  86 |                                                 </div>
+  87 |                                                 <div className="flex-1 h-1.5 bg-border/20 rounded"></div>
+  88 |                                                 <span className="text-[10px] tabular-nums text-text-muted">0ms</span>  react-hooks/purity
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/components/Sidebar.tsx
+   7:5  warning  'MessageSquare' is defined but never used  @typescript-eslint/no-unused-vars
+   8:5  warning  'Mic' is defined but never used            @typescript-eslint/no-unused-vars
+  11:5  warning  'Settings' is defined but never used       @typescript-eslint/no-unused-vars
+  14:5  warning  'Workflow' is defined but never used       @typescript-eslint/no-unused-vars
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/components/TopBar.tsx
+  51:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/components/landing/Features.tsx
+  5:15  warning  'Zap' is defined but never used         @typescript-eslint/no-unused-vars
+  5:48  warning  'Microscope' is defined but never used  @typescript-eslint/no-unused-vars
+  8:13  warning  't' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/components/landing/Header.tsx
+  5:10  warning  'CheckCircle' is defined but never used  @typescript-eslint/no-unused-vars
+  5:28  warning  'Shield' is defined but never used       @typescript-eslint/no-unused-vars
+  5:36  warning  'BarChart3' is defined but never used    @typescript-eslint/no-unused-vars
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/components/landing/HowItWorks.tsx
+  8:13  warning  't' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/components/landing/Integrations.tsx
+  7:13  warning  't' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/components/landing/Pricing.tsx
+  9:13  warning  't' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/components/landing/Problem.tsx
+  48:52  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  48:72  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/components/landing/Solution.tsx
+   5:50  warning  'Layers' is defined but never used                               @typescript-eslint/no-unused-vars
+   5:58  warning  'ShieldCheck' is defined but never used                          @typescript-eslint/no-unused-vars
+   5:71  warning  'BarChart4' is defined but never used                            @typescript-eslint/no-unused-vars
+   5:82  warning  'Users' is defined but never used                                @typescript-eslint/no-unused-vars
+  41:31  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/context/ThemeProvider.tsx
+  21:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/context/ThemeProvider.tsx:21:13
+  19 |         const savedTheme = localStorage.getItem("theme") as Theme;
+  20 |         if (savedTheme) {
+> 21 |             setTheme(savedTheme);
+     |             ^^^^^^^^ Avoid calling setState() directly within an effect
+  22 |         } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+  23 |             setTheme("dark");
+  24 |         } else {  react-hooks/set-state-in-effect
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/lib/LanguageContext.tsx
+   9:34  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-explicit-any
+  27:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/lib/LanguageContext.tsx:27:13
+  25 |         const savedLocale = localStorage.getItem('app_locale') as Locale;
+  26 |         if (savedLocale === 'en' || savedLocale === 'ru' || savedLocale === 'uz') {
+> 27 |             setLocale(savedLocale);
+     |             ^^^^^^^^^ Avoid calling setState() directly within an effect
+  28 |         }
+  29 |     }, []);
+  30 |  react-hooks/set-state-in-effect
+  32:9   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/lib/LanguageContext.tsx:32:9
+  30 |
+  31 |     useEffect(() => {
+> 32 |         setDict(locale === 'en' ? enDict : locale === 'ru' ? ruDict : uzDict);
+     |         ^^^^^^^ Avoid calling setState() directly within an effect
+  33 |         localStorage.setItem('app_locale', locale);
+  34 |     }, [locale]);
+  35 |                                                      react-hooks/set-state-in-effect
+  38:18  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-explicit-any
+
+/Users/elmurodovnazir/Documents/InstaTG Agent/frontend/src/lib/api.ts
+  264:67  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 279 problems (123 errors, 156 warnings)
+

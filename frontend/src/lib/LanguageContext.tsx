@@ -17,16 +17,21 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-    const [locale, setLocale] = useState<Locale>('uz'); // Defaulting to Uzbek
-    const [dict, setDict] = useState<Dictionary>(uzDict);
-
-    useEffect(() => {
-        // Load preference from localStorage safely
-        const savedLocale = localStorage.getItem('app_locale') as Locale;
-        if (savedLocale === 'en' || savedLocale === 'ru' || savedLocale === 'uz') {
-            setLocale(savedLocale);
+    const [locale, setLocale] = useState<Locale>(() => {
+        if (typeof window !== 'undefined') {
+            const savedLocale = localStorage.getItem('app_locale') as Locale;
+            if (savedLocale === 'en' || savedLocale === 'ru' || savedLocale === 'uz') {
+                return savedLocale;
+            }
         }
-    }, []);
+        return 'uz';
+    });
+
+    const [dict, setDict] = useState<Dictionary>(() => {
+        if (locale === 'en') return enDict;
+        if (locale === 'ru') return ruDict;
+        return uzDict;
+    });
 
     useEffect(() => {
         setDict(locale === 'en' ? enDict : locale === 'ru' ? ruDict : uzDict);

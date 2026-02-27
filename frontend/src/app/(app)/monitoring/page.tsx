@@ -180,9 +180,12 @@ export default function MonitoringPage() {
                                     <div style={{ flex: 1, height: 24, position: 'relative' }}>
                                         {/* Mock waveform */}
                                         <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', gap: 3 }}>
-                                            {Array.from({ length: 40 }).map((_, i) => (
-                                                <div key={i} style={{ flex: 1, minWidth: 2, height: `${20 + Math.random() * 60}%`, background: 'var(--accent)', opacity: 0.3, borderRadius: 1 }} />
-                                            ))}
+                                            {Array.from({ length: 40 }).map((_, i) => {
+                                                const height = 20 + ((i * 13) % 60); // Deterministic height for waveform
+                                                return (
+                                                    <div key={i} style={{ flex: 1, minWidth: 2, height: `${height}%`, background: 'var(--accent)', opacity: 0.3, borderRadius: 1 }} />
+                                                );
+                                            })}
                                         </div>
                                     </div>
                                     <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)' }}>02:45</div>

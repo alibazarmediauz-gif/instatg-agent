@@ -82,7 +82,7 @@ export default function LandingPage() {
                                         {[1, 2, 3, 4, 5].map(i => (
                                             <div key={i} className="flex items-center gap-4">
                                                 <div className="w-24 h-2 bg-border/40 rounded overflow-hidden">
-                                                    <div className="h-full bg-accent animate-pulse" style={{ width: `${Math.random() * 60 + 40}%` }}></div>
+                                                    <div className="h-full bg-accent animate-pulse" style={{ width: `${40 + (i * 12) % 60}%` }}></div>
                                                 </div>
                                                 <div className="flex-1 h-1.5 bg-border/20 rounded"></div>
                                                 <span className="text-[10px] tabular-nums text-text-muted">0ms</span>

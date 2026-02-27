@@ -42,10 +42,10 @@ const Problem: React.FC = () => {
                             </div>
                             <div className="space-y-6">
                                 <div className="p-4 rounded-lg border border-border/30 border-dashed text-text-muted text-xs">
-                                    [Lead #8921] - No call for 48 hours
+                                    [Lead #8921] &ndash; No call for 48 hours
                                 </div>
                                 <div className="p-4 rounded-lg border border-border/30 border-dashed text-text-muted text-xs">
-                                    [Lead #8922] - "Manager will return" - 3 days ago
+                                    [Lead #8922] &ndash; &ldquo;Manager will return&rdquo; &ndash; 3 days ago
                                 </div>
                                 <div className="p-12 flex items-center justify-center border border-red-500/20 bg-red-500/5 rounded-xl">
                                     <TrendingDown size={48} className="text-red-500/40" />
