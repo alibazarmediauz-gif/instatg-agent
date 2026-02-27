@@ -3,6 +3,7 @@
 import React from "react";
 import { useLanguage } from "@/lib/LanguageContext";
 import { CheckCircle } from "lucide-react";
+import Link from "next/link";
 
 const Hero: React.FC = () => {
     const { t } = useLanguage();
@@ -24,12 +25,12 @@ const Hero: React.FC = () => {
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-                    <button className="btn-primary px-8 py-4 text-lg font-bold min-w-[240px]">
+                    <Link href="/dashboard" className="btn-primary px-8 py-4 text-lg font-bold min-w-[240px] flex items-center justify-center">
                         {t('landing.hero.cta_primary')}
-                    </button>
-                    <button className="btn-secondary px-8 py-4 text-lg font-bold min-w-[240px]">
+                    </Link>
+                    <Link href="/dashboard" className="btn-secondary px-8 py-4 text-lg font-bold min-w-[240px] flex items-center justify-center">
                         {t('landing.hero.cta_secondary')}
-                    </button>
+                    </Link>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-text-muted text-sm font-medium border-t border-border/50 pt-8 mt-4">

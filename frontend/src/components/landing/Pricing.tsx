@@ -3,6 +3,7 @@
 import React from "react";
 import { useLanguage } from "@/lib/LanguageContext";
 import { Check } from "lucide-react";
+import Link from "next/link";
 
 const Pricing: React.FC = () => {
     const { t } = useLanguage();
@@ -57,9 +58,9 @@ const Pricing: React.FC = () => {
                                 ))}
                             </ul>
 
-                            <button className={`w-full py-4 rounded-xl font-bold transition-all ${plan.popular ? 'bg-accent text-white shadow-lg shadow-accent/20' : 'bg-bg-body border border-border hover:border-accent'}`}>
+                            <Link href="/dashboard" className={`w-full py-4 rounded-xl font-bold transition-all text-center flex items-center justify-center ${plan.popular ? 'bg-accent text-white shadow-lg shadow-accent/20' : 'bg-bg-body border border-border hover:border-accent'}`}>
                                 Get Started
-                            </button>
+                            </Link>
                         </div>
                     ))}
                 </div>

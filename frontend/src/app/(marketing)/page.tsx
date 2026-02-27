@@ -11,6 +11,7 @@ import Integrations from "@/components/landing/Integrations";
 import Pricing from "@/components/landing/Pricing";
 import { useLanguage } from "@/lib/LanguageContext";
 import { Shield, Lock, Server, Zap } from "lucide-react";
+import Link from "next/link";
 
 export default function LandingPage() {
     const { t } = useLanguage();
@@ -108,13 +109,12 @@ export default function LandingPage() {
                         <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-8">
                             {t('cta_final.title')}
                         </h2>
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                            <button className="btn-primary px-12 py-5 text-xl font-bold min-w-[280px] shadow-2xl shadow-accent/20">
+                            <Link href="/dashboard" className="btn-primary px-12 py-5 text-xl font-bold min-w-[280px] shadow-2xl shadow-accent/20 flex items-center justify-center">
                                 {t('cta_final.book')}
-                            </button>
-                            <button className="btn-secondary px-12 py-5 text-xl font-bold min-w-[280px]">
+                            </Link>
+                            <Link href="/dashboard" className="btn-secondary px-12 py-5 text-xl font-bold min-w-[280px] flex items-center justify-center">
                                 {t('cta_final.start')}
-                            </button>
+                            </Link>
                         </div>
                     </div>
                 </section>
@@ -135,6 +135,6 @@ export default function LandingPage() {
                     </div>
                 </div>
             </footer>
-        </div>
+        </div >
     );
 }
