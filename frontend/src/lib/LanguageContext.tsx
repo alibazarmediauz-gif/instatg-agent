@@ -16,27 +16,29 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-export function LanguageProvider({ children }: { children: React.ReactNode }) {
-    const [locale, setLocale] = useState<Locale>(() => {
-        if (typeof window !== 'undefined') {
-            const savedLocale = localStorage.getItem('app_locale') as Locale;
-            if (savedLocale === 'en' || savedLocale === 'ru' || savedLocale === 'uz') {
-                return savedLocale;
-            }
-        }
-        return 'uz';
-    });
+const dictMap: Record<Locale, Dictionary> = { en: enDict, ru: ruDict, uz: uzDict };
 
-    const [dict, setDict] = useState<Dictionary>(() => {
-        if (locale === 'en') return enDict;
-        if (locale === 'ru') return ruDict;
-        return uzDict;
-    });
+export function LanguageProvider({ children }: { children: React.ReactNode }) {
+    // Always start with 'uz' to match server render — avoids hydration mismatch
+    const [locale, setLocale] = useState<Locale>('uz');
+    const [dict, setDict] = useState<Dictionary>(uzDict);
+    const [mounted, setMounted] = useState(false);
+
+    // After mount, apply saved locale from localStorage
+    useEffect(() => {
+        const saved = localStorage.getItem('app_locale') as Locale | null;
+        if (saved && dictMap[saved]) {
+            setLocale(saved);
+            setDict(dictMap[saved]);
+        }
+        setMounted(true);
+    }, []);
 
     useEffect(() => {
-        setDict(locale === 'en' ? enDict : locale === 'ru' ? ruDict : uzDict);
+        if (!mounted) return;
+        setDict(dictMap[locale]);
         localStorage.setItem('app_locale', locale);
-    }, [locale]);
+    }, [locale, mounted]);
 
     const t = (keyStr: string): string => {
         const keys = keyStr.split('.');

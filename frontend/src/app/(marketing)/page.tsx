@@ -62,9 +62,6 @@ export default function LandingPage() {
         setLocale(next[locale]);
     };
 
-    const T = (uz: string, ru: string, en: string) =>
-        locale === "uz" ? uz : locale === "ru" ? ru : en;
-
     const solutions = [
         { icon: <MessageSquareText size={20} />, title: t("landing.solution.f1"), desc: t("landing.solution.f1_d") },
         { icon: <Headphones size={20} />, title: t("landing.solution.f2"), desc: t("landing.solution.f2_d") },
@@ -88,11 +85,11 @@ export default function LandingPage() {
 
     const plans = [
         {
-            name: t("landing.pricing.basic_name"), price: "$49", per: T("/oy", "/мес", "/mo"),
+            name: t("landing.pricing.basic_name"), price: "$49", per: t("landing.dashboard.per_month"),
             items: [t("landing.pricing.f_1_agent"), t("landing.pricing.f_1k_chats"), t("landing.pricing.f_crm_sync"), t("landing.pricing.f_tg_channel")],
         },
         {
-            name: t("landing.pricing.pro_name"), price: "$199", per: T("/oy", "/мес", "/mo"), popular: true,
+            name: t("landing.pricing.pro_name"), price: "$199", per: t("landing.dashboard.per_month"), popular: true,
             items: [t("landing.pricing.f_5_agents"), t("landing.pricing.f_10k_chats"), t("landing.pricing.f_voice_ai"), t("landing.pricing.f_sip"), t("landing.pricing.f_analytics")],
         },
         {
@@ -170,7 +167,7 @@ export default function LandingPage() {
                             <div className="sales-reveal sales-reveal-delay-4 mt-14 flex flex-wrap gap-10 border-t border-white/[0.06] pt-10">
                                 <div>
                                     <div className="sales-title text-[2rem] font-extrabold text-white">1,200+</div>
-                                    <div className="mt-1 text-[0.68rem] uppercase tracking-[0.12em] text-[#6b7fa0]">{T("Faol agentlar", "Активных агентов", "Active Agents")}</div>
+                                    <div className="mt-1 text-[0.68rem] uppercase tracking-[0.12em] text-[#6b7fa0]">{t("landing.stats.active_agents")}</div>
                                 </div>
                                 <div>
                                     <div className="sales-title text-[2rem] font-extrabold text-white">98.7%</div>
@@ -178,7 +175,7 @@ export default function LandingPage() {
                                 </div>
                                 <div>
                                     <div className="sales-title text-[2rem] font-extrabold text-[#67ddff]">&lt;42s</div>
-                                    <div className="mt-1 text-[0.68rem] uppercase tracking-[0.12em] text-[#6b7fa0]">{T("Birinchi javob", "Первый ответ", "First Response")}</div>
+                                    <div className="mt-1 text-[0.68rem] uppercase tracking-[0.12em] text-[#6b7fa0]">{t("landing.stats.first_response")}</div>
                                 </div>
                             </div>
                         </div>
@@ -187,16 +184,16 @@ export default function LandingPage() {
                         <div className="sales-reveal sales-reveal-delay-3 lg:col-span-5">
                             <div className="sales-panel p-6">
                                 <div className="mb-5 flex items-center justify-between">
-                                    <span className="text-[0.68rem] uppercase tracking-[0.12em] text-[#6b7fa0]">{T("Haftalik ko'rsatkich", "Недельный отчёт", "Weekly Snapshot")}</span>
+                                    <span className="text-[0.68rem] uppercase tracking-[0.12em] text-[#6b7fa0]">{t("landing.dashboard.weekly")}</span>
                                     <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-1 text-[0.6rem] font-bold uppercase tracking-wider text-emerald-300">
                                         <span className="sales-pulse-dot" /> Live
                                     </span>
                                 </div>
                                 <div className="space-y-3">
                                     {[
-                                        { label: T("Yangi lidlar", "Новые лиды", "New Leads"), value: "1,248", color: "text-white" },
-                                        { label: T("Konversiya", "Конверсия", "Conversion"), value: "+34%", color: "text-emerald-300", icon: <TrendingUp size={13} /> },
-                                        { label: T("Javob vaqti", "Время ответа", "Response"), value: "42 sec", color: "text-white", icon: <Clock3 size={12} /> },
+                                        { label: t("landing.dashboard.new_leads"), value: "1,248", color: "text-white" },
+                                        { label: t("landing.dashboard.conversion"), value: "+34%", color: "text-emerald-300", icon: <TrendingUp size={13} /> },
+                                        { label: t("landing.dashboard.response_time"), value: "42 sec", color: "text-white", icon: <Clock3 size={12} /> },
                                     ].map((row) => (
                                         <div key={row.label} className="sales-soft-box flex items-center justify-between">
                                             <span className="text-sm text-[#8899b7]">{row.label}</span>
@@ -355,7 +352,7 @@ export default function LandingPage() {
                                         <span className="text-[0.68rem] font-bold uppercase tracking-[0.12em] text-[#6b7fa0]">System Health</span>
                                         <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-1 text-[0.58rem] font-bold uppercase tracking-wider text-emerald-300">
                                             <span className="sales-pulse-dot" />
-                                            {T("Hammasi ishlayapti", "Все работает", "All Systems OK")}
+                                            {t("landing.dashboard.all_ok")}
                                         </span>
                                     </div>
                                     <div className="space-y-4">

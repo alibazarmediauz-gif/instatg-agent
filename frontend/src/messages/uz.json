@@ -226,6 +226,18 @@
         },
         "integrations_section": {
             "title": "Chuqur integratsiyalar, yuzaki emas"
+        },
+        "stats": {
+            "active_agents": "Faol agentlar",
+            "first_response": "Birinchi javob"
+        },
+        "dashboard": {
+            "weekly": "Haftalik ko'rsatkich",
+            "new_leads": "Yangi lidlar",
+            "conversion": "Konversiya",
+            "response_time": "Javob vaqti",
+            "all_ok": "Hammasi ishlayapti",
+            "per_month": "/oy"
         }
     }
 }

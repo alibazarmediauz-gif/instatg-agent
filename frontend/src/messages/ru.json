@@ -226,6 +226,18 @@
         },
         "integrations_section": {
             "title": "Глубокие интеграции, а не просто автоматизация"
+        },
+        "stats": {
+            "active_agents": "Активных агентов",
+            "first_response": "Первый ответ"
+        },
+        "dashboard": {
+            "weekly": "Недельный отчёт",
+            "new_leads": "Новые лиды",
+            "conversion": "Конверсия",
+            "response_time": "Время ответа",
+            "all_ok": "Все работает",
+            "per_month": "/мес"
         }
     }
 }

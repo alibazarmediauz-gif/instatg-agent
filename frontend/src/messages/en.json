@@ -227,6 +227,18 @@
         },
         "integrations_section": {
             "title": "Deep Integrations, Not Surface-Level Automations"
+        },
+        "stats": {
+            "active_agents": "Active Agents",
+            "first_response": "First Response"
+        },
+        "dashboard": {
+            "weekly": "Weekly Snapshot",
+            "new_leads": "New Leads",
+            "conversion": "Conversion",
+            "response_time": "Response",
+            "all_ok": "All Systems OK",
+            "per_month": "/mo"
         }
     }
 }
