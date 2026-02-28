@@ -378,7 +378,7 @@ export default function KnowledgeBasePage() {
                         ['unanswered', 'Javobsiz savollar', frequentQs.filter(q => q.status !== 'answered').length],
                     ].map(([id, label, count]) => (
                         <button key={id as string} onClick={() => setManageTab(id as string)} style={{ background: 'none', border: 'none', padding: '0 0 16px', fontSize: 14, fontWeight: 600, color: manageTab === id ? 'var(--text-primary)' : 'var(--text-muted)', borderBottom: manageTab === id ? '2px solid var(--accent)' : '2px solid transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
-                            {label} {count != null && count > 0 && <span style={{ background: 'var(--bg-elevated)', padding: '2px 8px', borderRadius: 12, fontSize: 11 }}>{count}</span>}
+                            {label} {typeof count === 'number' && count > 0 && <span style={{ background: 'var(--bg-elevated)', padding: '2px 8px', borderRadius: 12, fontSize: 11 }}>{count}</span>}
                         </button>
                     ))}
                 </div>
