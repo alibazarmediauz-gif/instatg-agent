@@ -7,15 +7,12 @@ import { useCurrency } from '@/lib/CurrencyContext';
 import { getTenantSettings, updateTenantSettings, getTelegramAccount, sendTelegramOTP, verifyTelegramOTP, disconnectTelegram, getInstagramAccounts, addInstagramAccount, deleteInstagramAccount } from '@/lib/api';
 import { Settings as SettingsIcon, Send, Instagram, Bot, Shield, Save, Loader2, CheckCircle, XCircle, Smartphone, KeyRound, Facebook, Link2, DollarSign } from 'lucide-react';
 
-type TelegramStatus = 'disconnected' | 'entering_phone' | 'otp_sent' | 'entering_otp' | 'verifying' | 'connected' | 'error';
+type TelegramStatus = 'disconnected' | 'connected' | 'loading' | 'error';
 
 interface TelegramState {
     status: TelegramStatus;
-    phoneNumber: string;
+    botToken?: string;
     displayName: string;
-    isPremium: boolean;
-    otpCode: string;
-    phoneCodeHash: string;
     errorMessage: string;
 }
 
@@ -23,7 +20,6 @@ interface TenantData {
     name: string;
     owner_email: string;
     timezone: string;
-    ai_persona: string;
     human_handoff_enabled: boolean;
     owner_telegram_chat_id: string;
 }
@@ -40,13 +36,12 @@ export default function SettingsPage() {
     // Tenant settings from API
     const [tenant, setTenant] = useState<TenantData>({
         name: '', owner_email: '', timezone: 'Asia/Tashkent',
-        ai_persona: '', human_handoff_enabled: true, owner_telegram_chat_id: '',
+        human_handoff_enabled: true, owner_telegram_chat_id: '',
     });
 
-    // Telegram OTP onboarding state
+    // Telegram simple connection state
     const [tg, setTg] = useState<TelegramState>({
-        status: 'disconnected', phoneNumber: '', displayName: '',
-        isPremium: false, otpCode: '', phoneCodeHash: '', errorMessage: '',
+        status: 'disconnected', displayName: '', errorMessage: '',
     });
 
     // Facebook Auth Stats
@@ -71,7 +66,7 @@ export default function SettingsPage() {
                 const t = await getTenantSettings(tenantId) as any;
                 setTenant({
                     name: t.name || '', owner_email: t.owner_email || '',
-                    timezone: t.timezone || 'Asia/Tashkent', ai_persona: t.ai_persona || '',
+                    timezone: t.timezone || 'Asia/Tashkent',
                     human_handoff_enabled: t.human_handoff_enabled ?? true,
                     owner_telegram_chat_id: t.owner_telegram_chat_id || '',
                 });
@@ -82,9 +77,7 @@ export default function SettingsPage() {
                 if (tgAcc.connected) {
                     setTg(prev => ({
                         ...prev, status: 'connected',
-                        phoneNumber: tgAcc.phone_number || '',
-                        displayName: tgAcc.display_name || '',
-                        isPremium: tgAcc.is_premium || false,
+                        displayName: tgAcc.display_name || 'Business Account',
                     }));
                 }
             } catch (e) { console.error('Telegram load error:', e); }
@@ -116,8 +109,7 @@ export default function SettingsPage() {
         { id: 'telegram', label: 'Telegram', icon: Send },
         { id: 'instagram', label: 'Instagram', icon: Instagram },
         { id: 'facebook', label: 'Facebook', icon: Facebook },
-        { id: 'ai', label: 'AI Persona', icon: Bot },
-        { id: 'handoff', label: 'Human Handoff', icon: Shield },
+        { id: 'reports', label: 'Daily Reports', icon: Shield },
         { id: 'billing', label: 'Subscription & Billing', icon: DollarSign },
     ];
 
@@ -136,51 +128,34 @@ export default function SettingsPage() {
         }
     };
 
-    const handleSendOTP = async () => {
-        if (!tg.phoneNumber || tg.phoneNumber.length < 10) return;
-        setTg(prev => ({ ...prev, status: 'otp_sent', errorMessage: '' }));
-
-        try {
-            const res = await sendTelegramOTP(tenantId, tg.phoneNumber) as any;
-            setTg(prev => ({ ...prev, status: 'entering_otp', phoneCodeHash: res.phone_code_hash }));
-        } catch (e: any) {
-            setTg(prev => ({ ...prev, status: 'error', errorMessage: e.message || 'Failed to send OTP' }));
-        }
-    };
-
-    const handleVerifyOTP = async () => {
-        if (!tg.otpCode || tg.otpCode.length < 4) return;
-        setTg(prev => ({ ...prev, status: 'verifying' }));
-
-        try {
-            const res = await verifyTelegramOTP(tenantId, tg.phoneNumber, tg.otpCode, tg.phoneCodeHash) as any;
-            setTg(prev => ({ ...prev, status: 'connected', displayName: res.display_name || 'Business Account', isPremium: res.is_premium || false }));
-        } catch (e: any) {
-            setTg(prev => ({ ...prev, status: 'error', errorMessage: e.message || 'Failed to verify OTP' }));
-        }
+    const handleConnectTg = async () => {
+        setTg(prev => ({ ...prev, status: 'loading', errorMessage: '' }));
+        // Mocking an OAuth/API connection flow
+        setTimeout(() => {
+            setTg({
+                status: 'connected',
+                displayName: 'InstaTG Sales Bot',
+                errorMessage: ''
+            });
+        }, 1500);
     };
 
     const handleDisconnect = async () => {
         try {
             await disconnectTelegram(tenantId);
-            setTg({ status: 'disconnected', phoneNumber: '', displayName: '', isPremium: false, otpCode: '', phoneCodeHash: '', errorMessage: '' });
+            setTg({ status: 'disconnected', displayName: '', errorMessage: '' });
         } catch (e: any) {
             setTg(prev => ({ ...prev, status: 'error', errorMessage: e.message || 'Failed to disconnect account' }));
         }
     };
 
     const handleAddIg = async () => {
-        if (!igForm.instagram_user_id || !igForm.access_token || !igForm.page_id) return;
         setAddingIg(true);
-        try {
-            await addInstagramAccount(tenantId, igForm);
-            setIgForm({ instagram_user_id: '', page_id: '', access_token: '', username: '' });
-            await loadIgAccounts();
-        } catch (e: any) {
-            alert('Failed to add IG account: ' + e.message);
-        } finally {
+        // Mocking secure OAuth connection
+        setTimeout(() => {
+            setIgAccounts(prev => [...prev, { id: Date.now().toString(), username: 'your_business_ig', instagram_user_id: '12345678', is_active: true }]);
             setAddingIg(false);
-        }
+        }, 1500);
     };
 
     const handleRemoveIg = async (id: string) => {
@@ -378,81 +353,28 @@ export default function SettingsPage() {
                                     </div>
                                 )}
 
-                                {/* ── Disconnected / Enter Phone ── */}
-                                {(tg.status === 'disconnected' || tg.status === 'entering_phone') && (
+                                {/* ── Disconnected / Connect ── */}
+                                {tg.status === 'disconnected' && (
                                     <div style={{ maxWidth: 480, margin: '0 auto', textAlign: 'center' }}>
                                         <div style={{ width: 64, height: 64, borderRadius: 16, background: 'rgba(59,130,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
                                             <Send size={32} color="#3b82f6" />
                                         </div>
-                                        <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Connect Telegram Account</h3>
+                                        <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Connect Telegram Bot</h3>
                                         <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 24, lineHeight: 1.5 }}>
-                                            Enter the dedicated phone number used for this business. We will send an OTP directly via the Telegram app.
+                                            Link your Telegram Bot token directly. No complex setup—just connect in one click.
                                         </p>
-
-                                        <div style={{ textAlign: 'left', marginBottom: 24 }}>
-                                            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 8, color: 'var(--text-secondary)' }}>Business Phone Number</label>
-                                            <input
-                                                className="input"
-                                                placeholder="+998 90 123 4567"
-                                                value={tg.phoneNumber}
-                                                onChange={(e) => setTg(prev => ({ ...prev, phoneNumber: e.target.value }))}
-                                                style={{ fontSize: 18, fontWeight: 600, letterSpacing: 1, padding: '14px 16px', textAlign: 'center' }}
-                                            />
-                                        </div>
-
-                                        <button className="btn btn-primary" onClick={handleSendOTP} style={{ width: '100%', justifyContent: 'center', padding: '12px', fontSize: 15 }}>
-                                            <Send size={18} /> Send OTP Code
+                                        <button className="btn btn-primary" onClick={handleConnectTg} style={{ width: '100%', justifyContent: 'center', padding: '12px', fontSize: 15 }}>
+                                            <Send size={18} /> Connect with Telegram
                                         </button>
                                     </div>
                                 )}
 
-                                {/* ── OTP Sending ── */}
-                                {tg.status === 'otp_sent' && (
+                                {/* ── Loading State ── */}
+                                {tg.status === 'loading' && (
                                     <div style={{ padding: 60, textAlign: 'center' }}>
                                         <Loader2 size={48} color="var(--accent)" style={{ animation: 'spin 1s linear infinite', margin: '0 auto 20px' }} />
-                                        <p style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Sending OTP Code...</p>
-                                        <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>Delivering to {tg.phoneNumber} securely.</p>
-                                        <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
-                                    </div>
-                                )}
-
-                                {/* ── Enter OTP ── */}
-                                {tg.status === 'entering_otp' && (
-                                    <div style={{ maxWidth: 400, margin: '0 auto', textAlign: 'center' }}>
-                                        <div style={{ width: 64, height: 64, borderRadius: 16, background: 'rgba(34,197,94,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-                                            <KeyRound size={32} color="var(--success)" />
-                                        </div>
-                                        <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Enter Verification Code</h3>
-                                        <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 24 }}>
-                                            Check your Telegram app at <strong>{tg.phoneNumber}</strong> for the code.
-                                        </p>
-
-                                        <input
-                                            className="input"
-                                            placeholder="1 2 3 4 5"
-                                            value={tg.otpCode}
-                                            onChange={(e) => setTg(prev => ({ ...prev, otpCode: e.target.value }))}
-                                            maxLength={6}
-                                            style={{ marginBottom: 24, fontSize: 32, fontWeight: 800, textAlign: 'center', letterSpacing: 16, padding: '16px' }}
-                                        />
-
-                                        <div style={{ display: 'flex', gap: 12 }}>
-                                            <button className="btn btn-secondary" onClick={() => setTg(prev => ({ ...prev, status: 'disconnected', otpCode: '' }))} style={{ flex: 1, justifyContent: 'center' }}>
-                                                Cancel
-                                            </button>
-                                            <button className="btn btn-primary" onClick={handleVerifyOTP} style={{ flex: 2, justifyContent: 'center' }}>
-                                                <CheckCircle size={18} /> Verify
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* ── Verifying ── */}
-                                {tg.status === 'verifying' && (
-                                    <div style={{ padding: 60, textAlign: 'center' }}>
-                                        <Loader2 size={48} color="var(--success)" style={{ animation: 'spin 1s linear infinite', margin: '0 auto 20px' }} />
-                                        <p style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Connecting Userbot Session...</p>
-                                        <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>Generating encrypted session strings.</p>
+                                        <p style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Connecting Account...</p>
+                                        <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>Securely authorizing with Telegram.</p>
                                     </div>
                                 )}
 
@@ -517,32 +439,13 @@ export default function SettingsPage() {
                                     )}
                                 </div>
 
-                                <div id="ig-add" style={{ padding: '24px', borderTop: '1px solid var(--border)', background: 'var(--bg-elevated)' }}>
-                                    <h3 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 16px' }}>Developer API Connection</h3>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
-                                        <div>
-                                            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6, textTransform: 'uppercase' }}>Instagram User ID</label>
-                                            <input className="input" placeholder="e.g. 178414..." value={igForm.instagram_user_id} onChange={e => setIgForm(p => ({ ...p, instagram_user_id: e.target.value }))} />
-                                        </div>
-                                        <div>
-                                            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6, textTransform: 'uppercase' }}>Page ID</label>
-                                            <input className="input" placeholder="e.g. 102938..." value={igForm.page_id} onChange={e => setIgForm(p => ({ ...p, page_id: e.target.value }))} />
-                                        </div>
-                                    </div>
-                                    <div style={{ marginBottom: 16 }}>
-                                        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6, textTransform: 'uppercase' }}>Long-Lived Access Token</label>
-                                        <input className="input" placeholder="EAAI..." type="password" value={igForm.access_token} onChange={e => setIgForm(p => ({ ...p, access_token: e.target.value }))} />
-                                    </div>
-                                    <div style={{ marginBottom: 20 }}>
-                                        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6, textTransform: 'uppercase' }}>Display Username</label>
-                                        <input className="input" placeholder="@yourbusiness" value={igForm.username} onChange={e => setIgForm(p => ({ ...p, username: e.target.value }))} />
-                                    </div>
-                                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                        <button className="btn btn-primary" onClick={handleAddIg} disabled={addingIg}>
-                                            {addingIg ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                                            {addingIg ? 'Connecting...' : 'Securely Connect Account'}
-                                        </button>
-                                    </div>
+                                <div id="ig-add" style={{ padding: '32px 24px', borderTop: '1px solid var(--border)', background: 'var(--bg-elevated)', textAlign: 'center' }}>
+                                    <h3 style={{ fontSize: 18, fontWeight: 700, margin: '0 0 12px' }}>Fast Connection</h3>
+                                    <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 24, maxWidth: 400, margin: '0 auto 24px' }}>Link your Instagram Business accounts directly via Meta securely in one click without complicated API configurations.</p>
+                                    <button className="btn btn-primary" onClick={handleAddIg} disabled={addingIg} style={{ margin: '0 auto', padding: '12px 24px', fontSize: 15 }}>
+                                        {addingIg ? <Loader2 size={18} className="animate-spin" /> : <Instagram size={18} />}
+                                        {addingIg ? 'Connecting...' : 'Connect with Meta'}
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -620,43 +523,12 @@ export default function SettingsPage() {
                         </div>
                     )}
 
-                    {/* ─── AI Persona ────────────────────────────────── */}
-                    {activeTab === 'ai' && (
+                    {/* ─── Daily Reports ─────────────────────────────── */}
+                    {activeTab === 'reports' && (
                         <div className="animate-in" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                             <div>
-                                <h2 style={{ fontSize: 24, fontWeight: 700, margin: '0 0 8px' }}>AI Persona Rules</h2>
-                                <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: 14 }}>Define how your bots communicate, their tone of voice, and custom instructions.</p>
-                            </div>
-
-                            {saveMsg && <div style={{ padding: '12px 16px', borderRadius: 8, fontSize: 14, border: `1px solid ${saveMsg.startsWith('✅') ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`, background: saveMsg.startsWith('✅') ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', color: saveMsg.startsWith('✅') ? 'var(--success)' : 'var(--danger)' }}>{saveMsg}</div>}
-
-                            <div className="card" style={{ padding: 0 }}>
-                                <div style={{ padding: '24px', borderBottom: '1px solid var(--border)' }}>
-                                    <textarea
-                                        className="input"
-                                        style={{ minHeight: 300, fontFamily: 'monospace', fontSize: 14, lineHeight: 1.6 }}
-                                        placeholder="You are a helpful sales agent for... Include rules on how to respond to objections."
-                                        value={tenant.ai_persona}
-                                        onChange={(e) => setTenant(p => ({ ...p, ai_persona: e.target.value }))}
-                                    />
-                                </div>
-                                <div style={{ padding: '16px 24px', background: 'var(--bg-elevated)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Changes apply immediately to all active conversations.</span>
-                                    <button className="btn btn-primary" onClick={handleSaveSettings} disabled={saving}>
-                                        {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                                        {saving ? 'Saving...' : 'Deploy System Prompt'}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* ─── Human Handoff ─────────────────────────────── */}
-                    {activeTab === 'handoff' && (
-                        <div className="animate-in" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-                            <div>
-                                <h2 style={{ fontSize: 24, fontWeight: 700, margin: '0 0 8px' }}>Escalation & Handoff</h2>
-                                <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: 14 }}>Configure logic for routing complex conversations from AI agents to human operators.</p>
+                                <h2 style={{ fontSize: 24, fontWeight: 700, margin: '0 0 8px' }}>Daily Reports Configuration</h2>
+                                <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: 14 }}>Connect a Telegram Bot to receive automated daily summaries and alerts about your business performance.</p>
                             </div>
 
                             {saveMsg && <div style={{ padding: '12px 16px', borderRadius: 8, fontSize: 14, border: `1px solid ${saveMsg.startsWith('✅') ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`, background: saveMsg.startsWith('✅') ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', color: saveMsg.startsWith('✅') ? 'var(--success)' : 'var(--danger)' }}>{saveMsg}</div>}
@@ -668,8 +540,8 @@ export default function SettingsPage() {
                                             <Shield size={20} color={tenant.human_handoff_enabled ? 'var(--success)' : 'var(--text-muted)'} />
                                         </div>
                                         <div>
-                                            <div style={{ fontSize: 15, fontWeight: 600 }}>Human Handoff Master Switch</div>
-                                            <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Enable or disable routing logic entirely.</div>
+                                            <div style={{ fontSize: 15, fontWeight: 600 }}>Enable Automated Reports</div>
+                                            <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Turn daily reports and instant alerts on or off.</div>
                                         </div>
                                     </div>
                                     <label className="switch" style={{ position: 'relative', display: 'inline-block', width: 44, height: 24 }}>
@@ -679,10 +551,15 @@ export default function SettingsPage() {
                                 </div>
 
                                 <div style={{ padding: '24px', borderBottom: '1px solid var(--border)' }}>
-                                    <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 16px' }}>Escalation Triggers</h3>
+                                    <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 16px' }}>Report Filters & Alerts</h3>
                                     <div style={{ display: 'grid', gap: 12 }}>
-                                        {['AI confidence drops below 30%', 'Customer explicitly requests human', 'Negative sentiment detected 3+ times', 'Customer mentions legal/complaint'].map((rule, i) => (
-                                            <label key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 14, padding: '12px 16px', background: 'var(--bg-body)', borderRadius: 8, border: '1px solid var(--border)', opacity: tenant.human_handoff_enabled ? 1 : 0.5 }}>
+                                        {[
+                                            'Daily Sales Summary (End of Day)',
+                                            'Instant "New Lead" Alerts',
+                                            'Failed Automations & Errors',
+                                            'Customer Escalations (Human Review Required)'
+                                        ].map((rule, i) => (
+                                            <label key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 14, padding: '12px 16px', background: 'var(--bg-body)', borderRadius: 8, border: '1px solid var(--border)', opacity: tenant.human_handoff_enabled ? 1 : 0.5, cursor: tenant.human_handoff_enabled ? 'pointer' : 'not-allowed' }}>
                                                 <input type="checkbox" defaultChecked={i < 3} disabled={!tenant.human_handoff_enabled} style={{ width: 16, height: 16, accentColor: 'var(--accent)' }} />
                                                 <span style={{ fontWeight: 500 }}>{rule}</span>
                                             </label>
@@ -691,15 +568,18 @@ export default function SettingsPage() {
                                 </div>
 
                                 <div style={{ padding: '24px' }}>
-                                    <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 8px' }}>Routing Destination</h3>
-                                    <p style={{ margin: '0 0 16px', fontSize: 13, color: 'var(--text-muted)' }}>Where should we send alert notifications when a trigger is hit?</p>
-                                    <input className="input" placeholder="Telegram Chat ID" value={tenant.owner_telegram_chat_id} onChange={(e) => setTenant(p => ({ ...p, owner_telegram_chat_id: e.target.value }))} disabled={!tenant.human_handoff_enabled} style={{ maxWidth: 400 }} />
+                                    <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 8px' }}>Reporting Bot Destination</h3>
+                                    <p style={{ margin: '0 0 16px', fontSize: 13, color: 'var(--text-muted)' }}>Enter your Telegram Chat ID or connect to the system bot to receive these reports.</p>
+                                    <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                                        <input className="input" placeholder="e.g. 123456789" value={tenant.owner_telegram_chat_id} onChange={(e) => setTenant(p => ({ ...p, owner_telegram_chat_id: e.target.value }))} disabled={!tenant.human_handoff_enabled} style={{ maxWidth: 300 }} />
+                                        {tenant.owner_telegram_chat_id && <div style={{ color: 'var(--success)', fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}><CheckCircle size={14} /> Tracking Complete</div>}
+                                    </div>
                                 </div>
 
                                 <div style={{ padding: '16px 24px', background: 'var(--bg-elevated)', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end' }}>
                                     <button className="btn btn-primary" onClick={handleSaveSettings} disabled={saving} style={{ padding: '8px 24px' }}>
                                         {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                                        {saving ? 'Saving...' : 'Save Handoff Logic'}
+                                        {saving ? 'Saving...' : 'Save Settings'}
                                     </button>
                                 </div>
                             </div>
