@@ -47,6 +47,9 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
             val = val?.[k];
             if (val === undefined) break;
         }
+        if (val === undefined && keyStr.includes('dashboard')) {
+            console.log('Language Debug: Key not found:', keyStr, 'in dict keys:', Object.keys(dict || {}));
+        }
         return val !== undefined ? String(val) : keyStr;
     };
 
