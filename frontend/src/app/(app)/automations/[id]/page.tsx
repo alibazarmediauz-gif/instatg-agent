@@ -56,7 +56,7 @@ function AutomationCanvas() {
     const [saving, setSaving] = useState(false);
 
     const onConnect: OnConnect = useCallback(
-        (params) => setEdges((eds) => addEdge(params, eds)),
+        (params) => setEdges((eds: Edge[]) => addEdge(params, eds)),
         [setEdges]
     );
 
