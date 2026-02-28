@@ -62,7 +62,7 @@ class Settings(BaseSettings):
     # --- Meta (Facebook/Instagram) ---
     meta_app_id: str = ""
     meta_app_secret: str = ""
-    meta_verify_token: str = "instatg-verify-token"
+    meta_verify_token: str = ""
     public_base_url: str = "http://localhost:8000"
     frontend_url: str = "http://localhost:3000"
     encryption_key: str = ""  # Fernet key for token encryption at rest
