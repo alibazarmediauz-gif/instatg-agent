@@ -49,9 +49,39 @@ async def get_db():
 
 
 async def init_db() -> None:
-    """Create all tables on startup."""
+    """Create all tables on startup and add any missing columns."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+        # ── Safe column migration (idempotent) ──────────────────────
+        # create_all doesn't ALTER existing tables to add new columns.
+        # These statements safely add them if they don't exist yet.
+        migrations = [
+            # instagram_accounts — new Meta integration columns
+            "ALTER TABLE instagram_accounts ADD COLUMN IF NOT EXISTS token_expires_at TIMESTAMPTZ",
+            "ALTER TABLE instagram_accounts ADD COLUMN IF NOT EXISTS granted_scopes JSONB",
+            "ALTER TABLE instagram_accounts ADD COLUMN IF NOT EXISTS connection_status VARCHAR(50) DEFAULT 'connected'",
+            "ALTER TABLE instagram_accounts ADD COLUMN IF NOT EXISTS last_webhook_at TIMESTAMPTZ",
+            # facebook_accounts — new Meta integration columns
+            "ALTER TABLE facebook_accounts ADD COLUMN IF NOT EXISTS token_expires_at TIMESTAMPTZ",
+            "ALTER TABLE facebook_accounts ADD COLUMN IF NOT EXISTS granted_scopes JSONB",
+            "ALTER TABLE facebook_accounts ADD COLUMN IF NOT EXISTS connection_status VARCHAR(50) DEFAULT 'connected'",
+            "ALTER TABLE facebook_accounts ADD COLUMN IF NOT EXISTS instagram_business_id VARCHAR(100)",
+            "ALTER TABLE facebook_accounts ADD COLUMN IF NOT EXISTS ig_username VARCHAR(255)",
+            "ALTER TABLE facebook_accounts ADD COLUMN IF NOT EXISTS last_webhook_at TIMESTAMPTZ",
+            # event_logs — ensure it exists with all columns
+            "ALTER TABLE event_logs ADD COLUMN IF NOT EXISTS page_id VARCHAR(100)",
+            "ALTER TABLE event_logs ADD COLUMN IF NOT EXISTS sender_id VARCHAR(100)",
+            "ALTER TABLE event_logs ADD COLUMN IF NOT EXISTS ig_user_id VARCHAR(100)",
+            "ALTER TABLE event_logs ADD COLUMN IF NOT EXISTS processed BOOLEAN DEFAULT FALSE",
+            "ALTER TABLE event_logs ADD COLUMN IF NOT EXISTS error_message TEXT",
+        ]
+        from sqlalchemy import text
+        for sql in migrations:
+            try:
+                await conn.execute(text(sql))
+            except Exception:
+                pass  # Column already exists or table doesn't exist yet
 
 
 async def close_db() -> None:
