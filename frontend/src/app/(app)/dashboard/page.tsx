@@ -69,7 +69,7 @@ export default function ControlCenter() {
                 </div>
                 <div className="status-badge">
                     <div className="status-dot" />
-                    {t('dashboard_metrics.all_ok') || 'System Operational'}
+                    {t('dashboard_metrics.all_ok') || 'System Operational [v2.0.1]'}
                 </div>
             </div>
 
