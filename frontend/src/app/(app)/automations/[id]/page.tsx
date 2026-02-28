@@ -37,15 +37,18 @@ function AutomationCanvas() {
     const reactFlowWrapper = useRef<HTMLDivElement>(null);
     const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
 
-    const [nodes, setNodes, onNodesChange] = useNodesState<Node>([
+    const initialNodes: Node[] = [
         {
             id: 'trigger-1',
             type: 'trigger',
             position: { x: 250, y: 150 },
             data: { keyword: 'start' },
         }
-    ]);
-    const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+    ];
+    const initialEdges: Edge[] = [];
+
+    const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initialNodes);
+    const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
     const [name, setName] = useState('Yangi Avtomatizatsiya');
     const [saving, setSaving] = useState(false);
 
