@@ -57,24 +57,31 @@ async def init_db() -> None:
         # create_all doesn't ALTER existing tables to add new columns.
         # These statements safely add them if they don't exist yet.
         migrations = [
-            # instagram_accounts — new Meta integration columns
+            # instagram_accounts — ALL columns that may be missing
+            "ALTER TABLE instagram_accounts ADD COLUMN IF NOT EXISTS username VARCHAR(255)",
             "ALTER TABLE instagram_accounts ADD COLUMN IF NOT EXISTS token_expires_at TIMESTAMPTZ",
             "ALTER TABLE instagram_accounts ADD COLUMN IF NOT EXISTS granted_scopes JSONB",
             "ALTER TABLE instagram_accounts ADD COLUMN IF NOT EXISTS connection_status VARCHAR(50) DEFAULT 'connected'",
             "ALTER TABLE instagram_accounts ADD COLUMN IF NOT EXISTS last_webhook_at TIMESTAMPTZ",
-            # facebook_accounts — new Meta integration columns
+            "ALTER TABLE instagram_accounts ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW()",
+            "ALTER TABLE instagram_accounts ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW()",
+            # facebook_accounts — ALL columns that may be missing
+            "ALTER TABLE facebook_accounts ADD COLUMN IF NOT EXISTS page_name VARCHAR(255)",
             "ALTER TABLE facebook_accounts ADD COLUMN IF NOT EXISTS token_expires_at TIMESTAMPTZ",
             "ALTER TABLE facebook_accounts ADD COLUMN IF NOT EXISTS granted_scopes JSONB",
             "ALTER TABLE facebook_accounts ADD COLUMN IF NOT EXISTS connection_status VARCHAR(50) DEFAULT 'connected'",
             "ALTER TABLE facebook_accounts ADD COLUMN IF NOT EXISTS instagram_business_id VARCHAR(100)",
             "ALTER TABLE facebook_accounts ADD COLUMN IF NOT EXISTS ig_username VARCHAR(255)",
             "ALTER TABLE facebook_accounts ADD COLUMN IF NOT EXISTS last_webhook_at TIMESTAMPTZ",
-            # event_logs — ensure it exists with all columns
+            "ALTER TABLE facebook_accounts ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW()",
+            "ALTER TABLE facebook_accounts ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW()",
+            # event_logs — ALL columns
             "ALTER TABLE event_logs ADD COLUMN IF NOT EXISTS page_id VARCHAR(100)",
             "ALTER TABLE event_logs ADD COLUMN IF NOT EXISTS sender_id VARCHAR(100)",
             "ALTER TABLE event_logs ADD COLUMN IF NOT EXISTS ig_user_id VARCHAR(100)",
             "ALTER TABLE event_logs ADD COLUMN IF NOT EXISTS processed BOOLEAN DEFAULT FALSE",
             "ALTER TABLE event_logs ADD COLUMN IF NOT EXISTS error_message TEXT",
+            "ALTER TABLE event_logs ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW()",
         ]
         from sqlalchemy import text
         for sql in migrations:
