@@ -64,12 +64,12 @@ export default function ControlCenter() {
         <div className="page-container animate-in" style={{ padding: '24px 32px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 24 }}>
                 <div>
-                    <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 8 }}>Control Center</h1>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>Live operational and financial pulse.</p>
+                    <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 8 }}>{t('nav.control_center')}</h1>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>{t('topbar.dashboard_subtitle')}</p>
                 </div>
                 <div className="status-badge">
                     <div className="status-dot" />
-                    System Operational
+                    {t('dashboard.all_ok') || 'System Operational'}
                 </div>
             </div>
 
@@ -84,8 +84,8 @@ export default function ControlCenter() {
                 <MiniStatCard label={t('dashboard.revenue_today') || 'Revenue Today'} value={formatCurrency(kpis.total_revenue || 0, 0, 0)} sub="+12.4%" icon={<TrendingUp size={14} />} color="var(--accent)" />
                 <MiniStatCard label={t('dashboard.ai_cost_today') || 'AI Cost Today'} value={formatCurrency(kpis.total_cost || 0, 2, 4)} sub="0.003/msg" icon={<Cpu size={14} />} color="var(--warning)" />
                 <MiniStatCard label={t('dashboard.profit_margin') || 'Profit Margin'} value={`${Math.max(0, 100 - (kpis.total_cost / (kpis.total_revenue || 1) * 100)).toFixed(1)}%`} sub="Target: 95%" icon={<Activity size={14} />} color="var(--success)" />
-                <MiniStatCard label={t('dashboard.calls_today') || 'Calls Today'} value={funnelData[0]?.value || 0} sub="Outbound" icon={<Phone size={14} />} color="var(--purple)" />
-                <MiniStatCard label={t('dashboard.active_calls') || 'Active Calls'} value="0" sub="Live Pulse" icon={<Activity size={14} />} color="var(--danger)" pulse />
+                <MiniStatCard label={t('dashboard.calls_today') || 'Calls Today'} value={funnelData[0]?.value || 0} sub={t('dashboard.outbound') || 'Outbound'} icon={<Phone size={14} />} color="var(--purple)" />
+                <MiniStatCard label={t('dashboard.active_calls') || 'Active Calls'} value="0" sub={t('dashboard.live_pulse') || 'Live Pulse'} icon={<Activity size={14} />} color="var(--danger)" pulse />
                 <MiniStatCard label={t('dashboard.ai_conv_rate') || 'AI Conv. Rate'} value={`${Number(kpis.roi) > 0 ? '14.2' : '0'}%`} sub="+2.1% w/w" icon={<Zap size={14} />} color="var(--accent)" />
             </div>
 

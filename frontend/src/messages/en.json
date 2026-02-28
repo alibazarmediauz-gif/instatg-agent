@@ -21,6 +21,14 @@
         "prompts": "AI Scripts",
         "voice_agents": "Voice Agents",
         "chat_agents": "Chat Sales Agents",
+        "chat_agents_brand": "Brand Name",
+        "chat_agents_phone": "Contact Phone",
+        "chat_agents_hours": "Working Hours",
+        "chat_agents_address": "Store/Office Address",
+        "chat_agents_name": "Agent Name",
+        "chat_agents_channel": "Deployment Channel",
+        "chat_agents_lang": "Primary Language",
+        "chat_agents_mood": "Initial Mood",
         "campaigns": "Automated Sales Campaigns",
         "knowledge": "AI Training Center",
         "billing": "Billing",
@@ -244,5 +252,17 @@
             "conversion_label": "Conversion",
             "response_time_label": "Response Time"
         }
+    },
+    "dashboard": {
+        "wallet_balance": "Wallet Balance",
+        "prepaid": "Prepaid",
+        "revenue_today": "Revenue Today",
+        "ai_cost_today": "AI Cost Today",
+        "profit_margin": "Profit Margin",
+        "calls_today": "Calls Today",
+        "outbound": "Outbound",
+        "active_calls": "Active Calls",
+        "live_pulse": "Live Pulse",
+        "ai_conv_rate": "AI Conv. Rate"
     }
 }

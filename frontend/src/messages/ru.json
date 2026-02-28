@@ -30,6 +30,14 @@
         "prompts": "AI Сценарии",
         "voice_agents": "Голосовые агенты",
         "chat_agents": "Chat Sales Agents",
+        "chat_agents_brand": "Название бренда",
+        "chat_agents_phone": "Контактный телефон",
+        "chat_agents_hours": "Рабочее время",
+        "chat_agents_address": "Адрес магазина/офиса",
+        "chat_agents_name": "Имя агента",
+        "chat_agents_channel": "Канал развертывания",
+        "chat_agents_lang": "Основной язык",
+        "chat_agents_mood": "Начальный настрой",
         "campaigns": "Автоматизированные кампании продаж",
         "knowledge": "Центр обучения ИИ",
         "billing": "Биллинг",
@@ -243,5 +251,17 @@
             "conversion_label": "Конверсия",
             "response_time_label": "Время ответа"
         }
+    },
+    "dashboard": {
+        "wallet_balance": "Баланс кошелька",
+        "prepaid": "Предоплата",
+        "revenue_today": "Выручка сегодня",
+        "ai_cost_today": "Затраты на ИИ",
+        "profit_margin": "Маржа прибыли",
+        "calls_today": "Звонки сегодня",
+        "outbound": "Исходящие",
+        "active_calls": "Активные звонки",
+        "live_pulse": "Пульс системы",
+        "ai_conv_rate": "Конверсия ИИ"
     }
 }

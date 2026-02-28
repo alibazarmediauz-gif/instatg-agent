@@ -558,193 +558,195 @@ export default function ChatAgentsPage() {
                                 <div className="animate-in" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                                         <div>
-                                            <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>Agent Name</label>
-                                            <input className="input" placeholder="e.g. Premium Support Bot" value={newAgent.name} onChange={e => setNewAgent({ ...newAgent, name: e.target.value })} />
-                                        </div>
-                                        <div>
-                                            <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>Retail Name / Brand</label>
-                                            <input className="input" placeholder="e.g. Alibazar Media" value={newAgent.settings.brand_name || ''} onChange={e => setNewAgent({ ...newAgent, settings: { ...newAgent.settings, brand_name: e.target.value } })} />
-                                        </div>
-                                    </div>
-
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                                        <div>
-                                            <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>Contact Phone</label>
-                                            <input className="input" placeholder="+998 90..." value={newAgent.settings.phone || ''} onChange={e => setNewAgent({ ...newAgent, settings: { ...newAgent.settings, phone: e.target.value } })} />
-                                        </div>
-                                        <div>
-                                            <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>Working Hours</label>
-                                            <input className="input" placeholder="09:00 - 20:00" value={newAgent.settings.hours || ''} onChange={e => setNewAgent({ ...newAgent, settings: { ...newAgent.settings, hours: e.target.value } })} />
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>Store/Office Address</label>
-                                        <input className="input" placeholder="Tashkent, Chilonzor str..." value={newAgent.settings.address || ''} onChange={e => setNewAgent({ ...newAgent, settings: { ...newAgent.settings, address: e.target.value } })} />
-                                    </div>
-
-                                    <div>
-                                        <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 12, textTransform: 'uppercase' }}>Deployment Channel</label>
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
-                                            {CHANNELS.map(c => (
-                                                <div key={c.id} onClick={() => setNewAgent({ ...newAgent, channel: c.id })} style={{
-                                                    padding: '12px 8px', borderRadius: 12, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-                                                    border: `2px solid ${newAgent.channel === c.id ? 'var(--accent)' : 'var(--border)'}`,
-                                                    background: newAgent.channel === c.id ? 'rgba(59,130,246,0.06)' : 'var(--bg-elevated)',
-                                                    transition: 'all 0.2s', textAlign: 'center'
-                                                }}>
-                                                    <div style={{ color: newAgent.channel === c.id ? 'var(--accent)' : 'var(--text-muted)' }}>{c.icon}</div>
-                                                    <div style={{ fontSize: 12, fontWeight: 700 }}>{c.label}</div>
+                                            <div style={{ display: grid, gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                                                <div>
+                                                    <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>{t('nav.chat_agents_name') || 'Agent Name'}</label>
+                                                    <input className="input" placeholder="e.g. Premium Support Bot" value={newAgent.name} onChange={e => setNewAgent({ ...newAgent, name: e.target.value })} />
                                                 </div>
-                                            ))}
-                                        </div>
-                                    </div>
+                                                <div>
+                                                    <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>{t('nav.chat_agents_brand') || 'Retail Name / Brand'}</label>
+                                                    <input className="input" placeholder="e.g. Alibazar Media" value={newAgent.settings.brand_name || ''} onChange={e => setNewAgent({ ...newAgent, settings: { ...newAgent.settings, brand_name: e.target.value } })} />
+                                                </div>
+                                            </div>
 
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                                        <div>
-                                            <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>Primary Language</label>
-                                            <select className="input" value={newAgent.settings.language} onChange={e => setNewAgent({ ...newAgent, settings: { ...newAgent.settings, language: e.target.value } })}>
-                                                <option value="en">English (Global)</option>
-                                                <option value="ru">Russian (CIS)</option>
-                                                <option value="uz">Uzbek (Central Asia)</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>Initial Mood</label>
-                                            <select className="input" value={newAgent.settings.persona} onChange={e => setNewAgent({ ...newAgent, settings: { ...newAgent.settings, persona: e.target.value } })}>
-                                                {PERSONAS.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                                                <div>
+                                                    <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>{t('nav.chat_agents_phone') || 'Contact Phone'}</label>
+                                                    <input className="input" placeholder="+998 90..." value={newAgent.settings.phone || ''} onChange={e => setNewAgent({ ...newAgent, settings: { ...newAgent.settings, phone: e.target.value } })} />
+                                                </div>
+                                                <div>
+                                                    <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>{t('nav.chat_agents_hours') || 'Working Hours'}</label>
+                                                    <input className="input" placeholder="09:00 - 20:00" value={newAgent.settings.hours || ''} onChange={e => setNewAgent({ ...newAgent, settings: { ...newAgent.settings, hours: e.target.value } })} />
+                                                </div>
+                                            </div>
 
-                            {/* Step 2: Intelligence */}
-                            {wizardStep === 2 && (
-                                <div className="animate-in" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-                                    <div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                                            <label style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Master Prompt</label>
-                                            <span style={{ fontSize: 11, color: 'var(--accent)' }}>AI Strategy</span>
-                                        </div>
-                                        <textarea
-                                            className="input" rows={5}
-                                            placeholder="Define the core logic, goals, and behavioral constraints of your agent..."
-                                            style={{ fontFamily: 'monospace', fontSize: 12, lineHeight: 1.6 }}
-                                            value={newAgent.system_prompt}
-                                            onChange={e => setNewAgent({ ...newAgent, system_prompt: e.target.value })}
-                                        />
-                                    </div>
+                                            <div>
+                                                <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>{t('nav.chat_agents_address') || 'Store/Office Address'}</label>
+                                                <input className="input" placeholder="Tashkent, Chilonzor str..." value={newAgent.settings.address || ''} onChange={e => setNewAgent({ ...newAgent, settings: { ...newAgent.settings, address: e.target.value } })} />
+                                            </div>
 
-                                    <div>
-                                        <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 12, textTransform: 'uppercase' }}>Link Knowledge Base (RAG)</label>
-                                        <div style={{ padding: '16px', borderRadius: 12, border: '1px dashed var(--border)', background: 'var(--bg-elevated)' }}>
-                                            {knowledgeDocs.length > 0 ? (
-                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                                                    <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 8px 0' }}>Select documents this agent should use for grounding:</p>
-                                                    {knowledgeDocs.slice(0, 3).map(doc => (
-                                                        <div key={doc.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
-                                                            <div style={{ width: 14, height: 14, borderRadius: 3, border: '1px solid var(--accent)', background: 'rgba(59,130,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                                <div style={{ width: 8, height: 8, borderRadius: 1, background: 'var(--accent)' }} />
-                                                            </div>
-                                                            {doc.filename}
+                                            <div>
+                                                <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 12, textTransform: 'uppercase' }}>{t('nav.chat_agents_channel') || 'Deployment Channel'}</label>
+                                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+                                                    {CHANNELS.map(c => (
+                                                        <div key={c.id} onClick={() => setNewAgent({ ...newAgent, channel: c.id })} style={{
+                                                            padding: '12px 8px', borderRadius: 12, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+                                                            border: `2px solid ${newAgent.channel === c.id ? 'var(--accent)' : 'var(--border)'}`,
+                                                            background: newAgent.channel === c.id ? 'rgba(59,130,246,0.06)' : 'var(--bg-elevated)',
+                                                            transition: 'all 0.2s', textAlign: 'center'
+                                                        }}>
+                                                            <div style={{ color: newAgent.channel === c.id ? 'var(--accent)' : 'var(--text-muted)' }}>{c.icon}</div>
+                                                            <div style={{ fontSize: 12, fontWeight: 700 }}>{c.label}</div>
                                                         </div>
                                                     ))}
-                                                    {knowledgeDocs.length > 3 && <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>+ {knowledgeDocs.length - 3} more sources available</div>}
                                                 </div>
-                                            ) : (
-                                                <div style={{ textAlign: 'center', padding: '10px 0' }}>
-                                                    <Brain size={24} style={{ opacity: 0.2, margin: '0 auto 8px' }} />
-                                                    <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>No training documents found. <a href="/knowledge" style={{ color: 'var(--accent)', textDecoration: 'none' }}>Upload some?</a></div>
+                                            </div>
+
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                                                <div>
+                                                    <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>{t('nav.chat_agents_lang') || 'Primary Language'}</label>
+                                                    <select className="input" value={newAgent.settings.language} onChange={e => setNewAgent({ ...newAgent, settings: { ...newAgent.settings, language: e.target.value } })}>
+                                                        <option value="en">English (Global)</option>
+                                                        <option value="ru">Russian (CIS)</option>
+                                                        <option value="uz">Uzbek (Central Asia)</option>
+                                                    </select>
                                                 </div>
-                                            )}
+                                                <div>
+                                                    <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>{t('nav.chat_agents_mood') || 'Initial Mood'}</label>
+                                                    <select className="input" value={newAgent.settings.persona} onChange={e => setNewAgent({ ...newAgent, settings: { ...newAgent.settings, persona: e.target.value } })}>
+                                                        {PERSONAS.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
+                                                    </select>
+                                                </div>
+                                            </div>
                                         </div>
+                            )}
+
+                                        {/* Step 2: Intelligence */}
+                                        {wizardStep === 2 && (
+                                            <div className="animate-in" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                                                <div>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                                                        <label style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Master Prompt</label>
+                                                        <span style={{ fontSize: 11, color: 'var(--accent)' }}>AI Strategy</span>
+                                                    </div>
+                                                    <textarea
+                                                        className="input" rows={5}
+                                                        placeholder="Define the core logic, goals, and behavioral constraints of your agent..."
+                                                        style={{ fontFamily: 'monospace', fontSize: 12, lineHeight: 1.6 }}
+                                                        value={newAgent.system_prompt}
+                                                        onChange={e => setNewAgent({ ...newAgent, system_prompt: e.target.value })}
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 12, textTransform: 'uppercase' }}>Link Knowledge Base (RAG)</label>
+                                                    <div style={{ padding: '16px', borderRadius: 12, border: '1px dashed var(--border)', background: 'var(--bg-elevated)' }}>
+                                                        {knowledgeDocs.length > 0 ? (
+                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                                                <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 8px 0' }}>Select documents this agent should use for grounding:</p>
+                                                                {knowledgeDocs.slice(0, 3).map(doc => (
+                                                                    <div key={doc.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
+                                                                        <div style={{ width: 14, height: 14, borderRadius: 3, border: '1px solid var(--accent)', background: 'rgba(59,130,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                                            <div style={{ width: 8, height: 8, borderRadius: 1, background: 'var(--accent)' }} />
+                                                                        </div>
+                                                                        {doc.filename}
+                                                                    </div>
+                                                                ))}
+                                                                {knowledgeDocs.length > 3 && <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>+ {knowledgeDocs.length - 3} more sources available</div>}
+                                                            </div>
+                                                        ) : (
+                                                            <div style={{ textAlign: 'center', padding: '10px 0' }}>
+                                                                <Brain size={24} style={{ opacity: 0.2, margin: '0 auto 8px' }} />
+                                                                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>No training documents found. <a href="/knowledge" style={{ color: 'var(--accent)', textDecoration: 'none' }}>Upload some?</a></div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 12, textTransform: 'uppercase' }}>Custom Greeting</label>
+                                                    <input className="input" placeholder="e.g. Hello! I am your AI assistant. How can I help you today?" value={newAgent.settings.greeting} onChange={e => setNewAgent({ ...newAgent, settings: { ...newAgent.settings, greeting: e.target.value } })} />
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Step 3: Guardrails & Launch */}
+                                        {wizardStep === 3 && (
+                                            <div className="animate-in" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                                                <div style={{ padding: '20px', borderRadius: 16, background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.2)' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                                                        <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--success)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                            <Zap size={16} color="white" />
+                                                        </div>
+                                                        <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800 }}>Ready to Launch</h3>
+                                                    </div>
+                                                    <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.6 }}>
+                                                        Your agent <strong>{newAgent.name}</strong> will be deployed on <strong>{channelCfg(newAgent.channel).label}</strong>.
+                                                        It will use <strong>{newAgent.settings.persona}</strong> voice and respond in <strong>{newAgent.settings.language}</strong>.
+                                                    </p>
+                                                </div>
+
+                                                {newAgent.channel === 'telegram' && (
+                                                    <div style={{ padding: 16, background: 'var(--bg-elevated)', borderRadius: 12, border: '1px solid var(--border)', width: '100%', textAlign: 'left' }}>
+                                                        <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>Webhook Configuration</label>
+                                                        <div style={{ display: 'flex', gap: 8 }}>
+                                                            <input
+                                                                readOnly className="input" style={{ flex: 1, fontSize: 12, fontFamily: 'monospace' }}
+                                                                value={`https://api.instatg.uz/api/webhooks/telegram/bot/${tenantId}`}
+                                                            />
+                                                            <button className="btn btn-secondary" style={{ padding: '0 12px' }} onClick={() => navigator.clipboard.writeText(`https://api.instatg.uz/api/webhooks/telegram/bot/${tenantId}`)}>Copy</button>
+                                                        </div>
+                                                        <p style={{ fontSize: 10, color: 'var(--warning)', marginTop: 8 }}>⚠️ Ensure you have set this webhook in your bot settings.</p>
+                                                    </div>
+                                                )}
+
+                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                                                    <div>
+                                                        <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>Human Handoff Threshold</label>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                            <input type="number" className="input" style={{ width: 80 }} value={newAgent.settings.max_messages_before_handoff} onChange={e => setNewAgent({ ...newAgent, settings: { ...newAgent.settings, max_messages_before_handoff: Number(e.target.value) } })} />
+                                                            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Messages</span>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>Simulation Delay</label>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                            <input type="number" className="input" style={{ width: 80 }} value={newAgent.settings.delay_ms} onChange={e => setNewAgent({ ...newAgent, settings: { ...newAgent.settings, delay_ms: Number(e.target.value) } })} />
+                                                            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>MS</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: 'var(--bg-elevated)', borderRadius: 12, border: '1px solid var(--border)' }}>
+                                                    <div>
+                                                        <div style={{ fontSize: 13, fontWeight: 600 }}>Active Immediately</div>
+                                                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Start replying to incoming messages upon creation</div>
+                                                    </div>
+                                                    <ToggleRight size={28} color="var(--success)" />
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
 
-                                    <div>
-                                        <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 12, textTransform: 'uppercase' }}>Custom Greeting</label>
-                                        <input className="input" placeholder="e.g. Hello! I am your AI assistant. How can I help you today?" value={newAgent.settings.greeting} onChange={e => setNewAgent({ ...newAgent, settings: { ...newAgent.settings, greeting: e.target.value } })} />
+                                    {/* Wizard Footer */}
+                                    <div style={{ padding: '24px 32px', background: 'var(--bg-elevated)', borderTop: '1px solid var(--border)', display: 'flex', gap: 12 }}>
+                                        {wizardStep > 1 && (
+                                            <button className="btn btn-secondary" onClick={() => setWizardStep(wizardStep - 1)}>Back</button>
+                                        )}
+                                        <button className="btn btn-secondary" style={{ marginLeft: wizardStep === 1 ? 0 : 'auto' }} onClick={() => { setShowCreate(false); setWizardStep(1); }}>Cancel</button>
+                                        <button
+                                            className="btn btn-primary"
+                                            style={{ flex: wizardStep === 3 ? 1 : 0, minWidth: 120, justifyContent: 'center', gap: 8 }}
+                                            onClick={() => wizardStep === 3 ? handleCreate() : setWizardStep(wizardStep + 1)}
+                                            disabled={saving || (wizardStep === 1 && !newAgent.name)}
+                                        >
+                                            {saving ? <Loader2 size={13} className="animate-spin" /> : (wizardStep === 3 ? <Play size={13} /> : <ChevronRight size={13} />)}
+                                            {saving ? 'Creating...' : (wizardStep === 3 ? 'Launch Agent' : 'Next Step')}
+                                        </button>
                                     </div>
                                 </div>
-                            )}
-
-                            {/* Step 3: Guardrails & Launch */}
-                            {wizardStep === 3 && (
-                                <div className="animate-in" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                                    <div style={{ padding: '20px', borderRadius: 16, background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.2)' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-                                            <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--success)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                <Zap size={16} color="white" />
-                                            </div>
-                                            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800 }}>Ready to Launch</h3>
-                                        </div>
-                                        <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.6 }}>
-                                            Your agent <strong>{newAgent.name}</strong> will be deployed on <strong>{channelCfg(newAgent.channel).label}</strong>.
-                                            It will use <strong>{newAgent.settings.persona}</strong> voice and respond in <strong>{newAgent.settings.language}</strong>.
-                                        </p>
-                                    </div>
-
-                                    {newAgent.channel === 'telegram' && (
-                                        <div style={{ padding: 16, background: 'var(--bg-elevated)', borderRadius: 12, border: '1px solid var(--border)', width: '100%', textAlign: 'left' }}>
-                                            <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>Webhook Configuration</label>
-                                            <div style={{ display: 'flex', gap: 8 }}>
-                                                <input
-                                                    readOnly className="input" style={{ flex: 1, fontSize: 12, fontFamily: 'monospace' }}
-                                                    value={`https://api.instatg.uz/api/webhooks/telegram/bot/${tenantId}`}
-                                                />
-                                                <button className="btn btn-secondary" style={{ padding: '0 12px' }} onClick={() => navigator.clipboard.writeText(`https://api.instatg.uz/api/webhooks/telegram/bot/${tenantId}`)}>Copy</button>
-                                            </div>
-                                            <p style={{ fontSize: 10, color: 'var(--warning)', marginTop: 8 }}>⚠️ Ensure you have set this webhook in your bot settings.</p>
-                                        </div>
-                                    )}
-
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                                        <div>
-                                            <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>Human Handoff Threshold</label>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                                <input type="number" className="input" style={{ width: 80 }} value={newAgent.settings.max_messages_before_handoff} onChange={e => setNewAgent({ ...newAgent, settings: { ...newAgent.settings, max_messages_before_handoff: Number(e.target.value) } })} />
-                                                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Messages</span>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>Simulation Delay</label>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                                <input type="number" className="input" style={{ width: 80 }} value={newAgent.settings.delay_ms} onChange={e => setNewAgent({ ...newAgent, settings: { ...newAgent.settings, delay_ms: Number(e.target.value) } })} />
-                                                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>MS</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: 'var(--bg-elevated)', borderRadius: 12, border: '1px solid var(--border)' }}>
-                                        <div>
-                                            <div style={{ fontSize: 13, fontWeight: 600 }}>Active Immediately</div>
-                                            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Start replying to incoming messages upon creation</div>
-                                        </div>
-                                        <ToggleRight size={28} color="var(--success)" />
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Wizard Footer */}
-                        <div style={{ padding: '24px 32px', background: 'var(--bg-elevated)', borderTop: '1px solid var(--border)', display: 'flex', gap: 12 }}>
-                            {wizardStep > 1 && (
-                                <button className="btn btn-secondary" onClick={() => setWizardStep(wizardStep - 1)}>Back</button>
-                            )}
-                            <button className="btn btn-secondary" style={{ marginLeft: wizardStep === 1 ? 0 : 'auto' }} onClick={() => { setShowCreate(false); setWizardStep(1); }}>Cancel</button>
-                            <button
-                                className="btn btn-primary"
-                                style={{ flex: wizardStep === 3 ? 1 : 0, minWidth: 120, justifyContent: 'center', gap: 8 }}
-                                onClick={() => wizardStep === 3 ? handleCreate() : setWizardStep(wizardStep + 1)}
-                                disabled={saving || (wizardStep === 1 && !newAgent.name)}
-                            >
-                                {saving ? <Loader2 size={13} className="animate-spin" /> : (wizardStep === 3 ? <Play size={13} /> : <ChevronRight size={13} />)}
-                                {saving ? 'Creating...' : (wizardStep === 3 ? 'Launch Agent' : 'Next Step')}
-                            </button>
-                        </div>
-                    </div>
                 </>
             )}
-        </div>
-    );
+                    </div>
+                    );
 }

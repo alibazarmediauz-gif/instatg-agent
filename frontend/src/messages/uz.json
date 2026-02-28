@@ -30,6 +30,14 @@
         "prompts": "AI Ssenariylar",
         "voice_agents": "Ovozli agentlar",
         "chat_agents": "Chat Sotuv agentlari",
+        "chat_agents_brand": "Brend nomi",
+        "chat_agents_phone": "Aloqa telefoni",
+        "chat_agents_hours": "Ish vaqti",
+        "chat_agents_address": "Do'kon/Ofis manzili",
+        "chat_agents_name": "Agent nomi",
+        "chat_agents_channel": "Joylashtirish kanali",
+        "chat_agents_lang": "Asosiy til",
+        "chat_agents_mood": "Boshlang'ich kayfiyat",
         "campaigns": "Avtomatlashtirilgan sotuv kampaniyalari",
         "knowledge": "AI Bilimlar markazi",
         "billing": "To'lovlar",
@@ -241,7 +249,18 @@
             "snapshot_title": "Performance Snapshot",
             "new_leads_label": "Yangi lidlar",
             "conversion_label": "Sotuvga aylangan",
-            "response_time_label": "Javob vaqti"
         }
+    },
+    "dashboard": {
+        "wallet_balance": "Balans",
+        "prepaid": "Prepaid",
+        "revenue_today": "Bugungi tushum",
+        "ai_cost_today": "AI xarajati",
+        "profit_margin": "Foyda marjasi",
+        "calls_today": "Bugungi qo'ng'iroqlar",
+        "outbound": "Chiquvchi",
+        "active_calls": "Faol qo'ng'iroqlar",
+        "live_pulse": "Jonli efir",
+        "ai_conv_rate": "AI Konversiya"
     }
 }
