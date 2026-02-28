@@ -152,6 +152,7 @@ async def _register_instagram_accounts():
         from app.database import async_session_factory
         from app.models import InstagramAccount, Tenant
         from app.channels.instagram import register_instagram_account
+        from app.services.meta_oauth_service import decrypt_token
         from sqlalchemy import select
 
         async with async_session_factory() as db:
@@ -161,16 +162,19 @@ async def _register_instagram_accounts():
                 .where(InstagramAccount.is_active == True)
             )
 
+            count = 0
             for row in result.all():
                 account = row[0]
                 business_name = row[1]
                 register_instagram_account(
                     instagram_user_id=account.instagram_user_id,
                     tenant_id=str(account.tenant_id),
-                    access_token=account.access_token,
+                    access_token=decrypt_token(account.access_token),
                     page_id=account.page_id,
                     display_name=business_name,
                 )
+                count += 1
+            logger.info("instagram_accounts_registered", count=count)
 
     except Exception as e:
         logger.warning("instagram_startup_skipped", reason=str(e))
@@ -182,6 +186,7 @@ async def _register_facebook_accounts():
         from app.database import async_session_factory
         from app.models import FacebookAccount, Tenant
         from app.channels.facebook import register_facebook_account
+        from app.services.meta_oauth_service import decrypt_token
         from sqlalchemy import select
 
         async with async_session_factory() as db:
@@ -191,15 +196,18 @@ async def _register_facebook_accounts():
                 .where(FacebookAccount.is_active == True)
             )
 
+            count = 0
             for row in result.all():
                 account = row[0]
                 business_name = row[1]
                 register_facebook_account(
                     page_id=account.page_id,
                     tenant_id=str(account.tenant_id),
-                    access_token=account.access_token,
+                    access_token=decrypt_token(account.access_token),
                     page_name=account.page_name or business_name,
                 )
+                count += 1
+            logger.info("facebook_accounts_registered", count=count)
 
     except Exception as e:
         logger.warning("facebook_startup_skipped", reason=str(e))
