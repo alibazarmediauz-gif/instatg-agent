@@ -72,10 +72,14 @@ async def receive_meta_webhook(
         ).hexdigest()
 
         # Debug logging (temporary — remove after confirming fix)
+        secret = settings.meta_app_secret
+        secret_hint = f"{secret[:4]}...{secret[-4:]}" if len(secret) > 8 else "TOO_SHORT"
         logger.info("META_WEBHOOK_RECEIVED")
         logger.info(f"Signature header: {signature}")
         logger.info(f"Expected signature: {expected_signature}")
         logger.info(f"Body length: {len(raw_body)}")
+        logger.info(f"Secret hint: {secret_hint} (len={len(secret)})")
+        logger.info(f"Raw body first 100 chars: {raw_body[:100]}")
 
         # Constant-time comparison
         if not hmac.compare_digest(signature, expected_signature):
