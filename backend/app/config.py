@@ -63,6 +63,9 @@ class Settings(BaseSettings):
     meta_app_id: str = ""
     meta_app_secret: str = ""
     meta_verify_token: str = "instatg-verify-token"
+    public_base_url: str = "http://localhost:8000"
+    encryption_key: str = ""  # Fernet key for token encryption at rest
+    graph_api_version: str = "v19.0"
 
     # --- AmoCRM ---
     amocrm_base_url: str = ""

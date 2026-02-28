@@ -14,6 +14,8 @@ interface TelegramState {
     botToken?: string;
     displayName: string;
     errorMessage: string;
+    isPremium?: boolean;
+    phoneNumber?: string;
 }
 
 interface TenantData {

@@ -183,7 +183,12 @@ class InstagramAccount(Base):
     access_token = Column(Text, nullable=False)
     username = Column(String(255), nullable=True)
     is_active = Column(Boolean, default=True)
+    token_expires_at = Column(DateTime(timezone=True), nullable=True)
+    granted_scopes = Column(JSON, nullable=True)
+    connection_status = Column(String(50), default="connected")  # connected, error, needs_review
+    last_webhook_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     tenant = relationship("Tenant", back_populates="instagram_accounts")
 
@@ -198,9 +203,33 @@ class FacebookAccount(Base):
     access_token = Column(Text, nullable=False)
     page_name = Column(String(255), nullable=True)
     is_active = Column(Boolean, default=True)
+    token_expires_at = Column(DateTime(timezone=True), nullable=True)
+    granted_scopes = Column(JSON, nullable=True)
+    connection_status = Column(String(50), default="connected")  # connected, error, needs_review
+    instagram_business_id = Column(String(100), nullable=True)
+    ig_username = Column(String(255), nullable=True)
+    last_webhook_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     tenant = relationship("Tenant", back_populates="facebook_accounts")
+
+
+class EventLog(Base):
+    """Audit log for all incoming webhook events from Meta (IG + FB)."""
+    __tablename__ = "event_logs"
+
+    id = Column(UUID(), primary_key=True, default=uuid.uuid4)
+    tenant_id = Column(UUID(), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True, index=True)
+    platform = Column(String(50), nullable=False)  # instagram, facebook
+    event_type = Column(String(100), nullable=False)  # message, comment, reaction, etc.
+    payload = Column(JSON, nullable=True)
+    page_id = Column(String(100), nullable=True, index=True)
+    ig_user_id = Column(String(100), nullable=True, index=True)
+    sender_id = Column(String(100), nullable=True)
+    processed = Column(Boolean, default=False)
+    error_message = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
 class AmoCRMAccount(Base):

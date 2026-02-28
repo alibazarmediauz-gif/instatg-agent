@@ -595,3 +595,36 @@ export async function setActivePrompt(tenantId: string, id: string) {
         params: { tenant_id: tenantId },
     });
 }
+
+// ─── Meta Integration ───────────────────────────────────────────────
+
+export async function getMetaIntegrationStatus(tenantId: string) {
+    return apiClient('/api/integrations/meta/status', {
+        params: { tenant_id: tenantId },
+    });
+}
+
+export async function getMetaConnectUrl(tenantId: string, provider: string = 'all') {
+    return apiClient<{ url: string }>('/api/integrations/meta/connect-url', {
+        params: { tenant_id: tenantId, provider },
+    });
+}
+
+export async function disconnectMetaIntegration(tenantId: string, provider: string = 'all') {
+    return apiClient('/api/integrations/meta/disconnect', {
+        method: 'POST',
+        params: { tenant_id: tenantId, provider },
+    });
+}
+
+export async function getMetaIntegrationAssets(tenantId: string) {
+    return apiClient('/api/integrations/meta/assets', {
+        params: { tenant_id: tenantId },
+    });
+}
+
+export async function checkMetaHealth(tenantId: string) {
+    return apiClient('/api/integrations/meta/health', {
+        params: { tenant_id: tenantId },
+    });
+}

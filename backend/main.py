@@ -45,6 +45,7 @@ from app.channels.facebook import router as facebook_webhook_router
 from app.api.routes.notifications import router as notifications_router
 from app.api.routes.facebook_auth import router as facebook_auth_router
 from app.api.routes.meta_webhooks import router as meta_webhooks_router
+from app.api.routes.meta_integration import router as meta_integration_router
 from app.api.routes.leads import router as leads_router
 from app.api.routes.prompts import router as prompts_router
 from app.api.routes.payments import router as payments_router
@@ -238,6 +239,7 @@ app.include_router(facebook_webhook_router)
 app.include_router(notifications_router)
 app.include_router(facebook_auth_router)
 app.include_router(meta_webhooks_router)
+app.include_router(meta_integration_router)
 
 # SaaS Extensions
 app.include_router(leads_router)
