@@ -47,6 +47,7 @@ from app.api.routes.leads import router as leads_router
 from app.api.routes.prompts import router as prompts_router
 from app.api.routes.payments import router as payments_router
 from app.api.routes.qa import router as qa_router
+from app.api.routes.automations import router as automations_router
 
 # SaaS AI Agents & Campaign Routes
 from app.api.routes.agents import router as agents_router
@@ -248,6 +249,7 @@ app.include_router(kb_router)
 app.include_router(reports_router)
 app.include_router(settings_router)
 app.include_router(integrations_router)
+app.include_router(automations_router)
 app.include_router(notifications_router)
 app.include_router(meta_webhooks_router)      # GET/POST /api/webhooks/meta — unified webhook
 app.include_router(meta_integration_router)   # /api/integrations/meta/* — connect, status, etc.

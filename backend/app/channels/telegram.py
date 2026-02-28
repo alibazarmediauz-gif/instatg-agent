@@ -224,6 +224,35 @@ def get_client_status(tenant_id: str) -> str:
 
 # ─── Message Processing ─────────────────────────────────────────────
 
+from app.utils.media_parser import parse_media_tags
+
+async def _send_telegram_reply(message: Message, text: str) -> None:
+    """Helper to parse media tags and send native attachments via Telegram."""
+    if not text:
+        return
+
+    clean_text, image_urls, video_urls = parse_media_tags(text)
+
+    try:
+        if image_urls:
+            # Send the first image as a photo with caption
+            await message.reply_photo(photo=image_urls[0], caption=clean_text)
+            # If there are more, send them sequentially
+            for url in image_urls[1:]:
+                await message.reply_photo(photo=url)
+        elif video_urls:
+            await message.reply_video(video=video_urls[0], caption=clean_text)
+            for url in video_urls[1:]:
+                await message.reply_video(video=url)
+        else:
+            # Pure text
+            await message.reply_text(clean_text)
+    except Exception as e:
+        logger.error("telegram_media_send_error", str(e))
+        # Fallback to plain text if media fails
+        await message.reply_text(text)
+
+
 async def process_telegram_message(
     tenant_id: str,
     business_name: str,
@@ -262,7 +291,21 @@ async def process_telegram_message(
     try:
         # Route to appropriate handler
         if message.text:
-            await _handle_text(tenant_id, business_name, client, message, contact_id)
+            from app.services.automation_engine import process_automation_flow
+            
+            async def _auto_reply(text: str):
+                await _send_telegram_reply(message, text)
+                
+            handled = await process_automation_flow(
+                tenant_id=tenant_id,
+                message_text=message.text,
+                platform="telegram",
+                user_id=contact_id,
+                send_message_func=_auto_reply
+            )
+            
+            if not handled:
+                await _handle_text(tenant_id, business_name, client, message, contact_id)
 
         elif message.voice or message.audio:
             await _handle_voice(tenant_id, business_name, client, message, contact_id)
@@ -313,7 +356,7 @@ async def _handle_text(
         business_name=business_name,
     )
     if response.reply_text and not response.human_handoff:
-        await message.reply_text(response.reply_text)
+        await _send_telegram_reply(message, response.reply_text)
 
 
 async def _handle_voice(
@@ -340,7 +383,7 @@ async def _handle_voice(
         business_name=business_name,
     )
     if response.reply_text and not response.human_handoff:
-        await message.reply_text(response.reply_text)
+        await _send_telegram_reply(message, response.reply_text)
 
 
 async def _handle_photo(
@@ -366,7 +409,7 @@ async def _handle_photo(
         image_data=[vision.get_image_base64(image_data)],
     )
     if response.reply_text and not response.human_handoff:
-        await message.reply_text(response.reply_text)
+        await _send_telegram_reply(message, response.reply_text)
 
 
 async def _handle_video(
@@ -392,7 +435,7 @@ async def _handle_video(
         business_name=business_name,
     )
     if response.reply_text and not response.human_handoff:
-        await message.reply_text(response.reply_text)
+        await _send_telegram_reply(message, response.reply_text)
 
 
 async def _handle_document(
@@ -424,7 +467,7 @@ async def _handle_document(
         business_name=business_name,
     )
     if response.reply_text and not response.human_handoff:
-        await message.reply_text(response.reply_text)
+        await _send_telegram_reply(message, response.reply_text)
 
 
 async def _handle_sticker(
@@ -440,7 +483,7 @@ async def _handle_sticker(
         message_type="text", business_name=business_name,
     )
     if response.reply_text and not response.human_handoff:
-        await message.reply_text(response.reply_text)
+        await _send_telegram_reply(message, response.reply_text)
 
 
 async def _handle_fallback(
@@ -456,7 +499,7 @@ async def _handle_fallback(
         message_type="text", business_name=business_name,
     )
     if response.reply_text and not response.human_handoff:
-        await message.reply_text(response.reply_text)
+        await _send_telegram_reply(message, response.reply_text)
 
 
 def _get_contact_name(message: Message) -> str:

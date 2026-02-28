@@ -149,11 +149,11 @@ export async function getManualKnowledge(tenantId: string) {
     });
 }
 
-export async function createManualKnowledge(tenantId: string, question: string, answer: string) {
+export async function createManualKnowledge(tenantId: string, question: string, answer: string, mediaUrl: string = "") {
     return apiClient('/api/knowledge-base/manual', {
         method: 'POST',
         params: { tenant_id: tenantId },
-        body: JSON.stringify({ question, answer }),
+        body: JSON.stringify({ question, answer, media_url: mediaUrl || undefined }),
     });
 }
 

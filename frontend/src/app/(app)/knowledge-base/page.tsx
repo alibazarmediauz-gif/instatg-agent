@@ -94,6 +94,7 @@ export default function KnowledgeBasePage() {
     const [manualKb, setManualKb] = useState<any[]>([]);
     const [newQ, setNewQ] = useState('');
     const [newA, setNewA] = useState('');
+    const [newMediaUrl, setNewMediaUrl] = useState('');
     const [submittingManual, setSubmittingManual] = useState(false);
     const [savingAll, setSavingAll] = useState(false);
 
@@ -137,7 +138,7 @@ export default function KnowledgeBasePage() {
 
     async function handleAddManual(e: React.FormEvent) {
         e.preventDefault(); if (!newA) return; setSubmittingManual(true);
-        try { await createManualKnowledge(tenantId, newQ, newA); setSuccessMsg('✅ Qo\'shildi!'); setTimeout(() => setSuccessMsg(''), 3000); setNewQ(''); setNewA(''); await loadExtraData(); } catch (err: any) { setError(err.message); } finally { setSubmittingManual(false); }
+        try { await createManualKnowledge(tenantId, newQ, newA, newMediaUrl); setSuccessMsg('✅ Qo\'shildi!'); setTimeout(() => setSuccessMsg(''), 3000); setNewQ(''); setNewA(''); setNewMediaUrl(''); await loadExtraData(); } catch (err: any) { setError(err.message); } finally { setSubmittingManual(false); }
     }
 
     async function handleDeleteManual(id: string) {
@@ -299,6 +300,7 @@ export default function KnowledgeBasePage() {
                 <form onSubmit={handleAddManual} style={{ display: 'grid', gap: 12 }}>
                     <input style={inputStyle} placeholder="Savol: Yetkazib berish bormi?" value={newQ} onChange={e => setNewQ(e.target.value)} />
                     <textarea style={{ ...inputStyle, minHeight: 60 }} placeholder="Javob: Ha, Toshkent bo'ylab bepul yetkazib beramiz." required value={newA} onChange={e => setNewA(e.target.value)} />
+                    <input style={inputStyle} placeholder="Media URL (ixtiyoriy, rasm yoki video linki)" value={newMediaUrl} onChange={e => setNewMediaUrl(e.target.value)} />
                     <button type="submit" className="btn btn-primary" disabled={submittingManual} style={{ justifySelf: 'end', padding: '8px 20px', fontSize: 13 }}>{submittingManual ? 'Saqlanmoqda...' : '+ Qo\'shish'}</button>
                 </form>
             </div>
@@ -407,7 +409,7 @@ export default function KnowledgeBasePage() {
                     </tr></thead>
                     <tbody>
                         {docs.map(doc => (<tr key={doc.id} style={{ borderBottom: '1px solid var(--border)' }}><td style={{ padding: '14px 16px', fontWeight: 500, fontSize: 14 }}>{doc.filename}</td><td style={{ padding: '14px 16px', color: 'var(--text-secondary)', fontSize: 13 }}>Fayl</td><td style={{ padding: '14px 16px' }}><span className={doc.status === 'completed' ? 'badge success' : 'badge warning'} style={{ fontSize: 11 }}>{doc.status === 'completed' ? 'Tayyor' : 'Yuklanmoqda'}</span></td><td style={{ padding: '14px 16px', textAlign: 'right' }}><button onClick={() => handleDelete(doc.id, doc.filename)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><Trash2 size={16} /></button></td></tr>))}
-                        {manualKb.map(item => (<tr key={item.id} style={{ borderBottom: '1px solid var(--border)' }}><td style={{ padding: '14px 16px', fontWeight: 500, fontSize: 14, maxWidth: 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.question || item.answer?.substring(0, 50)}</td><td style={{ padding: '14px 16px', color: 'var(--text-secondary)', fontSize: 13 }}>FAQ</td><td style={{ padding: '14px 16px' }}><span className="badge success" style={{ fontSize: 11 }}>Tayyor</span></td><td style={{ padding: '14px 16px', textAlign: 'right' }}><button onClick={() => handleDeleteManual(item.id)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><Trash2 size={16} /></button></td></tr>))}
+                        {manualKb.map(item => (<tr key={item.id} style={{ borderBottom: '1px solid var(--border)' }}><td style={{ padding: '14px 16px', fontWeight: 500, fontSize: 14, maxWidth: 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.question || item.answer?.substring(0, 50)}{item.media_url ? ' 🖼️' : ''}</td><td style={{ padding: '14px 16px', color: 'var(--text-secondary)', fontSize: 13 }}>FAQ</td><td style={{ padding: '14px 16px' }}><span className="badge success" style={{ fontSize: 11 }}>Tayyor</span></td><td style={{ padding: '14px 16px', textAlign: 'right' }}><button onClick={() => handleDeleteManual(item.id)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><Trash2 size={16} /></button></td></tr>))}
                         {docs.length === 0 && manualKb.length === 0 && <tr><td colSpan={4} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Hali hech narsa qo'shilmagan.</td></tr>}
                     </tbody>
                 </table>

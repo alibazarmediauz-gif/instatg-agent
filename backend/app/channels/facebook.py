@@ -350,29 +350,73 @@ async def _process_comment_event(page_id: str, value: dict) -> None:
 
 # ─── Send Message APIs ──────────────────────────────────────────────
 
+from app.utils.media_parser import parse_media_tags
+
 async def _send_messenger_message(recipient_id: str, text: str, access_token: str) -> bool:
     """Send a message via Facebook Messenger (Page messages API)."""
+    if not text:
+        return False
+
+    clean_text, image_urls, video_urls = parse_media_tags(text)
     url = f"{GRAPH_API_URL}/me/messages"
-    payload = {
-        "recipient": {"id": recipient_id},
-        "message": {"text": text},
-        "messaging_type": "RESPONSE",
-    }
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json",
     }
+    
+    success = True
 
     try:
         async with httpx.AsyncClient() as http:
-            response = await http.post(url, json=payload, headers=headers, timeout=15)
+            # 1. Send Text if present
+            if clean_text:
+                payload = {
+                    "recipient": {"id": recipient_id},
+                    "message": {"text": clean_text},
+                    "messaging_type": "RESPONSE",
+                }
+                res = await http.post(url, json=payload, headers=headers, timeout=15)
+                if res.status_code != 200:
+                    logger.error("facebook_text_send_error", status=res.status_code, body=res.text)
+                    success = False
 
-            if response.status_code == 200:
+            # 2. Send Images
+            for img_url in image_urls:
+                payload = {
+                    "recipient": {"id": recipient_id},
+                    "message": {
+                        "attachment": {
+                            "type": "image",
+                            "payload": {"url": img_url, "is_reusable": True}
+                        }
+                    },
+                    "messaging_type": "RESPONSE",
+                }
+                res = await http.post(url, json=payload, headers=headers, timeout=15)
+                if res.status_code != 200:
+                    logger.error("facebook_img_send_error", status=res.status_code, body=res.text)
+                    success = False
+
+            # 3. Send Videos
+            for vid_url in video_urls:
+                payload = {
+                    "recipient": {"id": recipient_id},
+                    "message": {
+                        "attachment": {
+                            "type": "video",
+                            "payload": {"url": vid_url, "is_reusable": True}
+                        }
+                    },
+                    "messaging_type": "RESPONSE",
+                }
+                res = await http.post(url, json=payload, headers=headers, timeout=15)
+                if res.status_code != 200:
+                    logger.error("facebook_vid_send_error", status=res.status_code, body=res.text)
+                    success = False
+
+            if success:
                 logger.info("facebook_message_sent", recipient=recipient_id)
-                return True
-            else:
-                logger.error("facebook_send_error", status=response.status_code, body=response.text)
-                return False
+            return success
 
     except Exception as e:
         logger.error("facebook_send_exception", error=str(e), recipient=recipient_id)

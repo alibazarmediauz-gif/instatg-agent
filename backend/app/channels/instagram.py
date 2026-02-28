@@ -261,6 +261,8 @@ async def _handle_attachment(
 
 # ─── Send Message API ────────────────────────────────────────────────
 
+from app.utils.media_parser import parse_media_tags
+
 async def _send_instagram_message(
     recipient_id: str,
     text: str,
@@ -271,31 +273,66 @@ async def _send_instagram_message(
     
     Returns True if successful.
     """
+    if not text:
+        return False
+
+    clean_text, image_urls, video_urls = parse_media_tags(text)
     url = f"{GRAPH_API_URL}/me/messages"
-    payload = {
-        "recipient": {"id": recipient_id},
-        "message": {"text": text},
-    }
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json",
     }
+    
+    success = True
 
     try:
         async with httpx.AsyncClient() as http:
-            response = await http.post(url, json=payload, headers=headers, timeout=15)
+            # 1. Send Text if present
+            if clean_text:
+                payload = {
+                    "recipient": {"id": recipient_id},
+                    "message": {"text": clean_text},
+                }
+                res = await http.post(url, json=payload, headers=headers, timeout=15)
+                if res.status_code != 200:
+                    logger.error("instagram_text_send_error", status=res.status_code, body=res.text)
+                    success = False
 
-            if response.status_code == 200:
+            # 2. Send Images
+            for img_url in image_urls:
+                payload = {
+                    "recipient": {"id": recipient_id},
+                    "message": {
+                        "attachment": {
+                            "type": "image",
+                            "payload": {"url": img_url, "is_reusable": True}
+                        }
+                    },
+                }
+                res = await http.post(url, json=payload, headers=headers, timeout=15)
+                if res.status_code != 200:
+                    logger.error("instagram_img_send_error", status=res.status_code, body=res.text)
+                    success = False
+
+            # 3. Send Videos 
+            for vid_url in video_urls:
+                payload = {
+                    "recipient": {"id": recipient_id},
+                    "message": {
+                        "attachment": {
+                            "type": "video",
+                            "payload": {"url": vid_url, "is_reusable": True}
+                        }
+                    },
+                }
+                res = await http.post(url, json=payload, headers=headers, timeout=15)
+                if res.status_code != 200:
+                    logger.error("instagram_vid_send_error", status=res.status_code, body=res.text)
+                    success = False
+
+            if success:
                 logger.info("instagram_message_sent", recipient=recipient_id)
-                return True
-            else:
-                logger.error(
-                    "instagram_send_error",
-                    status=response.status_code,
-                    body=response.text,
-                    recipient=recipient_id,
-                )
-                return False
+            return success
 
     except Exception as e:
         logger.error("instagram_send_exception", error=str(e), recipient=recipient_id)

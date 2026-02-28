@@ -158,19 +158,24 @@ from pydantic import BaseModel
 class ManualKnowledgeCreate(BaseModel):
     question: str
     answer: str
+    media_url: Optional[str] = None
 
 @router.get("/manual")
 async def list_manual_knowledge(tenant_id: UUID = Query(...), db: AsyncSession = Depends(get_db)):
     from app.models import ManualKnowledge
     result = await db.execute(select(ManualKnowledge).where(ManualKnowledge.tenant_id == tenant_id, ManualKnowledge.is_active == True))
-    return {"manual": [{"id": str(k.id), "question": k.question, "answer": k.answer, "created_at": k.created_at.isoformat()} for k in result.scalars().all()]}
+    return {"manual": [{"id": str(k.id), "question": k.question, "answer": k.answer, "media_url": k.media_url, "created_at": k.created_at.isoformat()} for k in result.scalars().all()]}
 
 @router.post("/manual")
 async def create_manual_knowledge(data: ManualKnowledgeCreate, tenant_id: UUID = Query(...), db: AsyncSession = Depends(get_db)):
     from app.models import ManualKnowledge
-    new_kb = ManualKnowledge(tenant_id=tenant_id, question=data.question, answer=data.answer)
+    new_kb = ManualKnowledge(tenant_id=tenant_id, question=data.question, answer=data.answer, media_url=data.media_url)
     db.add(new_kb)
     await db.commit()
+    
+    # Optional: Log to Pinecone here if you want it searchable immediately
+    # We will implement embedding inclusion later if needed.
+    
     return {"status": "success", "id": str(new_kb.id)}
 
 @router.delete("/manual/{item_id}")

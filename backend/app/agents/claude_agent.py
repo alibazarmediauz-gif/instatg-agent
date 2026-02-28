@@ -55,6 +55,9 @@ YOUR GOALS (in priority order):
 KNOWLEDGE BASE CONTEXT:
 {knowledge_context}
 
+MEDIA ATTACHMENTS (CRITICAL):
+If the Knowledge Base Context above contains an [IMAGE: https://...] or [VIDEO: https://...] tag that is relevant to the customer's question, YOU MUST INCLUDE that exact tag in your text response. Do not change the URL. The system will detect this tag and automatically convert it into a real media attachment for the customer. Place the tag on its own line where appropriate.
+
 MASTER OVERRIDE PROMPT:
 {master_prompt}
 

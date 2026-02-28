@@ -147,6 +147,7 @@ class Tenant(Base):
     knowledge_base_chunks = relationship("KnowledgeBaseChunk", back_populates="tenant", cascade="all, delete-orphan")
     pipelines = relationship("Pipeline", back_populates="tenant", cascade="all, delete-orphan")
     leads = relationship("Lead", back_populates="tenant", cascade="all, delete-orphan")
+    automations = relationship("Automation", back_populates="tenant", cascade="all, delete-orphan")
 
 
 class TelegramAccount(Base):
@@ -410,6 +411,7 @@ class ManualKnowledge(Base):
     tenant_id = Column(UUID(), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False)
     question = Column(Text, nullable=True)
     answer = Column(Text, nullable=False)
+    media_url = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
@@ -426,6 +428,7 @@ class FrequentQuestion(Base):
     hit_count = Column(Integer, default=1)
     status = Column(String(50), default="tracking")  # tracking, pending_review, answered, dismissed
     admin_answer = Column(Text, nullable=True)
+    media_url = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
@@ -664,3 +667,19 @@ class Transaction(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     
     lead = relationship("Lead", back_populates="transactions")
+
+class Automation(Base):
+    """Manychat-style visual automation flows."""
+    __tablename__ = "automations"
+
+    id = Column(UUID(), primary_key=True, default=uuid.uuid4)
+    tenant_id = Column(UUID(), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True)
+    name = Column(String(255), nullable=False)
+    is_active = Column(Boolean, default=True)
+    trigger_type = Column(String(50), nullable=False, default="keyword") # auto, keyword, platform
+    trigger_keyword = Column(String(255), nullable=True)
+    flow_data = Column(JSON, nullable=True) # React Flow JSON array of nodes/edges
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    tenant = relationship("Tenant", back_populates="automations")
