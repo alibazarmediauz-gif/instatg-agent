@@ -2,15 +2,17 @@
 Meta Webhooks Route
 
 Unified webhook receiver for all Facebook and Instagram events.
-Validates HMAC signatures, logs events to EventLog, routes to channel handlers.
+Validates HMAC signatures using RAW body, logs events to EventLog, routes to channel handlers.
 """
 
+import hmac
+import hashlib
+import json
 import structlog
 from fastapi import APIRouter, Request, Response, HTTPException, Query, BackgroundTasks
 from typing import Dict, Any
 
 from app.config import settings
-from app.services.webhook_security import verify_signature
 
 logger = structlog.get_logger(__name__)
 
@@ -39,64 +41,75 @@ async def receive_meta_webhook(
 ) -> Dict[str, Any]:
     """
     Receive incoming Meta events (Facebook and Instagram).
-    Validates signature, logs event, routes to appropriate channel handler.
+    Validates signature using RAW body bytes, logs event, routes to channel handler.
     """
-    # Read raw body for signature verification
+    # 1. Read RAW body (do NOT parse json first)
     raw_body = await request.body()
 
-    # Verify HMAC signature
-    signature = request.headers.get("X-Hub-Signature-256", "")
-    if settings.meta_app_secret and not verify_signature(raw_body, signature):
-        logger.warning("meta_webhook_invalid_signature")
-        raise HTTPException(status_code=403, detail="Invalid signature")
+    # 2. Verify HMAC signature against raw bytes
+    signature = request.headers.get("X-Hub-Signature-256")
 
+    if settings.meta_app_secret:
+        if not signature:
+            logger.warning("webhook_missing_signature")
+            raise HTTPException(status_code=403, detail="Missing signature")
+
+        expected_signature = "sha256=" + hmac.new(
+            settings.meta_app_secret.encode(),
+            raw_body,
+            hashlib.sha256,
+        ).hexdigest()
+
+        if not hmac.compare_digest(expected_signature, signature):
+            logger.warning("webhook_signature_mismatch")
+            raise HTTPException(status_code=403, detail="Invalid signature")
+
+    # 3. Only AFTER verification — parse JSON
     try:
-        import json
         body = json.loads(raw_body)
-        logger.debug("meta_webhook_received", object=body.get("object"))
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid JSON")
 
-        obj_type = body.get("object", "")
+    logger.debug("meta_webhook_received", object=body.get("object"))
 
-        if obj_type not in ("page", "instagram"):
-            return {"status": "ok", "message": "unsupported object type"}
+    obj_type = body.get("object", "")
 
-        # Process each entry
-        for entry in body.get("entry", []):
-            page_id = entry.get("id", "")
-            platform = "instagram" if obj_type == "instagram" else "facebook"
+    if obj_type not in ("page", "instagram"):
+        return {"status": "ok", "message": "unsupported object type"}
 
-            # ── DM Messages ──
-            for messaging_event in entry.get("messaging", []):
-                sender_id = messaging_event.get("sender", {}).get("id", "")
+    # Process each entry
+    for entry in body.get("entry", []):
+        page_id = entry.get("id", "")
+        platform = "instagram" if obj_type == "instagram" else "facebook"
+
+        # ── DM Messages ──
+        for messaging_event in entry.get("messaging", []):
+            sender_id = messaging_event.get("sender", {}).get("id", "")
+            background_tasks.add_task(
+                _process_and_log_event,
+                platform=platform,
+                event_type="message",
+                page_id=page_id,
+                sender_id=sender_id,
+                payload=messaging_event,
+            )
+
+        # ── Comments (feed changes) ──
+        for change in entry.get("changes", []):
+            field = change.get("field", "")
+            if field in ("feed", "comments"):
+                value = change.get("value", {})
+                sender_id = value.get("from", {}).get("id", "")
                 background_tasks.add_task(
                     _process_and_log_event,
                     platform=platform,
-                    event_type="message",
+                    event_type="comment",
                     page_id=page_id,
                     sender_id=sender_id,
-                    payload=messaging_event,
+                    payload=value,
                 )
 
-            # ── Comments (feed changes) ──
-            for change in entry.get("changes", []):
-                field = change.get("field", "")
-                if field in ("feed", "comments"):
-                    value = change.get("value", {})
-                    sender_id = value.get("from", {}).get("id", "")
-                    background_tasks.add_task(
-                        _process_and_log_event,
-                        platform=platform,
-                        event_type="comment",
-                        page_id=page_id,
-                        sender_id=sender_id,
-                        payload=value,
-                    )
-
-        return {"status": "ok", "processed": True}
-
-    except Exception as e:
-        logger.error("meta_webhook_error", error=str(e))
-        return {"status": "error", "message": str(e)}
+    return {"status": "ok", "processed": True}
 
 
 async def _process_and_log_event(
