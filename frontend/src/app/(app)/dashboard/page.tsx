@@ -86,7 +86,7 @@ export default function ControlCenter() {
                 <MiniStatCard label={t('dashboard.profit_margin') || 'Profit Margin'} value={`${Math.max(0, 100 - (kpis.total_cost / (kpis.total_revenue || 1) * 100)).toFixed(1)}%`} sub="Target: 95%" icon={<Activity size={14} />} color="var(--success)" />
                 <MiniStatCard label={t('dashboard.calls_today') || 'Calls Today'} value={funnelData[0]?.value || 0} sub="Outbound" icon={<Phone size={14} />} color="var(--purple)" />
                 <MiniStatCard label={t('dashboard.active_calls') || 'Active Calls'} value="0" sub="Live Pulse" icon={<Activity size={14} />} color="var(--danger)" pulse />
-                <MiniStatCard label={t('dashboard.ai_conv_rate') || 'AI Conv. Rate'} value={`${kpis.roi > 0 ? '14.2' : '0'}%`} sub="+2.1% w/w" icon={<Zap size={14} />} color="var(--accent)" />
+                <MiniStatCard label={t('dashboard.ai_conv_rate') || 'AI Conv. Rate'} value={`${Number(kpis.roi) > 0 ? '14.2' : '0'}%`} sub="+2.1% w/w" icon={<Zap size={14} />} color="var(--accent)" />
             </div>
 
             {/* ─── Main Content Grid ─── */}

@@ -52,7 +52,7 @@ export default function ReportsPage() {
                 setLoading(true);
                 const res = await getReports(tenantId, 30) as { reports: ReportSummary[] };
                 setReports(res.reports || []);
-                if (res.reports?.length > 0) {
+                if ((res.reports?.length ?? 0) > 0) {
                     loadReport(res.reports[0].id);
                 }
             } catch (e) {

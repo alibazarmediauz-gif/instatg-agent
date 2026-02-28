@@ -40,7 +40,7 @@ export default function VoiceAnalysisPage() {
                 setLoading(true);
                 const res = await getVoiceAnalyses(tenantId) as { analyses: VASummary[] };
                 setAnalyses(res.analyses || []);
-                if (res.analyses?.length > 0) {
+                if ((res.analyses?.length ?? 0) > 0) {
                     loadDetail(res.analyses[0].id);
                 }
             } catch (e) {
