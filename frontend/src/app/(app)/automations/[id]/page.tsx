@@ -52,7 +52,10 @@ function AutomationCanvas() {
     const [name, setName] = useState('Yangi Avtomatizatsiya');
     const [saving, setSaving] = useState(false);
 
-    const onConnect = useCallback((params: Connection | Edge) => setEdges((eds: Edge[]) => addEdge(params, eds)), [setEdges]);
+    const onConnect = useCallback(
+        (params: Connection | Edge) => setEdges((eds: Edge[]) => addEdge(params, eds) as Edge[]),
+        [setEdges]
+    );
 
     const onDragOver = useCallback((event: React.DragEvent) => {
         event.preventDefault();
