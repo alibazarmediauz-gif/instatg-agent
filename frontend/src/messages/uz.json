@@ -249,6 +249,7 @@
             "snapshot_title": "Performance Snapshot",
             "new_leads_label": "Yangi lidlar",
             "conversion_label": "Sotuvga aylangan",
+            "response_time_label": "Javob vaqti"
         }
     },
     "dashboard": {
