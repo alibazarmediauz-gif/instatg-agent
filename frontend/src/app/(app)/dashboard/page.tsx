@@ -69,7 +69,7 @@ export default function ControlCenter() {
                 </div>
                 <div className="status-badge">
                     <div className="status-dot" />
-                    {t('dashboard.all_ok') || 'System Operational'}
+                    {t('dashboard_metrics.all_ok') || 'System Operational'}
                 </div>
             </div>
 
@@ -80,13 +80,13 @@ export default function ControlCenter() {
                 gap: 20,
                 marginBottom: 32
             }}>
-                <MiniStatCard label={t('dashboard.wallet_balance') || 'Wallet Balance'} value={formatCurrency(1240.50)} sub={t('dashboard.prepaid') || 'Prepaid'} icon={<DollarSign size={14} />} color="var(--success)" />
-                <MiniStatCard label={t('dashboard.revenue_today') || 'Revenue Today'} value={formatCurrency(kpis.total_revenue || 0, 0, 0)} sub="+12.4%" icon={<TrendingUp size={14} />} color="var(--accent)" />
-                <MiniStatCard label={t('dashboard.ai_cost_today') || 'AI Cost Today'} value={formatCurrency(kpis.total_cost || 0, 2, 4)} sub="0.003/msg" icon={<Cpu size={14} />} color="var(--warning)" />
-                <MiniStatCard label={t('dashboard.profit_margin') || 'Profit Margin'} value={`${Math.max(0, 100 - (kpis.total_cost / (kpis.total_revenue || 1) * 100)).toFixed(1)}%`} sub="Target: 95%" icon={<Activity size={14} />} color="var(--success)" />
-                <MiniStatCard label={t('dashboard.calls_today') || 'Calls Today'} value={funnelData[0]?.value || 0} sub={t('dashboard.outbound') || 'Outbound'} icon={<Phone size={14} />} color="var(--purple)" />
-                <MiniStatCard label={t('dashboard.active_calls') || 'Active Calls'} value="0" sub={t('dashboard.live_pulse') || 'Live Pulse'} icon={<Activity size={14} />} color="var(--danger)" pulse />
-                <MiniStatCard label={t('dashboard.ai_conv_rate') || 'AI Conv. Rate'} value={`${Number(kpis.roi) > 0 ? '14.2' : '0'}%`} sub="+2.1% w/w" icon={<Zap size={14} />} color="var(--accent)" />
+                <MiniStatCard label={t('dashboard_metrics.wallet_balance') || 'Wallet Balance'} value={formatCurrency(1240.50)} sub={t('dashboard_metrics.prepaid') || 'Prepaid'} icon={<DollarSign size={14} />} color="var(--success)" />
+                <MiniStatCard label={t('dashboard_metrics.revenue_today') || 'Revenue Today'} value={formatCurrency(kpis.total_revenue || 0, 0, 0)} sub="+12.4%" icon={<TrendingUp size={14} />} color="var(--accent)" />
+                <MiniStatCard label={t('dashboard_metrics.ai_cost_today') || 'AI Cost Today'} value={formatCurrency(kpis.total_cost || 0, 2, 4)} sub="0.003/msg" icon={<Cpu size={14} />} color="var(--warning)" />
+                <MiniStatCard label={t('dashboard_metrics.profit_margin') || 'Profit Margin'} value={`${Math.max(0, 100 - (kpis.total_cost / (kpis.total_revenue || 1) * 100)).toFixed(1)}%`} sub="Target: 95%" icon={<Activity size={14} />} color="var(--success)" />
+                <MiniStatCard label={t('dashboard_metrics.calls_today') || 'Calls Today'} value={funnelData[0]?.value || 0} sub={t('dashboard_metrics.outbound') || 'Outbound'} icon={<Phone size={14} />} color="var(--purple)" />
+                <MiniStatCard label={t('dashboard_metrics.active_calls') || 'Active Calls'} value="0" sub={t('dashboard_metrics.live_pulse') || 'Live Pulse'} icon={<Activity size={14} />} color="var(--danger)" pulse />
+                <MiniStatCard label={t('dashboard_metrics.ai_conv_rate') || 'AI Conv. Rate'} value={`${Number(kpis.roi) > 0 ? '14.2' : '0'}%`} sub="+2.1% w/w" icon={<Zap size={14} />} color="var(--accent)" />
             </div>
 
             {/* ─── Main Content Grid ─── */}
@@ -100,17 +100,17 @@ export default function ControlCenter() {
                         <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <h3 style={{ fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
                                 <Activity size={16} color="var(--accent)" />
-                                {t('dashboard.live_activity') || 'Live Activity Stream'}
+                                {t('dashboard_metrics.live_activity') || 'Live Activity Stream'}
                             </h3>
-                            <span className="badge info">{t('dashboard.listening') || 'Listening'} (wss://)</span>
+                            <span className="badge info">{t('dashboard_metrics.listening') || 'Listening'} (wss://)</span>
                         </div>
                         <div style={{ padding: '0' }}>
                             <table className="data-table">
                                 <thead>
                                     <tr>
-                                        <th>{t('dashboard.timestamp') || 'Timestamp'}</th>
-                                        <th>{t('dashboard.event_type') || 'Event Type'}</th>
-                                        <th>{t('dashboard.details') || 'Details'}</th>
+                                        <th>{t('dashboard_metrics.timestamp') || 'Timestamp'}</th>
+                                        <th>{t('dashboard_metrics.event_type') || 'Event Type'}</th>
+                                        <th>{t('dashboard_metrics.details') || 'Details'}</th>
                                         <th>{t('common.status') || 'Status'}</th>
                                     </tr>
                                 </thead>
@@ -130,7 +130,7 @@ export default function ControlCenter() {
                         <div className="card">
                             <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
                                 <ShieldAlert size={16} color="var(--danger)" />
-                                {t('dashboard.escalation_alerts') || 'Escalation Alerts'}
+                                {t('dashboard_metrics.escalation_alerts') || 'Escalation Alerts'}
                             </h3>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                                 <AlertItem title="Angry Customer Detected" desc="Voice sentiment hit -0.85" id="Call-9912" time="2m ago" />
@@ -141,20 +141,20 @@ export default function ControlCenter() {
                         <div className="card">
                             <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
                                 <Clock size={16} color="var(--warning)" />
-                                {t('dashboard.human_sla') || 'Human SLA Timer'}
+                                {t('dashboard_metrics.human_sla') || 'Human SLA Timer'}
                             </h3>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 6 }}>
-                                        <span style={{ color: 'var(--text-secondary)' }}>{t('dashboard.first_response_time') || 'First Response Time'}</span>
+                                        <span style={{ color: 'var(--text-secondary)' }}>{t('dashboard_metrics.first_response_time') || 'First Response Time'}</span>
                                         <span style={{ fontWeight: 600, color: 'var(--success)' }}>1m 12s</span>
                                     </div>
                                     <div className="progress-bar"><div className="progress-fill" style={{ width: '15%', background: 'var(--success)' }} /></div>
                                 </div>
                                 <div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 6 }}>
-                                        <span style={{ color: 'var(--text-secondary)' }}>{t('dashboard.escalation_resolution') || 'Escalation Resolution'}</span>
-                                        <span style={{ fontWeight: 600, color: 'var(--danger)' }}>14m 30s ({t('dashboard.sla_breach') || 'SLA Breach Risk'})</span>
+                                        <span style={{ color: 'var(--text-secondary)' }}>{t('dashboard_metrics.escalation_resolution') || 'Escalation Resolution'}</span>
+                                        <span style={{ fontWeight: 600, color: 'var(--danger)' }}>14m 30s ({t('dashboard_metrics.sla_breach') || 'SLA Breach Risk'})</span>
                                     </div>
                                     <div className="progress-bar"><div className="progress-fill" style={{ width: '85%', background: 'var(--danger)' }} /></div>
                                 </div>

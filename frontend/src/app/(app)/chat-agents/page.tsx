@@ -560,33 +560,33 @@ export default function ChatAgentsPage() {
                                         <div>
                                             <div style={{ display: grid, gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                                                 <div>
-                                                    <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>{t('nav.chat_agents_name') || 'Agent Name'}</label>
+                                                    <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>{t('wizard.chat_agents_name') || 'Agent Name'}</label>
                                                     <input className="input" placeholder="e.g. Premium Support Bot" value={newAgent.name} onChange={e => setNewAgent({ ...newAgent, name: e.target.value })} />
                                                 </div>
                                                 <div>
-                                                    <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>{t('nav.chat_agents_brand') || 'Retail Name / Brand'}</label>
+                                                    <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>{t('wizard.chat_agents_brand') || 'Retail Name / Brand'}</label>
                                                     <input className="input" placeholder="e.g. Alibazar Media" value={newAgent.settings.brand_name || ''} onChange={e => setNewAgent({ ...newAgent, settings: { ...newAgent.settings, brand_name: e.target.value } })} />
                                                 </div>
                                             </div>
 
                                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                                                 <div>
-                                                    <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>{t('nav.chat_agents_phone') || 'Contact Phone'}</label>
+                                                    <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>{t('wizard.chat_agents_phone') || 'Contact Phone'}</label>
                                                     <input className="input" placeholder="+998 90..." value={newAgent.settings.phone || ''} onChange={e => setNewAgent({ ...newAgent, settings: { ...newAgent.settings, phone: e.target.value } })} />
                                                 </div>
                                                 <div>
-                                                    <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>{t('nav.chat_agents_hours') || 'Working Hours'}</label>
+                                                    <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>{t('wizard.chat_agents_hours') || 'Working Hours'}</label>
                                                     <input className="input" placeholder="09:00 - 20:00" value={newAgent.settings.hours || ''} onChange={e => setNewAgent({ ...newAgent, settings: { ...newAgent.settings, hours: e.target.value } })} />
                                                 </div>
                                             </div>
 
                                             <div>
-                                                <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>{t('nav.chat_agents_address') || 'Store/Office Address'}</label>
+                                                <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>{t('wizard.chat_agents_address') || 'Store/Office Address'}</label>
                                                 <input className="input" placeholder="Tashkent, Chilonzor str..." value={newAgent.settings.address || ''} onChange={e => setNewAgent({ ...newAgent, settings: { ...newAgent.settings, address: e.target.value } })} />
                                             </div>
 
                                             <div>
-                                                <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 12, textTransform: 'uppercase' }}>{t('nav.chat_agents_channel') || 'Deployment Channel'}</label>
+                                                <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 12, textTransform: 'uppercase' }}>{t('wizard.chat_agents_channel') || 'Deployment Channel'}</label>
                                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
                                                     {CHANNELS.map(c => (
                                                         <div key={c.id} onClick={() => setNewAgent({ ...newAgent, channel: c.id })} style={{
@@ -604,7 +604,7 @@ export default function ChatAgentsPage() {
 
                                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                                                 <div>
-                                                    <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>{t('nav.chat_agents_lang') || 'Primary Language'}</label>
+                                                    <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>{t('wizard.chat_agents_lang') || 'Primary Language'}</label>
                                                     <select className="input" value={newAgent.settings.language} onChange={e => setNewAgent({ ...newAgent, settings: { ...newAgent.settings, language: e.target.value } })}>
                                                         <option value="en">English (Global)</option>
                                                         <option value="ru">Russian (CIS)</option>
@@ -612,7 +612,7 @@ export default function ChatAgentsPage() {
                                                     </select>
                                                 </div>
                                                 <div>
-                                                    <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>{t('nav.chat_agents_mood') || 'Initial Mood'}</label>
+                                                    <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>{t('wizard.chat_agents_mood') || 'Initial Mood'}</label>
                                                     <select className="input" value={newAgent.settings.persona} onChange={e => setNewAgent({ ...newAgent, settings: { ...newAgent.settings, persona: e.target.value } })}>
                                                         {PERSONAS.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
                                                     </select>

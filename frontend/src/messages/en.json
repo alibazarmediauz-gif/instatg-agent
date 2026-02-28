@@ -21,14 +21,7 @@
         "prompts": "AI Scripts",
         "voice_agents": "Voice Agents",
         "chat_agents": "Chat Sales Agents",
-        "chat_agents_brand": "Brand Name",
-        "chat_agents_phone": "Contact Phone",
-        "chat_agents_hours": "Working Hours",
-        "chat_agents_address": "Store/Office Address",
-        "chat_agents_name": "Agent Name",
-        "chat_agents_channel": "Deployment Channel",
-        "chat_agents_lang": "Primary Language",
-        "chat_agents_mood": "Initial Mood",
+        "chat_agents": "Chat Sales Agents",
         "campaigns": "Automated Sales Campaigns",
         "knowledge": "AI Training Center",
         "billing": "Billing",
@@ -253,7 +246,17 @@
             "response_time_label": "Response Time"
         }
     },
-    "dashboard": {
+    "wizard": {
+        "chat_agents_brand": "Brand Name",
+        "chat_agents_phone": "Contact Phone",
+        "chat_agents_hours": "Working Hours",
+        "chat_agents_address": "Store/Office Address",
+        "chat_agents_name": "Agent Name",
+        "chat_agents_channel": "Deployment Channel",
+        "chat_agents_lang": "Primary Language",
+        "chat_agents_mood": "Initial Mood"
+    },
+    "dashboard_metrics": {
         "wallet_balance": "Wallet Balance",
         "prepaid": "Prepaid",
         "revenue_today": "Revenue Today",
