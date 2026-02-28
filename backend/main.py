@@ -74,17 +74,26 @@ async def lifespan(app: FastAPI):
     await init_db()
     logger.info("database_initialized")
 
-    # 2. Connect Redis
-    await memory.connect()
+    # 2. Connect Redis (non-critical — app works without it)
+    try:
+        await memory.connect()
+    except Exception as e:
+        logger.warning("redis_connect_failed", error=str(e))
 
     # # 3. Start Telegram clients for all active accounts
     # await _start_telegram_clients()
 
     # 4. Register Instagram accounts for webhook handling
-    await _register_instagram_accounts()
+    try:
+        await _register_instagram_accounts()
+    except Exception as e:
+        logger.warning("instagram_registration_failed", error=str(e))
 
     # 5. Register Facebook accounts for webhook handling
-    await _register_facebook_accounts()
+    try:
+        await _register_facebook_accounts()
+    except Exception as e:
+        logger.warning("facebook_registration_failed", error=str(e))
 
     logger.info("application_ready", app_name=settings.app_name)
 
