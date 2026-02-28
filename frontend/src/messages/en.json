@@ -263,6 +263,16 @@
         "outbound": "Outbound",
         "active_calls": "Active Calls",
         "live_pulse": "Live Pulse",
-        "ai_conv_rate": "AI Conv. Rate"
+        "ai_conv_rate": "AI Conv. Rate",
+        "live_activity": "Live Activity Stream",
+        "listening": "Listening",
+        "timestamp": "Timestamp",
+        "event_type": "Event Type",
+        "details": "Details",
+        "escalation_alerts": "Escalation Alerts",
+        "human_sla": "Human SLA Timer",
+        "first_response_time": "First Response Time",
+        "escalation_resolution": "Escalation Resolution",
+        "sla_breach": "SLA Breach Risk"
     }
 }

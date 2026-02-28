@@ -100,18 +100,18 @@ export default function ControlCenter() {
                         <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <h3 style={{ fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
                                 <Activity size={16} color="var(--accent)" />
-                                Live Activity Stream
+                                {t('dashboard.live_activity') || 'Live Activity Stream'}
                             </h3>
-                            <span className="badge info">Listening (wss://)</span>
+                            <span className="badge info">{t('dashboard.listening') || 'Listening'} (wss://)</span>
                         </div>
                         <div style={{ padding: '0' }}>
                             <table className="data-table">
                                 <thead>
                                     <tr>
-                                        <th>Timestamp</th>
-                                        <th>Event Type</th>
-                                        <th>Details</th>
-                                        <th>Status</th>
+                                        <th>{t('dashboard.timestamp') || 'Timestamp'}</th>
+                                        <th>{t('dashboard.event_type') || 'Event Type'}</th>
+                                        <th>{t('dashboard.details') || 'Details'}</th>
+                                        <th>{t('common.status') || 'Status'}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -130,7 +130,7 @@ export default function ControlCenter() {
                         <div className="card">
                             <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
                                 <ShieldAlert size={16} color="var(--danger)" />
-                                Escalation Alerts
+                                {t('dashboard.escalation_alerts') || 'Escalation Alerts'}
                             </h3>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                                 <AlertItem title="Angry Customer Detected" desc="Voice sentiment hit -0.85" id="Call-9912" time="2m ago" />
@@ -141,20 +141,20 @@ export default function ControlCenter() {
                         <div className="card">
                             <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
                                 <Clock size={16} color="var(--warning)" />
-                                Human SLA Timer
+                                {t('dashboard.human_sla') || 'Human SLA Timer'}
                             </h3>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 6 }}>
-                                        <span style={{ color: 'var(--text-secondary)' }}>First Response Time</span>
+                                        <span style={{ color: 'var(--text-secondary)' }}>{t('dashboard.first_response_time') || 'First Response Time'}</span>
                                         <span style={{ fontWeight: 600, color: 'var(--success)' }}>1m 12s</span>
                                     </div>
                                     <div className="progress-bar"><div className="progress-fill" style={{ width: '15%', background: 'var(--success)' }} /></div>
                                 </div>
                                 <div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 6 }}>
-                                        <span style={{ color: 'var(--text-secondary)' }}>Escalation Resolution</span>
-                                        <span style={{ fontWeight: 600, color: 'var(--danger)' }}>14m 30s (SLA Breach Risk)</span>
+                                        <span style={{ color: 'var(--text-secondary)' }}>{t('dashboard.escalation_resolution') || 'Escalation Resolution'}</span>
+                                        <span style={{ fontWeight: 600, color: 'var(--danger)' }}>14m 30s ({t('dashboard.sla_breach') || 'SLA Breach Risk'})</span>
                                     </div>
                                     <div className="progress-bar"><div className="progress-fill" style={{ width: '85%', background: 'var(--danger)' }} /></div>
                                 </div>

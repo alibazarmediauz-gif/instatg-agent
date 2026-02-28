@@ -262,6 +262,16 @@
         "outbound": "Исходящие",
         "active_calls": "Активные звонки",
         "live_pulse": "Пульс системы",
-        "ai_conv_rate": "Конверсия ИИ"
+        "ai_conv_rate": "Конверсия ИИ",
+        "live_activity": "Поток активности",
+        "listening": "Прослушивание",
+        "timestamp": "Время",
+        "event_type": "Тип события",
+        "details": "Детали",
+        "escalation_alerts": "Сигналы эскалации",
+        "human_sla": "Таймер SLA",
+        "first_response_time": "Время первого ответа",
+        "escalation_resolution": "Решение эскалации",
+        "sla_breach": "Риск нарушения SLA"
     }
 }

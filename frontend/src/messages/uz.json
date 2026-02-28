@@ -262,6 +262,16 @@
         "outbound": "Chiquvchi",
         "active_calls": "Faol qo'ng'iroqlar",
         "live_pulse": "Jonli efir",
-        "ai_conv_rate": "AI Konversiya"
+        "ai_conv_rate": "AI Konversiya",
+        "live_activity": "Jonli faoliyat oqimi",
+        "listening": "Tinglanmoqda",
+        "timestamp": "Vaqt",
+        "event_type": "Voqea turi",
+        "details": "Tafsilotlar",
+        "escalation_alerts": "Eskalatsiya ogohlantirishlari",
+        "human_sla": "Human SLA taymeri",
+        "first_response_time": "Birinchi javob vaqti",
+        "escalation_resolution": "Eskalatsiyani hal qilish",
+        "sla_breach": "SLA buzilish xavfi"
     }
 }
