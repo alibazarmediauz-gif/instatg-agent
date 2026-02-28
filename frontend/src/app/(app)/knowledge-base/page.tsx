@@ -4,54 +4,107 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTenant } from '@/lib/TenantContext';
 import { getKnowledgeDocs, uploadKnowledgeDoc, deleteKnowledgeDoc, getTenantSettings, updateTenantSettings, getManualKnowledge, createManualKnowledge, deleteManualKnowledge, getFrequentQuestions, answerFrequentQuestion } from '@/lib/api';
 import {
-    Upload, File, Trash2, Check, AlertTriangle, Clock, FolderOpen, Save, Loader2, MessageSquare, Plus, PieChart, CheckCircle2, Users, Settings, Search
+    Upload, File, Trash2, Check, AlertTriangle, Clock, FolderOpen, Save, Loader2, MessageSquare, Plus, PieChart, CheckCircle2, Users, Settings, Search, ArrowRight, ArrowLeft, Sparkles, Bot, Zap, Globe, Instagram, Facebook, Send, Star, Building2, ShoppingBag, GraduationCap, Home, UtensilsCrossed, Stethoscope, ChevronRight
 } from 'lucide-react';
 
-/* ─── Types ───────────────────────────────────────────── */
-interface KBDoc {
-    id: string;
-    filename: string;
-    file_type: string;
-    file_size: number;
-    chunk_count: number;
-    status: string;
-    created_at: string;
+/* ─── Types ─── */
+interface KBDoc { id: string; filename: string; file_type: string; file_size: number; chunk_count: number; status: string; created_at: string; }
+
+interface AgentTemplate {
+    id: string; icon: string; name: string; desc: string; color: string;
+    businessInfo: Partial<BusinessInfo>; persona: string; masterPrompt: string;
 }
+
+interface BusinessInfo {
+    businessName: string; industry: string; products: string; workingHours: string;
+    location: string; contactPhone: string; contactEmail: string;
+    languages: string[]; paymentMethods: string[];
+}
+
+const TEMPLATES: AgentTemplate[] = [
+    {
+        id: 'ecommerce', icon: '🛍️', name: 'Savdo Agenti', desc: 'Mahsulot so\'rovlari, narxlar, buyurtmalar va yetkazib berish uchun', color: '#3B82F6',
+        businessInfo: { industry: 'E-commerce / Online savdo' }, persona: 'professional',
+        masterPrompt: 'Siz professional savdo agentisiz. Mijozlarga mahsulotlar haqida ma\'lumot bering, narxlarni ayting, buyurtma rasmiylashtiring. Doimo xushmuomala va yordamga tayyor bo\'ling.'
+    },
+    {
+        id: 'clinic', icon: '🏥', name: 'Klinika Agenti', desc: 'Qabulga yozilish, shifokorlar, xizmatlar haqida ma\'lumot', color: '#10B981',
+        businessInfo: { industry: 'Tibbiyot / Klinika' }, persona: 'consultant',
+        masterPrompt: 'Siz tibbiy klinika yordamchisisiz. Bemorlarni qabulga yozing, shifokorlar haqida ma\'lumot bering, xizmatlar narxini ayting. Tibbiy maslahat bermang.'
+    },
+    {
+        id: 'realestate', icon: '🏠', name: 'Ko\'chmas mulk Agenti', desc: 'Kvartiralar, uylar, narxlar va ko\'rishga yozilish', color: '#8B5CF6',
+        businessInfo: { industry: 'Ko\'chmas mulk' }, persona: 'advisor',
+        masterPrompt: 'Siz ko\'chmas mulk agentisiz. Mijozlarga uy va kvartiralar haqida ma\'lumot bering, ko\'rishga vaqt belgilang, narxlar va shartlarni tushuntiring.'
+    },
+    {
+        id: 'education', icon: '🎓', name: 'Ta\'lim Agenti', desc: 'Kurslar, o\'quv dasturlari, ro\'yxatdan o\'tish', color: '#F59E0B',
+        businessInfo: { industry: 'Ta\'lim / Kurslar' }, persona: 'consultant',
+        masterPrompt: 'Siz ta\'lim markazi yordamchisisiz. Kurslar, o\'qituvchilar, dars jadvali, narxlar haqida ma\'lumot bering. Ro\'yxatdan o\'tishga yordam bering.'
+    },
+    {
+        id: 'restaurant', icon: '🍕', name: 'Restoran Agenti', desc: 'Menyu, buyurtma, yetkazib berish va band qilish', color: '#EF4444',
+        businessInfo: { industry: 'Restoran / Yetkazib berish' }, persona: 'friendly',
+        masterPrompt: 'Siz restoran yordamchisisiz. Menyu haqida ayting, buyurtma qabul qiling, yetkazib berish vaqtini bildiring. Do\'stona va tezkor javob bering.'
+    },
+    {
+        id: 'custom', icon: '✨', name: 'Maxsus Agent', desc: 'Noldan o\'zingiz yarating — to\'liq nazorat', color: '#6366F1',
+        businessInfo: {}, persona: 'professional',
+        masterPrompt: ''
+    },
+];
+
+const PERSONAS = [
+    { id: 'professional', icon: '🏪', name: 'Sotuvchi', desc: 'Sotishga yo\'naltirilgan. Chegirmalar, shoshilinchlik, qisqa gaplar.', tone: 'Ishontiruvchi' },
+    { id: 'consultant', icon: '🎓', name: 'Konsultant', desc: 'Ekspert yondashuv. Texnik tafsilotlar va "qanday qilish" javoblari.', tone: 'Professional' },
+    { id: 'friendly', icon: '💬', name: 'Suhbatdosh', desc: 'Do\'stona va empatik. Emoji, sodda til, uzoq muddatli munosabat.', tone: 'Samimiy' },
+    { id: 'advisor', icon: '💡', name: 'Maslahatchi', desc: 'Strategik yordam. Mijozga to\'g\'ri yechim topishga yordam beradi.', tone: 'Ishonchli' },
+];
+
+const STEP_LABELS = ['Shablon', 'Biznes', 'Shaxsiyat', 'Bilim bazasi', 'Platformalar', 'Tekshirish'];
 
 export default function KnowledgeBasePage() {
     const { tenantId } = useTenant();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const [activeTab, setActiveTab] = useState('knowledge_base');
+    // Wizard state
+    const [step, setStep] = useState(0);
+    const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+    const [agentActivated, setAgentActivated] = useState(false);
 
+    // Business info
+    const [biz, setBiz] = useState<BusinessInfo>({
+        businessName: '', industry: '', products: '', workingHours: '09:00 - 18:00',
+        location: '', contactPhone: '', contactEmail: '',
+        languages: ['uz'], paymentMethods: [],
+    });
+
+    // Agent config
+    const [activePersona, setActivePersona] = useState('professional');
+    const [masterPrompt, setMasterPrompt] = useState('');
+    const [greeting, setGreeting] = useState('Assalomu alaykum! Sizga qanday yordam bera olaman? 😊');
+
+    // KB state
     const [docs, setDocs] = useState<KBDoc[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [dragOver, setDragOver] = useState(false);
     const [error, setError] = useState('');
     const [successMsg, setSuccessMsg] = useState('');
-
-    const [masterPrompt, setMasterPrompt] = useState('');
-    const [savingPrompt, setSavingPrompt] = useState(false);
-
     const [manualKb, setManualKb] = useState<any[]>([]);
-    const [frequentQs, setFrequentQs] = useState<any[]>([]);
-
-    // Manual entry modal/form state
-    const [showManualForm, setShowManualForm] = useState(false);
     const [newQ, setNewQ] = useState('');
     const [newA, setNewA] = useState('');
     const [submittingManual, setSubmittingManual] = useState(false);
+    const [savingAll, setSavingAll] = useState(false);
 
-    // Frequent Answer state
+    // Manage mode tabs
+    const [manageTab, setManageTab] = useState('topics');
+    const [frequentQs, setFrequentQs] = useState<any[]>([]);
     const [answeringId, setAnsweringId] = useState<string | null>(null);
     const [freqAnswer, setFreqAnswer] = useState('');
+    const [savingPrompt, setSavingPrompt] = useState(false);
 
-    useEffect(() => {
-        loadDocs();
-        loadSettings();
-        loadExtraData();
-    }, [tenantId]);
+    useEffect(() => { loadDocs(); loadSettings(); loadExtraData(); }, [tenantId]);
 
     async function loadExtraData() {
         try {
@@ -59,532 +112,383 @@ export default function KnowledgeBasePage() {
             setManualKb(m.manual || []);
             const f = await getFrequentQuestions(tenantId) as any;
             setFrequentQs(f.questions || []);
-        } catch (e) {
-            console.error(e);
-        }
+        } catch (e) { console.error(e); }
     }
 
     async function loadSettings() {
         try {
             const t = await getTenantSettings(tenantId) as any;
-            setMasterPrompt(t.master_prompt || '');
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
-    async function handleSavePrompt() {
-        try {
-            setSavingPrompt(true);
-            await updateTenantSettings(tenantId, { master_prompt: masterPrompt });
-            setSuccessMsg('✅ Master Prompt saved!');
-            setTimeout(() => setSuccessMsg(''), 3000);
-        } catch (e: any) {
-            setError(e.message);
-        } finally {
-            setSavingPrompt(false);
-        }
+            if (t.master_prompt) { setMasterPrompt(t.master_prompt); setAgentActivated(true); }
+        } catch (e) { console.error(e); }
     }
 
     async function loadDocs() {
-        try {
-            setLoading(true);
-            const res = await getKnowledgeDocs(tenantId) as { documents: KBDoc[] };
-            setDocs(res.documents || []);
-        } catch (e: any) {
-            setError(e.message);
-        } finally {
-            setLoading(false);
-        }
+        try { setLoading(true); const res = await getKnowledgeDocs(tenantId) as { documents: KBDoc[] }; setDocs(res.documents || []); } catch (e: any) { setError(e.message); } finally { setLoading(false); }
     }
 
     async function handleUpload(file: globalThis.File) {
-        try {
-            setUploading(true);
-            setError('');
-            await uploadKnowledgeDoc(tenantId, file);
-            setSuccessMsg(`✅ "${file.name}" uploaded successfully!`);
-            setTimeout(() => setSuccessMsg(''), 3000);
-            await loadDocs();
-        } catch (e: any) {
-            setError(e.message);
-        } finally {
-            setUploading(false);
-        }
+        try { setUploading(true); setError(''); await uploadKnowledgeDoc(tenantId, file); setSuccessMsg(`✅ "${file.name}" yuklandi!`); setTimeout(() => setSuccessMsg(''), 3000); await loadDocs(); } catch (e: any) { setError(e.message); } finally { setUploading(false); }
     }
 
     async function handleDelete(docId: string, filename: string) {
-        if (!confirm(`Delete "${filename}"?`)) return;
-        try {
-            await deleteKnowledgeDoc(docId, tenantId);
-            setSuccessMsg(`Deleted "${filename}"`);
-            setTimeout(() => setSuccessMsg(''), 3000);
-            await loadDocs();
-        } catch (e: any) {
-            setError(e.message);
-        }
+        if (!confirm(`"${filename}" o'chirilsinmi?`)) return;
+        try { await deleteKnowledgeDoc(docId, tenantId); await loadDocs(); } catch (e: any) { setError(e.message); }
     }
 
     async function handleAddManual(e: React.FormEvent) {
-        e.preventDefault();
-        if (!newA) return;
-        setSubmittingManual(true);
-        try {
-            await createManualKnowledge(tenantId, newQ, newA);
-            setSuccessMsg('✅ Manual entry added!');
-            setTimeout(() => setSuccessMsg(''), 3000);
-            setNewQ(''); setNewA(''); setShowManualForm(false);
-            await loadExtraData();
-            setActiveTab('knowledge_base'); // switch to topics view to see it
-        } catch (err: any) {
-            setError(err.message);
-        } finally {
-            setSubmittingManual(false);
-        }
+        e.preventDefault(); if (!newA) return; setSubmittingManual(true);
+        try { await createManualKnowledge(tenantId, newQ, newA); setSuccessMsg('✅ Qo\'shildi!'); setTimeout(() => setSuccessMsg(''), 3000); setNewQ(''); setNewA(''); await loadExtraData(); } catch (err: any) { setError(err.message); } finally { setSubmittingManual(false); }
     }
 
     async function handleDeleteManual(id: string) {
-        if (!confirm('Delete this entry?')) return;
-        try {
-            await deleteManualKnowledge(id, tenantId);
-            await loadExtraData();
-        } catch (err: any) {
-            setError(err.message);
-        }
+        if (!confirm('O\'chirilsinmi?')) return;
+        try { await deleteManualKnowledge(id, tenantId); await loadExtraData(); } catch (err: any) { setError(err.message); }
+    }
+
+    async function handleSavePrompt() {
+        try { setSavingPrompt(true); await updateTenantSettings(tenantId, { master_prompt: masterPrompt }); setSuccessMsg('✅ Saqlandi!'); setTimeout(() => setSuccessMsg(''), 3000); } catch (e: any) { setError(e.message); } finally { setSavingPrompt(false); }
     }
 
     async function handleAnswerFreq(id: string) {
         if (!freqAnswer) return;
-        try {
-            await answerFrequentQuestion(id, freqAnswer, tenantId);
-            setSuccessMsg('✅ Knowledge added to bot!');
-            setTimeout(() => setSuccessMsg(''), 3000);
-            setAnsweringId(null); setFreqAnswer('');
-            await loadExtraData();
-        } catch (err: any) {
-            setError(err.message);
-        }
+        try { await answerFrequentQuestion(id, freqAnswer, tenantId); setSuccessMsg('✅ Javob saqlandi!'); setTimeout(() => setSuccessMsg(''), 3000); setAnsweringId(null); setFreqAnswer(''); await loadExtraData(); } catch (err: any) { setError(err.message); }
     }
 
-    const onDrop = useCallback((e: React.DragEvent) => {
-        e.preventDefault();
-        setDragOver(false);
-        const file = e.dataTransfer.files[0];
-        if (file) handleUpload(file);
-    }, [tenantId]);
+    const onDrop = useCallback((e: React.DragEvent) => { e.preventDefault(); setDragOver(false); const file = e.dataTransfer.files[0]; if (file) handleUpload(file); }, [tenantId]);
 
-    const formatSize = (bytes: number) => {
-        if (bytes < 1024) return `${bytes} B`;
-        if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
-        return `${(bytes / 1048576).toFixed(1)} MB`;
-    };
+    function selectTemplate(id: string) {
+        setSelectedTemplate(id);
+        const t = TEMPLATES.find(tpl => tpl.id === id);
+        if (t) {
+            setBiz(prev => ({ ...prev, ...t.businessInfo }));
+            setActivePersona(t.persona);
+            setMasterPrompt(t.masterPrompt);
+        }
+        setStep(1);
+    }
 
-    const fileIcon = (type: string) => {
-        if (type === 'pdf') return '📄';
-        if (['doc', 'docx'].includes(type)) return '📝';
-        if (['xls', 'xlsx', 'csv'].includes(type)) return '📊';
-        if (type === 'txt' || type === 'md') return '📃';
-        return '📎';
-    };
+    function toggleLang(lang: string) {
+        setBiz(prev => ({ ...prev, languages: prev.languages.includes(lang) ? prev.languages.filter(l => l !== lang) : [...prev.languages, lang] }));
+    }
 
-    const personas = [
-        { id: 'professional', icon: '🏪', name: 'Sotuvchi', desc: 'Aggressive sales focus. Prioritizes closing deals, highlighting discounts, and urgency. Short, punchy sentences.', tone: 'Persuasive' },
-        { id: 'consultant', icon: '🎓', name: 'Konsultant', desc: 'Educational and expert-driven. Focuses on product details, technical specs, and answering "how-to" questions accurately.', tone: 'Professional' },
-        { id: 'friendly', icon: '💬', name: 'Suhbatdosh', desc: 'Friendly and empathetic. Uses emojis, casual language, and focuses on building a long-term relationship with the lead.', tone: 'Casual' },
-        { id: 'advisor', icon: '💡', name: 'Maslahatchi', desc: 'Strategic advisor. Helps clients choose the right solution for their needs. Balanced between selling and educating.', tone: 'Trusted' },
-    ];
+    function togglePayment(method: string) {
+        setBiz(prev => ({ ...prev, paymentMethods: prev.paymentMethods.includes(method) ? prev.paymentMethods.filter(m => m !== method) : [...prev.paymentMethods, method] }));
+    }
 
-    const [activePersona, setActivePersona] = useState('professional');
+    async function handleActivate() {
+        setSavingAll(true);
+        try {
+            const fullPrompt = `${masterPrompt}\n\n--- BIZNES MA'LUMOTLARI ---\nBiznes nomi: ${biz.businessName}\nSoha: ${biz.industry}\nMahsulotlar: ${biz.products}\nIsh vaqti: ${biz.workingHours}\nManzil: ${biz.location}\nTelefon: ${biz.contactPhone}\nEmail: ${biz.contactEmail}\nTillar: ${biz.languages.join(', ')}\nTo'lov usullari: ${biz.paymentMethods.join(', ')}\n\nSalomlash xabari: ${greeting}`;
+            await updateTenantSettings(tenantId, { master_prompt: fullPrompt });
+            setAgentActivated(true);
+            setSuccessMsg('✅ Agent faollashtirildi!');
+            setTimeout(() => setSuccessMsg(''), 3000);
+        } catch (e: any) { setError(e.message); } finally { setSavingAll(false); }
+    }
 
-    const navItemStyle = (tabId: string) => ({
-        padding: '8px 16px', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, fontSize: 14,
-        fontWeight: activeTab === tabId ? 600 : 500, color: activeTab === tabId ? 'var(--text-primary)' : 'var(--text-secondary)',
-        background: activeTab === tabId ? 'var(--bg-elevated)' : 'transparent',
-    });
+    // Card style helper
+    const cs = { background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: 24 } as const;
+    const inputStyle = { width: '100%', padding: '10px 14px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 10, color: 'var(--text-primary)', fontSize: 14, outline: 'none' } as const;
+    const labelStyle = { display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 } as const;
 
-    const unansweredCount = frequentQs.filter(q => q.status === 'pending_review' || q.status === 'tracked').length;
-    const totalTopicsCount = docs.length + manualKb.length;
+    /* ─── STEP RENDERERS ─── */
 
-    // View Components
-    const renderKnowledgeBase = () => (
-        <div className="animate-in card" style={{ padding: 0, overflow: 'hidden', border: '1px solid var(--border)', boxShadow: '0 4px 24px rgba(0,0,0,0.02)' }}>
-            <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-card)' }}>
-                <div style={{ display: 'flex', gap: 12, width: '100%' }}>
-                    <div className="search-bar" style={{ flex: 1, display: 'flex', alignItems: 'center', background: 'var(--bg-elevated)', padding: '0 12px', borderRadius: 8, border: '1px solid var(--border)' }}>
-                        <Search size={14} color="var(--text-muted)" />
-                        <input type="text" placeholder="Search saved topics and documents..." style={{ border: 'none', background: 'transparent', padding: '10px', width: '100%', color: 'var(--text-primary)', outline: 'none', fontSize: 13 }} />
-                    </div>
-                    <button className="btn btn-primary" onClick={() => setActiveTab('upload')} style={{ height: 38, padding: '0 16px', gap: 8 }}><Plus size={14} /> Upload JSON/PDF</button>
-                    <button className="btn btn-secondary" onClick={() => setActiveTab('manual_text')} style={{ height: 38, padding: '0 16px', gap: 8 }}><File size={14} /> Add Text/FAQ</button>
-                </div>
+    const renderStep0 = () => (
+        <div style={{ maxWidth: 900, margin: '0 auto' }}>
+            <div style={{ textAlign: 'center', marginBottom: 40 }}>
+                <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'linear-gradient(135deg, #6366F1, #3B82F6)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}><Bot size={28} color="white" /></div>
+                <h2 style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>AI Agentingizni yarating</h2>
+                <p style={{ color: 'var(--text-secondary)', fontSize: 15, maxWidth: 500, margin: '0 auto' }}>Tayyor shablondan boshlang yoki noldan o'zingiz yarating. Har birAgent biznesingiz uchun moslashtiriladi.</p>
             </div>
-
-            <div style={{ overflow: 'hidden' }}>
-                <table className="table" style={{ margin: 0, width: '100%', borderCollapse: 'collapse' }}>
-                    <thead>
-                        <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                            <th style={{ padding: '12px 8px', color: 'var(--text-muted)', fontWeight: 500, fontSize: 13, textAlign: 'left' }}>Topic / Document</th>
-                            <th style={{ padding: '12px 8px', color: 'var(--text-muted)', fontWeight: 500, fontSize: 13, textAlign: 'left' }}>Source</th>
-                            <th style={{ padding: '12px 8px', color: 'var(--text-muted)', fontWeight: 500, fontSize: 13, textAlign: 'left' }}>Vectors</th>
-                            <th style={{ padding: '12px 8px', color: 'var(--text-muted)', fontWeight: 500, fontSize: 13, textAlign: 'left' }}>Embedding Status</th>
-                            <th style={{ textAlign: 'right', padding: '12px 8px' }}></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {docs.map(doc => (
-                            <tr key={doc.id} style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.2s' }}>
-                                <td style={{ padding: '16px 8px', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 12, fontSize: 14 }}>
-                                    <div style={{ width: 4, height: 16, borderRadius: 4, background: '#e5e7eb' }} />
-                                    {doc.filename}
-                                </td>
-                                <td style={{ padding: '16px 8px', color: 'var(--text-secondary)', fontSize: 14 }}>File Upload</td>
-                                <td style={{ padding: '16px 8px', color: 'var(--text-secondary)', fontSize: 14 }}>{doc.chunk_count || Math.floor(Math.random() * 40 + 10)} chunks</td>
-                                <td style={{ padding: '16px 8px' }}>
-                                    <span className={doc.status === 'completed' ? 'badge success' : 'badge warning'} style={{ fontSize: 11 }}>
-                                        {doc.status === 'completed' ? 'Embedded' : 'Processing...'}
-                                    </span>
-                                </td>
-                                <td style={{ textAlign: 'right', padding: '16px 8px' }}>
-                                    <button className="btn btn-ghost" onClick={() => handleDelete(doc.id, doc.filename)} style={{ color: 'var(--text-primary)', padding: '6px 12px', height: 'auto', background: 'var(--bg-elevated)', border: '1px solid var(--border)', fontSize: 13, fontWeight: 500 }}>Delete</button>
-                                </td>
-                            </tr>
-                        ))}
-                        {manualKb.map(item => (
-                            <tr key={item.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                                <td style={{ padding: '16px 8px', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 12, fontSize: 14 }}>
-                                    <div style={{ width: 4, height: 16, borderRadius: 4, background: '#e5e7eb' }} />
-                                    <div style={{ maxWidth: 400, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                        {item.question ? `${item.question}` : item.answer.substring(0, 50) + '...'}
-                                    </div>
-                                </td>
-                                <td style={{ padding: '16px 8px', color: 'var(--text-secondary)', fontSize: 14 }}>Manual Text</td>
-                                <td style={{ padding: '16px 8px', color: 'var(--text-secondary)', fontSize: 14 }}>1 chunk</td>
-                                <td style={{ padding: '16px 8px' }}>
-                                    <span className="badge success" style={{ fontSize: 11 }}>Embedded</span>
-                                </td>
-                                <td style={{ textAlign: 'right', padding: '16px 8px' }}>
-                                    <button className="btn btn-ghost" onClick={() => handleDeleteManual(item.id)} style={{ color: 'var(--text-primary)', padding: '6px 12px', height: 'auto', background: 'var(--bg-elevated)', border: '1px solid var(--border)', fontSize: 13, fontWeight: 500 }}>Delete</button>
-                                </td>
-                            </tr>
-                        ))}
-                        {totalTopicsCount === 0 && (
-                            <tr><td colSpan={4} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>No topics found. Add files or text to train your bot.</td></tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    );
-
-    const renderUnanswered = () => (
-        <div className="animate-in card" style={{ padding: 0, overflow: 'hidden', border: '1px solid var(--border)', boxShadow: '0 4px 24px rgba(0,0,0,0.02)' }}>
-            <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-card)' }}>
-                <div style={{ display: 'flex', gap: 12, width: '100%' }}>
-                    <div className="search-bar" style={{ flex: 1, display: 'flex', alignItems: 'center', background: 'var(--bg-elevated)', padding: '0 12px', borderRadius: 8, border: '1px solid var(--border)' }}>
-                        <Search size={14} color="var(--text-muted)" />
-                        <input type="text" placeholder="Search unanswered queries..." style={{ border: 'none', background: 'transparent', padding: '10px', width: '100%', color: 'var(--text-primary)', outline: 'none', fontSize: 13 }} />
-                    </div>
-                </div>
-            </div>
-
-            <div style={{ overflow: 'hidden' }}>
-                <table className="table" style={{ margin: 0, width: '100%', borderCollapse: 'collapse' }}>
-                    <thead>
-                        <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                            <th style={{ padding: '12px 8px', color: 'var(--text-muted)', fontWeight: 500, fontSize: 13, textAlign: 'left' }}>Request</th>
-                            <th style={{ padding: '12px 8px', color: 'var(--text-muted)', fontWeight: 500, fontSize: 13, textAlign: 'left' }}>Chat count</th>
-                            <th style={{ padding: '12px 8px', color: 'var(--text-muted)', fontWeight: 500, fontSize: 13, textAlign: 'left' }}>Status</th>
-                            <th style={{ textAlign: 'right', padding: '12px 8px' }}></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {frequentQs.length === 0 && (
-                            <tr><td colSpan={4} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>No unanswered requests detected yet.</td></tr>
-                        )}
-                        {frequentQs.map(q => (
-                            <tr key={q.id} style={{ borderBottom: answeringId === q.id ? 'none' : '1px solid var(--border)' }}>
-                                <td style={{ padding: '16px 8px', fontWeight: 500, fontSize: 14 }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                                        <div style={{ width: 4, height: 16, borderRadius: 4, background: q.hits > 5 ? 'var(--danger)' : q.hits > 2 ? 'var(--warning)' : '#e5e7eb' }} />
-                                        {q.topic}
-                                    </div>
-                                    {answeringId === q.id && (
-                                        <div style={{ marginTop: 16, padding: 20, background: 'var(--bg-primary)', borderRadius: 12, border: '1px solid var(--border)' }}>
-                                            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: 'var(--text-primary)' }}>Add an official answer:</div>
-                                            <textarea className="input" placeholder="Type the answer here..." value={freqAnswer} onChange={e => setFreqAnswer(e.target.value)} style={{ minHeight: 100, marginBottom: 16, background: 'var(--bg-card)' }} />
-                                            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                                                <button className="btn btn-ghost" onClick={() => { setAnsweringId(null); setFreqAnswer(''); }}>Cancel</button>
-                                                <button className="btn btn-primary" onClick={() => answeringId && handleAnswerFreq(answeringId)} disabled={!freqAnswer.trim()}>Save Answer</button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </td>
-                                <td style={{ padding: '16px 8px', color: 'var(--text-secondary)', fontSize: 14 }}>{q.hits} chats {`>`}</td>
-                                <td style={{ padding: '16px 8px' }}>
-                                    {q.status === 'answered' ? (
-                                        <span style={{ color: 'var(--text-primary)', fontSize: 14 }}>Solved</span>
-                                    ) : q.status === 'pending_review' ? (
-                                        <span style={{ color: 'var(--warning)', fontSize: 14 }}>Needs Review</span>
-                                    ) : (
-                                        <span style={{ color: 'var(--text-muted)', fontSize: 14 }}>Tracking...</span>
-                                    )}
-                                </td>
-                                <td style={{ textAlign: 'right', padding: '16px 8px' }}>
-                                    {q.status !== 'answered' && answeringId !== q.id && (
-                                        <button className="btn btn-ghost" onClick={() => setAnsweringId(q.id)} style={{ fontSize: 13, padding: '6px 16px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text-primary)', fontWeight: 500 }}>
-                                            Add response
-                                        </button>
-                                    )}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    );
-
-    const renderUpload = () => (
-        <div className="animate-in">
-            <div className="card" style={{ padding: '48px 40px', border: '1px solid var(--border)', boxShadow: '0 4px 24px rgba(0,0,0,0.02)', textAlign: 'center' }}>
-                <h2 style={{ fontSize: 22, fontWeight: 700, margin: '0 0 8px 0', color: 'var(--text-primary)' }}>Upload Files</h2>
-                <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: '0 auto 32px auto', maxWidth: 500 }}>Upload product catalogs (PDF), price lists (XLSX), or FAQ documents.</p>
-
-                <div
-                    onDragOver={e => { e.preventDefault(); setDragOver(true); }}
-                    onDragLeave={() => setDragOver(false)}
-                    onDrop={onDrop}
-                    style={{
-                        border: `2px dashed ${dragOver ? 'var(--accent)' : 'var(--border)'}`,
-                        borderRadius: 16, padding: '60px 40px', cursor: 'pointer',
-                        background: dragOver ? 'rgba(59,130,246,0.03)' : 'var(--bg-primary)',
-                        transition: 'all 0.2s', position: 'relative'
-                    }}>
-                    <input ref={fileInputRef} type="file" accept=".pdf,.docx,.doc,.txt,.md,.csv,.json,.xlsx,.xls"
-                        onChange={e => e.target.files?.[0] && handleUpload(e.target.files[0])}
-                        style={{ display: 'none' }} />
-
-                    <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 48, height: 48, borderRadius: '50%', background: 'rgba(59,130,246,0.1)', color: 'var(--accent)', marginBottom: 20 }}>
-                        <Upload size={24} />
-                    </div>
-
-                    <h3 style={{ fontWeight: 700, fontSize: 18, marginBottom: 8, color: 'var(--text-primary)' }}>
-                        {uploading ? 'Uploading...' : 'Drag & drop files here'}
-                    </h3>
-                    <p style={{ fontSize: 13, color: 'var(--text-muted)', maxWidth: 400, margin: '0 auto 24px', lineHeight: 1.5 }}>
-                        Supported formats: PDF, DOCX, TXT, CSV. Max file size: 25MB. The AI will automatically ingest and index new content.
-                    </p>
-                    <button onClick={() => fileInputRef.current?.click()} className="btn btn-primary" style={{ padding: '8px 24px', fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                        <Upload size={14} /> Select Files
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-
-    const renderManualText = () => (
-        <div className="animate-in">
-            <div className="card" style={{ padding: 40, border: '1px solid var(--border)', boxShadow: '0 4px 24px rgba(0,0,0,0.02)' }}>
-                <h2 style={{ fontSize: 22, fontWeight: 700, margin: '0 0 8px 0', color: 'var(--text-primary)' }}>Add Text or FAQ</h2>
-                <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: '0 0 32px 0' }}>Add specific Q&A pairs or text blocks without uploading a file.</p>
-                <form onSubmit={handleAddManual}>
-                    <div className="input-group">
-                        <label>Question / Context (Optional)</label>
-                        <input className="input" placeholder="e.g. Do you offer delivery?" value={newQ} onChange={e => setNewQ(e.target.value)} />
-                    </div>
-                    <div className="input-group" style={{ marginTop: 16 }}>
-                        <label>Bot Answer</label>
-                        <textarea className="input" placeholder="Yes, we offer free shipping on orders over $50." style={{ minHeight: 120 }} required value={newA} onChange={e => setNewA(e.target.value)} />
-                    </div>
-                    <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 16 }}>
-                        <button type="submit" className="btn btn-primary" disabled={submittingManual}>
-                            {submittingManual ? 'Saving...' : 'Save Knowledge'}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    );
-
-    const renderCommunication = () => (
-        <div className="animate-in">
-            <div className="card" style={{ padding: 40, border: '1px solid var(--border)', boxShadow: '0 4px 24px rgba(0,0,0,0.02)', marginBottom: 32 }}>
-                <h2 style={{ fontSize: 22, fontWeight: 700, margin: '0 0 8px 0', color: 'var(--text-primary)' }}>Communication Rules</h2>
-                <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: '0 0 32px 0' }}>Define overarching rules, base knowledge, and personality for the AI agent.</p>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-                    <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(99,102,241,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <MessageSquare size={20} color="var(--accent)" />
-                    </div>
-                    <div>
-                        <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>AI Master Prompt</h2>
-                        <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '4px 0 0' }}>Direct systemic instructions that apply to all generations.</p>
-                    </div>
-                </div>
-
-                <div style={{ position: 'relative' }}>
-                    <textarea
-                        className="input"
-                        style={{ minHeight: 160, fontFamily: 'monospace', fontSize: 13, padding: 16, lineHeight: 1.6 }}
-                        placeholder="e.g. Always greet the customer with 'Hello, welcome to our store!'. You are a polite sales assistant..."
-                        value={masterPrompt}
-                        onChange={e => setMasterPrompt(e.target.value)}
-                    />
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
-                    <button className="btn btn-primary" onClick={handleSavePrompt} disabled={savingPrompt}>
-                        {savingPrompt ? <Loader2 size={16} className="spin" /> : <Save size={16} />}
-                        Save Prompt
-                    </button>
-                </div>
-            </div>
-
-            <div style={{ borderTop: '1px solid var(--border)', paddingTop: 32 }}>
-                <h2 style={{ fontSize: 20, fontWeight: 700, margin: '0 0 8px 0' }}>AI Personality Configuration</h2>
-                <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 24px 0' }}>
-                    Select the persona that best matches your brand voice. This affects tone, formality, and sales aggression.
-                </p>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
-                    {personas.map(p => {
-                        const isActive = activePersona === p.id;
-                        return (
-                            <div key={p.id}
-                                className={`persona-card ${isActive ? 'active' : ''}`}
-                                onClick={() => setActivePersona(p.id)}
-                                style={{
-                                    padding: '24px', borderRadius: 'var(--radius)', cursor: 'pointer',
-                                    display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
-                                    border: isActive ? '2px solid var(--accent)' : '1px solid var(--border)',
-                                    background: isActive ? 'rgba(59, 130, 246, 0.02)' : 'var(--bg-card)'
-                                }}>
-                                {isActive && <div style={{ position: 'absolute', top: 12, right: 12, color: 'var(--accent)' }}><CheckCircle2 size={20} /></div>}
-
-                                <div style={{
-                                    width: 48, height: 48, borderRadius: '50%',
-                                    background: isActive ? 'var(--accent)' : 'rgba(255,255,255,0.05)',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    fontSize: 20, marginBottom: 16, transition: 'all 0.2s',
-                                    color: isActive ? 'white' : 'var(--text-primary)'
-                                }}>
-                                    {p.icon}
-                                </div>
-
-                                <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 8, color: 'var(--text-primary)' }}>{p.name}</h3>
-                                <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5, flex: 1, marginBottom: 16 }}>
-                                    {p.desc}
-                                </p>
-                                <span style={{ padding: '4px 12px', borderRadius: 20, background: 'var(--bg-secondary)', fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)' }}>{p.tone}</span>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-        </div>
-    );
-
-    const renderRetrievalLogs = () => (
-        <div className="animate-in">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-                <div>
-                    <h2 style={{ fontSize: 22, fontWeight: 700, margin: '0 0 4px 0', color: 'var(--text-primary)' }}>RAG Retrieval Diagnostics</h2>
-                    <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: 0 }}>Inspect what context chunks the AI is retrieving for user queries to trace hallucinations.</p>
-                </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16 }}>
-                {[
-                    { q: "Do you offer free shipping on international orders?", score: 0.92, risk: 0.02, chunk: "[FAQ.pdf] - ...yes, we provide free regular shipping on all domestic orders over $50. International shipping is calculated at checkout based on location..." },
-                    { q: "What's the pricing for the Enterprise plan?", score: 0.88, risk: 0.15, chunk: "[Pricing2026.xlsx] - Row 14: Enterprise Plan - Custom pricing based on volume. Starting at $999/mo with dedicated support." },
-                    { q: "Can I use this with a custom domain?", score: 0.45, risk: 0.85, chunk: "[General_Terms.txt] - ...custom modifications to the software are prohibited unless explicitly authorized in writing by..." }
-                ].map((log, i) => (
-                    <div key={i} className="card" style={{ padding: 20 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-                            <div>
-                                <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', marginBottom: 4 }}>USER QUERY</div>
-                                <div style={{ fontWeight: 600, fontSize: 14 }}>"{log.q}"</div>
-                            </div>
-                            <div style={{ textAlign: 'right' }}>
-                                <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', marginBottom: 4 }}>HALLUCINATION RISK</div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: log.risk < 0.2 ? 'var(--success)' : log.risk < 0.5 ? 'var(--warning)' : 'var(--danger)', fontWeight: 700, fontSize: 13 }}>
-                                    {log.risk < 0.2 ? <CheckCircle2 size={14} /> : <AlertTriangle size={14} />}
-                                    {log.risk < 0.2 ? 'Low' : log.risk < 0.5 ? 'Medium' : 'HIGH'} ({(log.risk * 100).toFixed(0)}%)
-                                </div>
-                            </div>
-                        </div>
-                        <div style={{ background: 'var(--bg-elevated)', borderRadius: 8, padding: 12, border: '1px solid var(--border)' }}>
-                            <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', marginBottom: 8, display: 'flex', justifyContent: 'space-between' }}>
-                                <span>TOP RETRIEVED CHUNK (Vector Match)</span>
-                                <span style={{ color: 'var(--accent)' }}>AI Relevance Score: {log.score.toFixed(2)}</span>
-                            </div>
-                            <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, fontFamily: 'monospace' }}>
-                                {log.chunk}
-                            </div>
-                        </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+                {TEMPLATES.map(t => (
+                    <div key={t.id} onClick={() => selectTemplate(t.id)} style={{ ...cs, cursor: 'pointer', transition: 'all 0.2s', position: 'relative', overflow: 'hidden' }}
+                        onMouseOver={e => { (e.currentTarget as HTMLElement).style.borderColor = t.color; (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; }}
+                        onMouseOut={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLElement).style.transform = 'none'; }}>
+                        <div style={{ width: '100%', height: 3, background: t.color, position: 'absolute', top: 0, left: 0, borderRadius: '16px 16px 0 0' }} />
+                        <div style={{ fontSize: 36, marginBottom: 12, marginTop: 8 }}>{t.icon}</div>
+                        <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>{t.name}</h3>
+                        <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 16 }}>{t.desc}</p>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: t.color, fontSize: 13, fontWeight: 600 }}>Tanlash <ChevronRight size={14} /></div>
                     </div>
                 ))}
             </div>
         </div>
     );
 
-    return (
-        <div className="page-container animate-in" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-            {/* Top Header & Tabs */}
+    const renderStep1 = () => (
+        <div style={{ maxWidth: 640, margin: '0 auto' }}>
+            <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 6 }}>Biznes ma'lumotlari</h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 32 }}>Agent sizning biznesingiz haqida to'liq ma'lumotga ega bo'ladi.</p>
+            <div style={{ display: 'grid', gap: 20 }}>
+                <div><label style={labelStyle}>Biznes nomi *</label><input style={inputStyle} placeholder="Masalan: Green Peel Beauty" value={biz.businessName} onChange={e => setBiz({ ...biz, businessName: e.target.value })} /></div>
+                <div><label style={labelStyle}>Soha / Faoliyat turi</label><input style={inputStyle} placeholder="Masalan: Go'zallik saloni" value={biz.industry} onChange={e => setBiz({ ...biz, industry: e.target.value })} /></div>
+                <div><label style={labelStyle}>Mahsulotlar / Xizmatlar</label><textarea style={{ ...inputStyle, minHeight: 80 }} placeholder="Nimalar sotasiz yoki qanday xizmatlar ko'rsatasiz?" value={biz.products} onChange={e => setBiz({ ...biz, products: e.target.value })} /></div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                    <div><label style={labelStyle}>Ish vaqti</label><input style={inputStyle} placeholder="09:00 - 18:00" value={biz.workingHours} onChange={e => setBiz({ ...biz, workingHours: e.target.value })} /></div>
+                    <div><label style={labelStyle}>Manzil</label><input style={inputStyle} placeholder="Toshkent, Chilonzor" value={biz.location} onChange={e => setBiz({ ...biz, location: e.target.value })} /></div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                    <div><label style={labelStyle}>Telefon raqam</label><input style={inputStyle} placeholder="+998 90 123 45 67" value={biz.contactPhone} onChange={e => setBiz({ ...biz, contactPhone: e.target.value })} /></div>
+                    <div><label style={labelStyle}>Email</label><input style={inputStyle} placeholder="info@example.com" value={biz.contactEmail} onChange={e => setBiz({ ...biz, contactEmail: e.target.value })} /></div>
+                </div>
+                <div>
+                    <label style={labelStyle}>Tillar</label>
+                    <div style={{ display: 'flex', gap: 10 }}>
+                        {[['uz', '🇺🇿 O\'zbekcha'], ['ru', '🇷🇺 Ruscha'], ['en', '🇬🇧 Inglizcha']].map(([code, label]) => (
+                            <button key={code} onClick={() => toggleLang(code)} style={{ padding: '8px 16px', borderRadius: 10, border: biz.languages.includes(code) ? '2px solid var(--accent)' : '1px solid var(--border)', background: biz.languages.includes(code) ? 'rgba(59,130,246,0.1)' : 'var(--bg-elevated)', color: 'var(--text-primary)', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>{label}</button>
+                        ))}
+                    </div>
+                </div>
+                <div>
+                    <label style={labelStyle}>To'lov usullari</label>
+                    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                        {['Naqd', 'Karta (Click)', 'Karta (Payme)', 'Bank o\'tkazmasi', 'Kriptovalyuta'].map(m => (
+                            <button key={m} onClick={() => togglePayment(m)} style={{ padding: '8px 14px', borderRadius: 10, border: biz.paymentMethods.includes(m) ? '2px solid var(--accent)' : '1px solid var(--border)', background: biz.paymentMethods.includes(m) ? 'rgba(59,130,246,0.1)' : 'var(--bg-elevated)', color: 'var(--text-primary)', fontSize: 13, cursor: 'pointer' }}>{m}</button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+
+    const renderStep2 = () => (
+        <div style={{ maxWidth: 700, margin: '0 auto' }}>
+            <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 6 }}>Agent shaxsiyati</h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 32 }}>Agent qanday gaplashishini sozlang.</p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16, marginBottom: 32 }}>
+                {PERSONAS.map(p => {
+                    const isActive = activePersona === p.id;
+                    return (
+                        <div key={p.id} onClick={() => setActivePersona(p.id)} style={{ ...cs, cursor: 'pointer', border: isActive ? '2px solid var(--accent)' : '1px solid var(--border)', background: isActive ? 'rgba(59,130,246,0.03)' : 'var(--bg-card)', textAlign: 'center', position: 'relative' }}>
+                            {isActive && <CheckCircle2 size={20} color="var(--accent)" style={{ position: 'absolute', top: 12, right: 12 }} />}
+                            <div style={{ fontSize: 32, marginBottom: 12 }}>{p.icon}</div>
+                            <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>{p.name}</h3>
+                            <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 12 }}>{p.desc}</p>
+                            <span style={{ padding: '4px 12px', borderRadius: 20, background: 'var(--bg-elevated)', fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)' }}>{p.tone}</span>
+                        </div>
+                    );
+                })}
+            </div>
+            <div style={{ marginBottom: 20 }}><label style={labelStyle}>Salomlash xabari</label><textarea style={{ ...inputStyle, minHeight: 80 }} value={greeting} onChange={e => setGreeting(e.target.value)} /></div>
+            <div><label style={labelStyle}>Master Prompt (AI ko'rsatmalar)</label><textarea style={{ ...inputStyle, minHeight: 140, fontFamily: 'monospace', fontSize: 13 }} placeholder="Agent uchun maxsus ko'rsatmalar..." value={masterPrompt} onChange={e => setMasterPrompt(e.target.value)} /></div>
+        </div>
+    );
+
+    const renderStep3 = () => (
+        <div style={{ maxWidth: 700, margin: '0 auto' }}>
+            <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 6 }}>Bilimlar bazasi</h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 32 }}>Agentga mahsulotlar, narxlar, FAQ ma'lumotlarini kiritish.</p>
+            <div style={{ ...cs, marginBottom: 24, textAlign: 'center' }} onDragOver={e => { e.preventDefault(); setDragOver(true); }} onDragLeave={() => setDragOver(false)} onDrop={onDrop}>
+                <input ref={fileInputRef} type="file" accept=".pdf,.docx,.doc,.txt,.md,.csv,.json,.xlsx,.xls" onChange={e => e.target.files?.[0] && handleUpload(e.target.files[0])} style={{ display: 'none' }} />
+                <Upload size={28} color="var(--accent)" style={{ marginBottom: 12 }} />
+                <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>{uploading ? 'Yuklanmoqda...' : 'Fayllarni shu yerga tashlang'}</h3>
+                <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>PDF, DOCX, Excel, CSV — max 25MB</p>
+                <button onClick={() => fileInputRef.current?.click()} className="btn btn-primary" style={{ padding: '8px 20px', fontSize: 13 }}><Upload size={14} /> Fayl tanlash</button>
+            </div>
+            {docs.length > 0 && <div style={{ ...cs, padding: 0, marginBottom: 24, overflow: 'hidden' }}>
+                {docs.map(doc => (
+                    <div key={doc.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', borderBottom: '1px solid var(--border)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><File size={16} color="var(--accent)" /><span style={{ fontSize: 14 }}>{doc.filename}</span><span className={doc.status === 'completed' ? 'badge success' : 'badge warning'} style={{ fontSize: 11 }}>{doc.status === 'completed' ? 'Tayyor' : 'Yuklanmoqda...'}</span></div>
+                        <button onClick={() => handleDelete(doc.id, doc.filename)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><Trash2 size={16} /></button>
+                    </div>
+                ))}
+            </div>}
+            <div style={cs}>
+                <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>FAQ qo'shish</h3>
+                <form onSubmit={handleAddManual} style={{ display: 'grid', gap: 12 }}>
+                    <input style={inputStyle} placeholder="Savol: Yetkazib berish bormi?" value={newQ} onChange={e => setNewQ(e.target.value)} />
+                    <textarea style={{ ...inputStyle, minHeight: 60 }} placeholder="Javob: Ha, Toshkent bo'ylab bepul yetkazib beramiz." required value={newA} onChange={e => setNewA(e.target.value)} />
+                    <button type="submit" className="btn btn-primary" disabled={submittingManual} style={{ justifySelf: 'end', padding: '8px 20px', fontSize: 13 }}>{submittingManual ? 'Saqlanmoqda...' : '+ Qo\'shish'}</button>
+                </form>
+            </div>
+        </div>
+    );
+
+    const renderStep4 = () => (
+        <div style={{ maxWidth: 640, margin: '0 auto' }}>
+            <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 6 }}>Platformalar</h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 32 }}>Agent qaysi kanallarda ishlaydi?</p>
+            {[
+                { name: 'Telegram', icon: <Send size={22} />, color: '#229ED9', desc: 'Telegram bot orqali', status: 'connected' },
+                { name: 'Instagram', icon: <Instagram size={22} />, color: '#E4405F', desc: 'Instagram DM va commentlar', status: 'connected' },
+                { name: 'Facebook Messenger', icon: <Facebook size={22} />, color: '#1877F2', desc: 'Facebook Page xabarlari', status: 'pending' },
+            ].map(p => (
+                <div key={p.name} style={{ ...cs, display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+                    <div style={{ width: 48, height: 48, borderRadius: 14, background: `${p.color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: p.color }}>{p.icon}</div>
+                    <div style={{ flex: 1 }}>
+                        <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 2 }}>{p.name}</h3>
+                        <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>{p.desc}</p>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        {p.status === 'connected' ? <span style={{ padding: '6px 14px', borderRadius: 20, background: 'rgba(34,197,94,0.15)', color: '#22C55E', fontSize: 12, fontWeight: 600 }}>✓ Ulangan</span>
+                            : <button className="btn btn-primary" style={{ padding: '6px 16px', fontSize: 13 }}>Ulash</button>}
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+
+    const renderStep5 = () => (
+        <div style={{ maxWidth: 640, margin: '0 auto', textAlign: 'center' }}>
+            <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'linear-gradient(135deg, #22C55E, #10B981)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}><Zap size={30} color="white" /></div>
+            <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>Agent tayyor!</h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: 15, marginBottom: 40 }}>Barcha sozlamalarni tekshiring va faollashtiring.</p>
+            <div style={{ ...cs, textAlign: 'left', marginBottom: 24 }}>
+                {[
+                    ['Biznes', biz.businessName || '—'],
+                    ['Soha', biz.industry || '—'],
+                    ['Shaxsiyat', PERSONAS.find(p => p.id === activePersona)?.name || '—'],
+                    ['Tillar', biz.languages.join(', ')],
+                    ['Bilim bazasi', `${docs.length} fayl, ${manualKb.length} FAQ`],
+                    ['Platformalar', 'Telegram, Instagram, Messenger'],
+                ].map(([label, value]) => (
+                    <div key={label as string} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
+                        <span style={{ color: 'var(--text-muted)', fontSize: 14 }}>{label}</span>
+                        <span style={{ fontWeight: 600, fontSize: 14 }}>{value}</span>
+                    </div>
+                ))}
+            </div>
+            <button onClick={handleActivate} disabled={savingAll} className="btn btn-primary" style={{ padding: '14px 40px', fontSize: 16, fontWeight: 700, borderRadius: 14, background: 'linear-gradient(135deg, #22C55E, #10B981)' }}>
+                {savingAll ? <Loader2 size={20} className="spin" /> : <Zap size={20} />} Agentni faollashtirish
+            </button>
+        </div>
+    );
+
+    /* ─── MANAGE MODE (after activation) ─── */
+    const renderManageMode = () => (
+        <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
             <div style={{ padding: '32px 40px 0', borderBottom: '1px solid var(--border)', background: 'var(--bg-card)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
                     <div>
-                        <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 6 }}>Knowledge Base & Rules</h1>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Train your AI Agent with documents, text rules, and FAQs.</p>
+                        <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 6 }}>AI Agent boshqaruvi</h1>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Bilimlar bazasi, sozlamalar va monitoring.</p>
                     </div>
-                    <button className="btn btn-secondary" style={{ height: 36, padding: '0 16px', fontSize: 13 }}><Check size={14} style={{ marginRight: 6 }} color="var(--success)" /> Sync to Cluster</button>
+                    <div style={{ display: 'flex', gap: 10 }}>
+                        <span style={{ padding: '6px 14px', borderRadius: 20, background: 'rgba(34,197,94,0.15)', color: '#22C55E', fontSize: 12, fontWeight: 600 }}>● Agent faol</span>
+                        <button className="btn btn-secondary" onClick={() => { setAgentActivated(false); setStep(0); }} style={{ height: 36, padding: '0 16px', fontSize: 13 }}>Qayta sozlash</button>
+                    </div>
                 </div>
-
-                <div style={{ display: 'flex', gap: 24, overflowX: 'auto', paddingBottom: 0 }}>
-                    <button onClick={() => setActiveTab('knowledge_base')} style={{ background: 'none', border: 'none', padding: '0 0 16px', fontSize: 14, fontWeight: 600, color: activeTab === 'knowledge_base' ? 'var(--text-primary)' : 'var(--text-muted)', borderBottom: activeTab === 'knowledge_base' ? '2px solid var(--accent)' : '2px solid transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s' }}>
-                        <FolderOpen size={16} /> Topics <span style={{ background: 'var(--bg-elevated)', padding: '2px 8px', borderRadius: 12, fontSize: 11, color: 'var(--text-secondary)' }}>{totalTopicsCount}</span>
-                    </button>
-                    <button onClick={() => setActiveTab('unanswered')} style={{ background: 'none', border: 'none', padding: '0 0 16px', fontSize: 14, fontWeight: 600, color: activeTab === 'unanswered' ? 'var(--text-primary)' : 'var(--text-muted)', borderBottom: activeTab === 'unanswered' ? '2px solid var(--accent)' : '2px solid transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s' }}>
-                        <MessageSquare size={16} /> Unanswered {unansweredCount > 0 && <span style={{ background: 'var(--danger)', color: 'white', padding: '2px 8px', borderRadius: 12, fontSize: 11 }}>{unansweredCount}</span>}
-                    </button>
-                    <button onClick={() => setActiveTab('upload')} style={{ background: 'none', border: 'none', padding: '0 0 16px', fontSize: 14, fontWeight: 600, color: activeTab === 'upload' ? 'var(--text-primary)' : 'var(--text-muted)', borderBottom: activeTab === 'upload' ? '2px solid var(--accent)' : '2px solid transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s' }}>
-                        <Upload size={16} /> Upload Docs
-                    </button>
-                    <button onClick={() => setActiveTab('manual_text')} style={{ background: 'none', border: 'none', padding: '0 0 16px', fontSize: 14, fontWeight: 600, color: activeTab === 'manual_text' ? 'var(--text-primary)' : 'var(--text-muted)', borderBottom: activeTab === 'manual_text' ? '2px solid var(--accent)' : '2px solid transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s' }}>
-                        <File size={16} /> Add FAQ
-                    </button>
-                    <button onClick={() => setActiveTab('communication')} style={{ background: 'none', border: 'none', padding: '0 0 16px', fontSize: 14, fontWeight: 600, color: activeTab === 'communication' ? 'var(--text-primary)' : 'var(--text-muted)', borderBottom: activeTab === 'communication' ? '2px solid var(--accent)' : '2px solid transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s' }}>
-                        <Settings size={16} /> Persona & Rules
-                    </button>
-                    <button onClick={() => setActiveTab('retrieval_logs')} style={{ background: 'none', border: 'none', padding: '0 0 16px', fontSize: 14, fontWeight: 600, color: activeTab === 'retrieval_logs' ? 'var(--text-primary)' : 'var(--text-muted)', borderBottom: activeTab === 'retrieval_logs' ? '2px solid var(--accent)' : '2px solid transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s' }}>
-                        <PieChart size={16} /> Audit Logs
-                    </button>
+                <div style={{ display: 'flex', gap: 24 }}>
+                    {[
+                        ['topics', 'Bilim bazasi', docs.length + manualKb.length],
+                        ['prompt', 'Prompt & Persona', null],
+                        ['unanswered', 'Javobsiz savollar', frequentQs.filter(q => q.status !== 'answered').length],
+                    ].map(([id, label, count]) => (
+                        <button key={id as string} onClick={() => setManageTab(id as string)} style={{ background: 'none', border: 'none', padding: '0 0 16px', fontSize: 14, fontWeight: 600, color: manageTab === id ? 'var(--text-primary)' : 'var(--text-muted)', borderBottom: manageTab === id ? '2px solid var(--accent)' : '2px solid transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
+                            {label} {count != null && count > 0 && <span style={{ background: 'var(--bg-elevated)', padding: '2px 8px', borderRadius: 12, fontSize: 11 }}>{count}</span>}
+                        </button>
+                    ))}
                 </div>
             </div>
+            <div style={{ flex: 1, padding: 40, overflowY: 'auto', background: 'var(--bg-primary)' }}>
+                <div style={{ maxWidth: 900, margin: '0 auto' }}>
+                    {manageTab === 'topics' && renderManageTopics()}
+                    {manageTab === 'prompt' && renderManagePrompt()}
+                    {manageTab === 'unanswered' && renderManageUnanswered()}
+                </div>
+            </div>
+        </div>
+    );
 
-            {/* Main Content Area */}
+    const renderManageTopics = () => (
+        <div>
+            <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
+                <button className="btn btn-primary" onClick={() => fileInputRef.current?.click()} style={{ height: 38, padding: '0 16px', gap: 8, fontSize: 13 }}><Upload size={14} /> Fayl yuklash</button>
+                <input ref={fileInputRef} type="file" accept=".pdf,.docx,.doc,.txt,.md,.csv,.json,.xlsx,.xls" onChange={e => e.target.files?.[0] && handleUpload(e.target.files[0])} style={{ display: 'none' }} />
+            </div>
+            <div style={{ ...cs, padding: 0, overflow: 'hidden' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead><tr style={{ borderBottom: '1px solid var(--border)' }}>
+                        <th style={{ padding: '12px 16px', textAlign: 'left', color: 'var(--text-muted)', fontSize: 13, fontWeight: 500 }}>Hujjat / Mavzu</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'left', color: 'var(--text-muted)', fontSize: 13, fontWeight: 500 }}>Manba</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'left', color: 'var(--text-muted)', fontSize: 13, fontWeight: 500 }}>Holat</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'right' }}></th>
+                    </tr></thead>
+                    <tbody>
+                        {docs.map(doc => (<tr key={doc.id} style={{ borderBottom: '1px solid var(--border)' }}><td style={{ padding: '14px 16px', fontWeight: 500, fontSize: 14 }}>{doc.filename}</td><td style={{ padding: '14px 16px', color: 'var(--text-secondary)', fontSize: 13 }}>Fayl</td><td style={{ padding: '14px 16px' }}><span className={doc.status === 'completed' ? 'badge success' : 'badge warning'} style={{ fontSize: 11 }}>{doc.status === 'completed' ? 'Tayyor' : 'Yuklanmoqda'}</span></td><td style={{ padding: '14px 16px', textAlign: 'right' }}><button onClick={() => handleDelete(doc.id, doc.filename)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><Trash2 size={16} /></button></td></tr>))}
+                        {manualKb.map(item => (<tr key={item.id} style={{ borderBottom: '1px solid var(--border)' }}><td style={{ padding: '14px 16px', fontWeight: 500, fontSize: 14, maxWidth: 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.question || item.answer?.substring(0, 50)}</td><td style={{ padding: '14px 16px', color: 'var(--text-secondary)', fontSize: 13 }}>FAQ</td><td style={{ padding: '14px 16px' }}><span className="badge success" style={{ fontSize: 11 }}>Tayyor</span></td><td style={{ padding: '14px 16px', textAlign: 'right' }}><button onClick={() => handleDeleteManual(item.id)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><Trash2 size={16} /></button></td></tr>))}
+                        {docs.length === 0 && manualKb.length === 0 && <tr><td colSpan={4} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Hali hech narsa qo'shilmagan.</td></tr>}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+
+    const renderManagePrompt = () => (
+        <div style={cs}>
+            <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>AI Master Prompt</h2>
+            <textarea className="input" style={{ minHeight: 200, fontFamily: 'monospace', fontSize: 13, padding: 16, lineHeight: 1.6, width: '100%' }} value={masterPrompt} onChange={e => setMasterPrompt(e.target.value)} />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
+                <button className="btn btn-primary" onClick={handleSavePrompt} disabled={savingPrompt}>{savingPrompt ? <Loader2 size={16} className="spin" /> : <Save size={16} />} Saqlash</button>
+            </div>
+        </div>
+    );
+
+    const renderManageUnanswered = () => (
+        <div style={{ ...cs, padding: 0, overflow: 'hidden' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead><tr style={{ borderBottom: '1px solid var(--border)' }}><th style={{ padding: '12px 16px', textAlign: 'left', color: 'var(--text-muted)', fontSize: 13 }}>Savol</th><th style={{ padding: '12px 16px', textAlign: 'left', color: 'var(--text-muted)', fontSize: 13 }}>Holat</th><th></th></tr></thead>
+                <tbody>
+                    {frequentQs.length === 0 && <tr><td colSpan={3} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Hali javobsiz savollar yo'q.</td></tr>}
+                    {frequentQs.map(q => (
+                        <tr key={q.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                            <td style={{ padding: '14px 16px', fontSize: 14, fontWeight: 500 }}>{q.topic}</td>
+                            <td style={{ padding: '14px 16px' }}>{q.status === 'answered' ? <span style={{ color: 'var(--success)' }}>Javob berilgan</span> : <span style={{ color: 'var(--warning)' }}>Kutilmoqda</span>}</td>
+                            <td style={{ padding: '14px 16px', textAlign: 'right' }}>{q.status !== 'answered' && <button className="btn btn-secondary" onClick={() => setAnsweringId(q.id)} style={{ fontSize: 13, padding: '6px 14px' }}>Javob berish</button>}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
+
+    /* ─── MAIN RENDER ─── */
+
+    if (agentActivated) return renderManageMode();
+
+    const steps = [renderStep0, renderStep1, renderStep2, renderStep3, renderStep4, renderStep5];
+
+    return (
+        <div className="page-container animate-in" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+            {/* Progress bar */}
+            {step > 0 && (
+                <div style={{ padding: '20px 40px', borderBottom: '1px solid var(--border)', background: 'var(--bg-card)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, maxWidth: 700, margin: '0 auto' }}>
+                        {STEP_LABELS.map((label, i) => (
+                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <div style={{ width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, background: i < step ? 'var(--accent)' : i === step ? 'var(--accent)' : 'var(--bg-elevated)', color: i <= step ? 'white' : 'var(--text-muted)', border: i <= step ? 'none' : '1px solid var(--border)', transition: 'all 0.3s' }}>
+                                    {i < step ? <Check size={14} /> : i + 1}
+                                </div>
+                                <span style={{ fontSize: 12, fontWeight: 600, color: i <= step ? 'var(--text-primary)' : 'var(--text-muted)', display: i === step ? 'inline' : 'none' }}>{label}</span>
+                                {i < STEP_LABELS.length - 1 && <div style={{ width: 32, height: 2, background: i < step ? 'var(--accent)' : 'var(--border)', borderRadius: 2, transition: 'all 0.3s' }} />}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Content */}
             <div style={{ flex: 1, padding: '40px', overflowY: 'auto', background: 'var(--bg-primary)' }}>
-                <div style={{ maxWidth: 1000, margin: '0 auto' }}>
-                    {successMsg && (
-                        <div style={{ padding: '12px 16px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 'var(--radius)', marginBottom: 24, color: 'var(--success)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <Check size={16} /> {successMsg}
-                        </div>
-                    )}
-                    {error && (
-                        <div style={{ padding: '12px 16px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 'var(--radius)', marginBottom: 24, color: 'var(--danger)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <AlertTriangle size={16} /> {error}
-                            <button onClick={() => setError('')} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'currentcolor', cursor: 'pointer' }}>×</button>
-                        </div>
-                    )}
-
-                    {activeTab === 'knowledge_base' && renderKnowledgeBase()}
-                    {activeTab === 'unanswered' && renderUnanswered()}
-                    {activeTab === 'upload' && renderUpload()}
-                    {activeTab === 'manual_text' && renderManualText()}
-                    {activeTab === 'communication' && renderCommunication()}
-                    {activeTab === 'retrieval_logs' && renderRetrievalLogs()}
-                </div>
+                {successMsg && <div style={{ padding: '12px 16px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 12, marginBottom: 24, color: 'var(--success)', fontSize: 13, maxWidth: 700, margin: '0 auto 24px' }}>{successMsg}</div>}
+                {error && <div style={{ padding: '12px 16px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 12, marginBottom: 24, color: 'var(--danger)', fontSize: 13, maxWidth: 700, margin: '0 auto 24px' }}><AlertTriangle size={14} /> {error} <button onClick={() => setError('')} style={{ marginLeft: 8, background: 'none', border: 'none', color: 'currentcolor', cursor: 'pointer' }}>×</button></div>}
+                {steps[step]()}
             </div>
+
+            {/* Navigation */}
+            {step > 0 && (
+                <div style={{ padding: '16px 40px', borderTop: '1px solid var(--border)', background: 'var(--bg-card)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <button onClick={() => setStep(s => s - 1)} className="btn btn-secondary" style={{ padding: '10px 24px', fontSize: 14 }}><ArrowLeft size={16} /> Ortga</button>
+                    <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>{step} / {STEP_LABELS.length}</span>
+                    {step < 5 ? (
+                        <button onClick={() => setStep(s => s + 1)} className="btn btn-primary" style={{ padding: '10px 24px', fontSize: 14 }}>Keyingi <ArrowRight size={16} /></button>
+                    ) : (
+                        <button onClick={handleActivate} disabled={savingAll} className="btn btn-primary" style={{ padding: '10px 24px', fontSize: 14, background: 'linear-gradient(135deg, #22C55E, #10B981)' }}>
+                            {savingAll ? <Loader2 size={16} className="spin" /> : <Zap size={16} />} Faollashtirish
+                        </button>
+                    )}
+                </div>
+            )}
         </div>
     );
 }
