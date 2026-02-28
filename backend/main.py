@@ -40,8 +40,6 @@ from app.api.routes.reports import router as reports_router
 from app.api.routes.settings import router as settings_router
 from app.api.routes.auth import router as auth_router
 from app.api.routes.integrations import router as integrations_router
-from app.channels.instagram import router as instagram_webhook_router
-from app.channels.facebook import router as facebook_webhook_router
 from app.api.routes.notifications import router as notifications_router
 from app.api.routes.facebook_auth import router as facebook_auth_router
 from app.api.routes.meta_webhooks import router as meta_webhooks_router
@@ -234,12 +232,10 @@ app.include_router(kb_router)
 app.include_router(reports_router)
 app.include_router(settings_router)
 app.include_router(integrations_router)
-app.include_router(instagram_webhook_router)
-app.include_router(facebook_webhook_router)
 app.include_router(notifications_router)
 app.include_router(facebook_auth_router)
-app.include_router(meta_webhooks_router)
-app.include_router(meta_integration_router)
+app.include_router(meta_webhooks_router)      # GET/POST /api/webhooks/meta — unified webhook
+app.include_router(meta_integration_router)   # /api/integrations/meta/* — connect, status, etc.
 
 # SaaS Extensions
 app.include_router(leads_router)

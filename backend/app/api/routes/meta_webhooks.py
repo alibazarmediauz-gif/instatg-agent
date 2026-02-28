@@ -14,7 +14,7 @@ from app.services.webhook_security import verify_signature
 
 logger = structlog.get_logger(__name__)
 
-router = APIRouter(prefix="/webhooks/meta", tags=["Meta Webhooks"])
+router = APIRouter(prefix="/api/webhooks/meta", tags=["Meta Webhooks"])
 
 
 @router.get("")
