@@ -169,9 +169,12 @@ function IntegrationsPageContent() {
     const handleConnect = async (provider: string) => {
         setConnecting(true);
         try {
-            const api = await import('@/lib/api');
-            const result = await api.getMetaConnectUrl(tenantId, provider);
-            window.location.href = result.url;
+            // Direct redirect to backend OAuth endpoint
+            const API_URL = process.env.NEXT_PUBLIC_API_URL ||
+                (process.env.NODE_ENV === 'production'
+                    ? 'https://instatg-agent-production.up.railway.app'
+                    : 'http://localhost:8000');
+            window.location.href = `${API_URL}/api/integrations/meta/connect?tenant_id=${tenantId}&provider=${provider}`;
         } catch {
             setToast({ message: '❌ Failed to start connection. Check backend.', type: 'error' });
             setConnecting(false);

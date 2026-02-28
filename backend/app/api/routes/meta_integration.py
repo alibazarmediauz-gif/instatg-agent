@@ -1,18 +1,23 @@
 """
-Meta Integration API Routes
+Meta Integration API Routes — Production
 
-Provides status, disconnect, assets, health, and connect-url endpoints
-for Instagram and Facebook integrations per tenant.
+Full Meta (Instagram + Facebook) integration endpoints:
+- GET  /connect      → redirect to Meta OAuth
+- GET  /callback     → handle OAuth return, store tokens
+- GET  /status       → connection status per tenant
+- POST /disconnect   → unlink Meta
+- GET  /assets       → connected pages + IG accounts
+- GET  /health       → validate tokens via Graph API
 """
 
 import structlog
-from uuid import UUID
-
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, Query, HTTPException, Request
+from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select
 
 from app.database import get_db
+from app.config import settings
 from app.models import FacebookAccount, InstagramAccount, EventLog
 from app.services import meta_oauth_service
 
@@ -20,23 +25,96 @@ logger = structlog.get_logger(__name__)
 router = APIRouter(prefix="/api/integrations/meta", tags=["Meta Integration"])
 
 
-@router.get("/connect-url")
-async def get_connect_url(
+# ─── OAuth Connect ─────────────────────────────────────────
+@router.get("/connect")
+async def meta_connect(
     tenant_id: str = Query(...),
     provider: str = Query("all", description="instagram, facebook, or all"),
 ):
-    """Generate the Meta OAuth authorization URL for the tenant."""
+    """
+    Start Meta OAuth flow.
+    Redirects the user to Facebook Login with correct scopes.
+    """
+    result = meta_oauth_service.build_auth_url(tenant_id, provider)
+    return RedirectResponse(url=result["url"])
+
+
+@router.get("/connect-url")
+async def get_connect_url(
+    tenant_id: str = Query(...),
+    provider: str = Query("all"),
+):
+    """Return the OAuth URL (JSON) instead of redirect — for frontend SPA use."""
     result = meta_oauth_service.build_auth_url(tenant_id, provider)
     return {"url": result["url"]}
 
 
+# ─── OAuth Callback ────────────────────────────────────────
+@router.get("/callback")
+async def meta_callback(
+    code: str = Query(...),
+    state: str = Query(...),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Handle OAuth callback from Meta.
+    Verifies signed state, exchanges code for tokens, stores connection.
+    Redirects to frontend with success/error param.
+    """
+    frontend = settings.frontend_url.rstrip("/")
+
+    # 1. Verify signed state
+    try:
+        state_data = meta_oauth_service.verify_state(state)
+        tenant_id = state_data["tenant_id"]
+        provider = state_data["provider"]
+    except ValueError as e:
+        logger.error("meta_callback_invalid_state", error=str(e))
+        return RedirectResponse(url=f"{frontend}/integrations?error=invalid_state")
+
+    try:
+        # 2. Exchange code for long-lived token
+        token_data = await meta_oauth_service.exchange_code_for_token(code)
+
+        # 3. Fetch connected assets (Pages + IG Business accounts)
+        assets = await meta_oauth_service.fetch_connected_assets(token_data["access_token"])
+
+        # 4. Store everything in DB (with encryption) and register channel handlers
+        stored = await meta_oauth_service.store_connection(db, tenant_id, token_data, assets)
+
+        logger.info(
+            "meta_oauth_success",
+            tenant=tenant_id,
+            fb_pages=stored["facebook"],
+            ig_accounts=stored["instagram"],
+        )
+
+        # Build connected param for toast
+        connected_parts = []
+        if stored["facebook"] > 0:
+            connected_parts.append("facebook")
+        if stored["instagram"] > 0:
+            connected_parts.append("instagram")
+        connected_param = ",".join(connected_parts) if connected_parts else "meta"
+
+        return RedirectResponse(
+            url=f"{frontend}/integrations?connected={connected_param}"
+        )
+
+    except Exception as e:
+        logger.error("meta_callback_error", error=str(e), tenant=tenant_id)
+        return RedirectResponse(
+            url=f"{frontend}/integrations?error=connection_failed"
+        )
+
+
+# ─── Status ────────────────────────────────────────────────
 @router.get("/status")
 async def get_meta_status(
     tenant_id: str = Query(...),
     db: AsyncSession = Depends(get_db),
 ):
     """Get current connection status for Instagram and Facebook."""
-    # Facebook
     fb_q = await db.execute(
         select(FacebookAccount).where(
             FacebookAccount.tenant_id == tenant_id,
@@ -45,7 +123,6 @@ async def get_meta_status(
     )
     fb_accounts = fb_q.scalars().all()
 
-    # Instagram
     ig_q = await db.execute(
         select(InstagramAccount).where(
             InstagramAccount.tenant_id == tenant_id,
@@ -54,7 +131,6 @@ async def get_meta_status(
     )
     ig_accounts = ig_q.scalars().all()
 
-    # Last event
     last_event_q = await db.execute(
         select(EventLog.created_at)
         .where(EventLog.tenant_id == tenant_id)
@@ -106,10 +182,11 @@ async def get_meta_status(
     }
 
 
+# ─── Disconnect ────────────────────────────────────────────
 @router.post("/disconnect")
 async def disconnect_meta(
     tenant_id: str = Query(...),
-    provider: str = Query("all", description="instagram, facebook, or all"),
+    provider: str = Query("all"),
     db: AsyncSession = Depends(get_db),
 ):
     """Disconnect Instagram or Facebook integration for the tenant."""
@@ -117,6 +194,7 @@ async def disconnect_meta(
     return {"status": "disconnected" if success else "error", "provider": provider}
 
 
+# ─── Assets ────────────────────────────────────────────────
 @router.get("/assets")
 async def get_meta_assets(
     tenant_id: str = Query(...),
@@ -151,6 +229,7 @@ async def get_meta_assets(
     }
 
 
+# ─── Health ────────────────────────────────────────────────
 @router.get("/health")
 async def check_meta_health(
     tenant_id: str = Query(...),
