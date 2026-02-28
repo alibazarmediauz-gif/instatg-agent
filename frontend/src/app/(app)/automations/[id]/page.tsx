@@ -13,6 +13,7 @@ import {
     Connection,
     Edge,
     Node,
+    OnConnect,
     ReactFlowProvider
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -52,8 +53,8 @@ function AutomationCanvas() {
     const [name, setName] = useState('Yangi Avtomatizatsiya');
     const [saving, setSaving] = useState(false);
 
-    const onConnect = useCallback(
-        (params: Connection | Edge) => setEdges((eds: Edge[]) => addEdge(params, eds) as Edge[]),
+    const onConnect: OnConnect = useCallback(
+        (params) => setEdges((eds) => addEdge(params, eds)),
         [setEdges]
     );
 
