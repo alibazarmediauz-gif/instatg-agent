@@ -556,39 +556,48 @@ export default function ChatAgentsPage() {
                             {/* Step 1: Identity */}
                             {wizardStep === 1 && (
                                 <div className="animate-in" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                                        <div>
+                                            <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>Agent Name</label>
+                                            <input className="input" placeholder="e.g. Premium Support Bot" value={newAgent.name} onChange={e => setNewAgent({ ...newAgent, name: e.target.value })} />
+                                        </div>
+                                        <div>
+                                            <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>Retail Name / Brand</label>
+                                            <input className="input" placeholder="e.g. Alibazar Media" value={newAgent.settings.brand_name || ''} onChange={e => setNewAgent({ ...newAgent, settings: { ...newAgent.settings, brand_name: e.target.value } })} />
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                                        <div>
+                                            <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>Contact Phone</label>
+                                            <input className="input" placeholder="+998 90..." value={newAgent.settings.phone || ''} onChange={e => setNewAgent({ ...newAgent, settings: { ...newAgent.settings, phone: e.target.value } })} />
+                                        </div>
+                                        <div>
+                                            <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>Working Hours</label>
+                                            <input className="input" placeholder="09:00 - 20:00" value={newAgent.settings.hours || ''} onChange={e => setNewAgent({ ...newAgent, settings: { ...newAgent.settings, hours: e.target.value } })} />
+                                        </div>
+                                    </div>
+
                                     <div>
-                                        <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>Agent Name</label>
-                                        <input className="input" placeholder="e.g. Premium Support Bot" value={newAgent.name} onChange={e => setNewAgent({ ...newAgent, name: e.target.value })} />
-                                        <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8 }}>This name is used for internal organization and reporting.</p>
+                                        <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>Store/Office Address</label>
+                                        <input className="input" placeholder="Tashkent, Chilonzor str..." value={newAgent.settings.address || ''} onChange={e => setNewAgent({ ...newAgent, settings: { ...newAgent.settings, address: e.target.value } })} />
                                     </div>
 
                                     <div>
                                         <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 12, textTransform: 'uppercase' }}>Deployment Channel</label>
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
                                             {CHANNELS.map(c => (
                                                 <div key={c.id} onClick={() => setNewAgent({ ...newAgent, channel: c.id })} style={{
-                                                    padding: '16px', borderRadius: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12,
+                                                    padding: '12px 8px', borderRadius: 12, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
                                                     border: `2px solid ${newAgent.channel === c.id ? 'var(--accent)' : 'var(--border)'}`,
                                                     background: newAgent.channel === c.id ? 'rgba(59,130,246,0.06)' : 'var(--bg-elevated)',
-                                                    transition: 'all 0.2s'
+                                                    transition: 'all 0.2s', textAlign: 'center'
                                                 }}>
                                                     <div style={{ color: newAgent.channel === c.id ? 'var(--accent)' : 'var(--text-muted)' }}>{c.icon}</div>
-                                                    <div style={{ fontSize: 14, fontWeight: 700 }}>{c.label}</div>
+                                                    <div style={{ fontSize: 12, fontWeight: 700 }}>{c.label}</div>
                                                 </div>
                                             ))}
                                         </div>
-
-                                        {newAgent.channel === 'telegram' && (
-                                            <div style={{ marginTop: 20, padding: 16, background: 'rgba(59,130,246,0.05)', borderRadius: 12, border: '1px solid var(--border)' }}>
-                                                <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: 'var(--accent)', marginBottom: 8 }}>Telegram Bot Token (from @BotFather)</label>
-                                                <input
-                                                    className="input" placeholder="123456789:ABCDefgh..."
-                                                    value={newAgent.settings.telegram_token}
-                                                    onChange={e => setNewAgent({ ...newAgent, settings: { ...newAgent.settings, telegram_token: e.target.value } })}
-                                                />
-                                                <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 8 }}>Get your token by sending /newbot to <a href="https://t.me/botfather" target="_blank" style={{ color: 'var(--accent)' }}>@BotFather</a></p>
-                                            </div>
-                                        )}
                                     </div>
 
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
