@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useTenant } from '@/lib/TenantContext';
+import { useLanguage } from '@/lib/LanguageContext';
+import { useCurrency } from '@/lib/CurrencyContext';
 import { getTenantSettings, updateTenantSettings, getTelegramAccount, sendTelegramOTP, verifyTelegramOTP, disconnectTelegram, getInstagramAccounts, addInstagramAccount, deleteInstagramAccount } from '@/lib/api';
 import { Settings as SettingsIcon, Send, Instagram, Bot, Shield, Save, Loader2, CheckCircle, XCircle, Smartphone, KeyRound, Facebook, Link2, DollarSign } from 'lucide-react';
 
@@ -31,6 +33,9 @@ export default function SettingsPage() {
     const [activeTab, setActiveTab] = useState('general');
     const [saving, setSaving] = useState(false);
     const [saveMsg, setSaveMsg] = useState('');
+
+    const { locale, setLocale, t } = useLanguage();
+    const { currency, setCurrency } = useCurrency();
 
     // Tenant settings from API
     const [tenant, setTenant] = useState<TenantData>({
@@ -227,6 +232,24 @@ export default function SettingsPage() {
                             <div className="input-group">
                                 <label>Owner Email</label>
                                 <input className="input" type="email" value={tenant.owner_email} readOnly style={{ opacity: 0.7 }} />
+                            </div>
+                            <div className="input-group">
+                                <label>Platform Language</label>
+                                <select className="input" value={locale} onChange={e => setLocale(e.target.value as any)}>
+                                    <option value="uz">O'zbekcha (UZ)</option>
+                                    <option value="ru">Русский (RU)</option>
+                                    <option value="en">English (EN)</option>
+                                </select>
+                            </div>
+                            <div className="input-group">
+                                <label>Platform Currency</label>
+                                <select className="input" value={currency} onChange={e => setCurrency(e.target.value as any)}>
+                                    <option value="USD">USD ($)</option>
+                                    <option value="UZS">UZS (So'm)</option>
+                                    <option value="RUB">RUB (₽)</option>
+                                    <option value="EUR">EUR (€)</option>
+                                    <option value="KZT">KZT (₸)</option>
+                                </select>
                             </div>
                             <div className="input-group">
                                 <label>Timezone</label>

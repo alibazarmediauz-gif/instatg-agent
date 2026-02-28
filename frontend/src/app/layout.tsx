@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { TenantProvider } from "@/lib/TenantContext";
 import { LanguageProvider } from "@/lib/LanguageContext";
+import { CurrencyProvider } from "@/lib/CurrencyContext";
 import { ThemeProvider } from "@/context/ThemeProvider";
 
 export const metadata: Metadata = {
@@ -20,7 +21,9 @@ export default function RootLayout({
                 <ThemeProvider>
                     <TenantProvider>
                         <LanguageProvider>
-                            {children}
+                            <CurrencyProvider>
+                                {children}
+                            </CurrencyProvider>
                         </LanguageProvider>
                     </TenantProvider>
                 </ThemeProvider>

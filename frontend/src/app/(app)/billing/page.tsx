@@ -8,12 +8,14 @@ import {
     ChevronDown, ChevronUp, PieChart, BarChart3, Clock
 } from 'lucide-react';
 import { useTenant } from '@/lib/TenantContext';
+import { useCurrency } from '@/lib/CurrencyContext';
 import { getBillingWallet, getBillingUsageLogs, topUpWallet } from '@/lib/api';
 
 // ── Constants ────────────────────────────────────────────────────────────
 
 export default function BillingPage() {
     const { tenantId } = useTenant();
+    const { formatCurrency } = useCurrency();
     const [balance, setBalance] = useState<number>(1250.00);
     const [logs, setLogs] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -116,7 +118,7 @@ export default function BillingPage() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 28 }}>
                 <KPICard
                     label="Wallet Balance"
-                    value={`$${balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                    value={formatCurrency(balance)}
                     sub="Available"
                     color="var(--success)"
                     icon={<DollarSign size={16} />}
@@ -124,7 +126,7 @@ export default function BillingPage() {
                 />
                 <KPICard
                     label="Spent Today"
-                    value={`$${totalSpent.toFixed(2)}`}
+                    value={formatCurrency(totalSpent)}
                     sub={`${logs.length} transactions`}
                     color="var(--warning)"
                     icon={<TrendingDown size={16} />}
@@ -161,7 +163,7 @@ export default function BillingPage() {
                     }}>
                         <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Available Balance</div>
                         <div style={{ fontSize: 44, fontWeight: 900, letterSpacing: '-0.03em', marginBottom: 8 }}>
-                            ${balance.toFixed(2)}
+                            {formatCurrency(balance)}
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--success)', fontWeight: 700, marginBottom: 24 }}>
                             <CheckCircle2 size={12} /> Auto-recharge @ $200
@@ -205,28 +207,7 @@ export default function BillingPage() {
                         </button>
                     </div>
 
-                    {/* System Health */}
-                    <div className="card" style={{ padding: 20 }}>
-                        <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 16 }}>System Health</div>
-                        {[
-                            { icon: <Database size={14} />, label: 'Database', status: 'Operational', color: 'var(--success)', sub: 'Lag: 12ms' },
-                            { icon: <Cpu size={14} />, label: 'AI Processing', status: 'Operational', color: 'var(--success)', sub: 'Init: 240ms' },
-                            { icon: <Server size={14} />, label: 'API Gateway', status: 'Operational', color: 'var(--success)', sub: '99.98% uptime' },
-                            { icon: <ShieldAlert size={14} />, label: 'Abuse Shield', status: '3 Blocks', color: 'var(--danger)', sub: 'IP: RU, BY' },
-                        ].map(row => (
-                            <div key={row.label} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
-                                <div style={{ color: row.color }}>{row.icon}</div>
-                                <div style={{ flex: 1 }}>
-                                    <div style={{ fontSize: 13, fontWeight: 600 }}>{row.label}</div>
-                                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{row.sub}</div>
-                                </div>
-                                <div style={{ fontSize: 12, fontWeight: 700, color: row.color, display: 'flex', alignItems: 'center', gap: 4 }}>
-                                    <div style={{ width: 7, height: 7, borderRadius: '50%', background: row.color }} />
-                                    {row.status}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                    {/* System Health Section Removed */}
 
                     {/* Channel Breakdown */}
                     <div className="card" style={{ padding: 20 }}>
@@ -299,7 +280,7 @@ export default function BillingPage() {
                                             </td>
                                             <td style={{ padding: '13px 24px', fontWeight: 600 }}>{log.units_consumed?.toLocaleString() || '—'}</td>
                                             <td style={{ padding: '13px 24px', textAlign: 'right', color: 'var(--danger)', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10 }}>
-                                                -${(log.cost || 0).toFixed(3)}
+                                                -{formatCurrency(log.cost || 0)}
                                                 {expandedLog === log.id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                                             </td>
                                         </tr>
@@ -344,7 +325,7 @@ export default function BillingPage() {
 
                     <div style={{ padding: '12px 24px', borderTop: '1px solid var(--border)', background: 'var(--bg-elevated)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Total (shown)</span>
-                        <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--danger)' }}>-${totalSpent.toFixed(3)}</span>
+                        <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--danger)' }}>-{formatCurrency(totalSpent)}</span>
                     </div>
                 </div>
             </div>

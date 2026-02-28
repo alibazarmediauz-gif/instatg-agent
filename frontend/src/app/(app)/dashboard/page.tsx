@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useTenant } from '@/lib/TenantContext';
+import { useLanguage } from '@/lib/LanguageContext';
+import { useCurrency } from '@/lib/CurrencyContext';
 import {
     Activity, DollarSign, Phone, TrendingUp, AlertTriangle,
     Zap, Clock, ShieldAlert, Cpu, Network, CheckCircle2, XCircle
@@ -19,6 +21,8 @@ const mockPulseData = Array.from({ length: 24 }).map((_, i) => ({
 
 export default function ControlCenter() {
     const { tenantId } = useTenant();
+    const { t } = useLanguage();
+    const { formatCurrency } = useCurrency();
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState<any>(null);
 
@@ -76,17 +80,17 @@ export default function ControlCenter() {
                 gap: 20,
                 marginBottom: 32
             }}>
-                <MiniStatCard label="Wallet Balance" value={`$1,240.50`} sub="Prepaid" icon={<DollarSign size={14} />} color="var(--success)" />
-                <MiniStatCard label="Revenue Today" value={`$${kpis.total_revenue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`} sub="+12.4%" icon={<TrendingUp size={14} />} color="var(--accent)" />
-                <MiniStatCard label="AI Cost Today" value={`$${kpis.total_cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} sub="0.003/msg" icon={<Cpu size={14} />} color="var(--warning)" />
-                <MiniStatCard label="Profit Margin" value={`${Math.max(0, 100 - (kpis.total_cost / (kpis.total_revenue || 1) * 100)).toFixed(1)}%`} sub="Target: 95%" icon={<Activity size={14} />} color="var(--success)" />
-                <MiniStatCard label="Calls Today" value={funnelData[0]?.value || 0} sub="Outbound" icon={<Phone size={14} />} color="var(--purple)" />
-                <MiniStatCard label="Active Calls" value="0" sub="Live Pulse" icon={<Activity size={14} />} color="var(--danger)" pulse />
-                <MiniStatCard label="AI Conv. Rate" value={`${kpis.roi > 0 ? '14.2' : '0'}%`} sub="+2.1% w/w" icon={<Zap size={14} />} color="var(--accent)" />
+                <MiniStatCard label={t('dashboard.wallet_balance') || 'Wallet Balance'} value={formatCurrency(1240.50)} sub={t('dashboard.prepaid') || 'Prepaid'} icon={<DollarSign size={14} />} color="var(--success)" />
+                <MiniStatCard label={t('dashboard.revenue_today') || 'Revenue Today'} value={formatCurrency(kpis.total_revenue || 0, 0, 0)} sub="+12.4%" icon={<TrendingUp size={14} />} color="var(--accent)" />
+                <MiniStatCard label={t('dashboard.ai_cost_today') || 'AI Cost Today'} value={formatCurrency(kpis.total_cost || 0, 2, 4)} sub="0.003/msg" icon={<Cpu size={14} />} color="var(--warning)" />
+                <MiniStatCard label={t('dashboard.profit_margin') || 'Profit Margin'} value={`${Math.max(0, 100 - (kpis.total_cost / (kpis.total_revenue || 1) * 100)).toFixed(1)}%`} sub="Target: 95%" icon={<Activity size={14} />} color="var(--success)" />
+                <MiniStatCard label={t('dashboard.calls_today') || 'Calls Today'} value={funnelData[0]?.value || 0} sub="Outbound" icon={<Phone size={14} />} color="var(--purple)" />
+                <MiniStatCard label={t('dashboard.active_calls') || 'Active Calls'} value="0" sub="Live Pulse" icon={<Activity size={14} />} color="var(--danger)" pulse />
+                <MiniStatCard label={t('dashboard.ai_conv_rate') || 'AI Conv. Rate'} value={`${kpis.roi > 0 ? '14.2' : '0'}%`} sub="+2.1% w/w" icon={<Zap size={14} />} color="var(--accent)" />
             </div>
 
             {/* ─── Main Content Grid ─── */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 24 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
                 {/* MIDDLE SECTION: Activity & Escalations */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -160,74 +164,6 @@ export default function ControlCenter() {
 
                 </div>
 
-                {/* RIGHT SIDE: Enterprise Signals & System Health */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-
-                    <div className="card" style={{ background: 'var(--bg-elevated)', borderColor: 'rgba(255,255,255,0.05)' }}>
-                        <h3 style={{ fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 20, color: 'var(--text-secondary)' }}>
-                            System Health
-                        </h3>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                            <HealthRow label="Core API" status="Operational" ok />
-                            <HealthRow label="OpenAI API" status="Operational" ok />
-                            <HealthRow label="Twilio Media" status="Degraded" ok={false} color="var(--warning)" />
-                            <HealthRow label="Stripe Billing" status="Operational" ok />
-                            <HealthRow label="Vector DB (Redis)" status="Operational" ok />
-                        </div>
-                    </div>
-
-                    <div className="card">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                            <h3 style={{ fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-secondary)' }}>
-                                LLM Latency (ms)
-                            </h3>
-                            <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--success)' }}>410ms</span>
-                        </div>
-                        <div style={{ height: 60, marginLeft: -20, marginBottom: -20 }}>
-                            <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={mockPulseData}>
-                                    <Area type="monotone" dataKey="latency" stroke="var(--success)" fill="rgba(34, 197, 94, 0.1)" strokeWidth={2} isAnimationActive={false} />
-                                </AreaChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </div>
-
-                    <div className="card">
-                        <h3 style={{ fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 16, color: 'var(--text-secondary)' }}>
-                            Token Usage Today
-                        </h3>
-                        <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 4 }}>1.42M</div>
-                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>~ $14.20 estimated cost</div>
-                        <div className="progress-bar" style={{ marginTop: 16 }}>
-                            <div className="progress-fill" style={{ width: '42%', background: 'var(--accent)' }} />
-                        </div>
-                        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8, display: 'flex', justifyContent: 'space-between' }}>
-                            <span>0</span>
-                            <span>Rate Limit: 5M / day</span>
-                        </div>
-                    </div>
-
-                    <div className="card">
-                        <h3 style={{ fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 16, color: 'var(--text-secondary)' }}>
-                            Telephony Status
-                        </h3>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                                <span style={{ color: 'var(--text-secondary)' }}>Concurrent Calls</span>
-                                <span style={{ fontWeight: 600 }}>42 / 100</span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                                <span style={{ color: 'var(--text-secondary)' }}>Error Rate (5xx)</span>
-                                <span style={{ fontWeight: 600, color: 'var(--success)' }}>0.01%</span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                                <span style={{ color: 'var(--text-secondary)' }}>ASR Latency</span>
-                                <span style={{ fontWeight: 600 }}>120ms</span>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
             </div>
         </div>
     );
