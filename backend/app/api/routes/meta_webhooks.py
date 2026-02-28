@@ -1,8 +1,10 @@
 """
-Meta Webhooks Route
+Meta Webhooks Route — Unified Instagram + Facebook Messenger
 
-Unified webhook receiver for all Facebook and Instagram events.
-Validates HMAC signatures using RAW body, logs events to EventLog, routes to channel handlers.
+Single endpoint for all Meta webhook events.
+- Signature verification using RAW body bytes
+- Supports: messaging, standby, message_reactions, comments, live_comments
+- Debug logging for signature troubleshooting
 """
 
 import hmac
@@ -19,6 +21,7 @@ logger = structlog.get_logger(__name__)
 router = APIRouter(prefix="/api/webhooks/meta", tags=["Meta Webhooks"])
 
 
+# ─── GET: Webhook Verification ────────────────────────────────────────
 @router.get("")
 async def verify_meta_webhook(
     hub_mode: str = Query(None, alias="hub.mode"),
@@ -27,31 +30,39 @@ async def verify_meta_webhook(
 ) -> Response:
     """Verify the Meta webhook subscription (GET challenge)."""
     if hub_mode == "subscribe" and hub_verify_token == settings.meta_verify_token:
-        logger.info("meta_webhook_verified")
+        logger.info("META_WEBHOOK_VERIFIED", challenge=hub_challenge)
         return Response(content=hub_challenge, media_type="text/plain")
 
-    logger.warning("meta_webhook_verification_failed", mode=hub_mode)
+    logger.warning("META_WEBHOOK_VERIFY_FAILED", mode=hub_mode)
     raise HTTPException(status_code=403, detail="Verification failed")
 
 
+# ─── POST: Receive Webhook Events ─────────────────────────────────────
 @router.post("")
 async def receive_meta_webhook(
     request: Request,
     background_tasks: BackgroundTasks,
 ) -> Dict[str, Any]:
     """
-    Receive incoming Meta events (Facebook and Instagram).
-    Validates signature using RAW body bytes, logs event, routes to channel handler.
+    Receive incoming Meta events (Instagram + Facebook Messenger).
+    1. Read RAW body once
+    2. Verify HMAC SHA256 signature
+    3. Parse JSON only after verification
     """
-    # 1. Read RAW body (do NOT parse json first)
+
+    # ── Step 1: Read RAW body (only once, never call request.json()) ──
     raw_body = await request.body()
 
-    # 2. Verify HMAC signature against raw bytes
-    signature = request.headers.get("X-Hub-Signature-256")
+    # ── Step 2: Get signature header (case-insensitive) ──
+    signature = (
+        request.headers.get("x-hub-signature-256")
+        or request.headers.get("X-Hub-Signature-256")
+    )
 
+    # ── Step 3: Verify HMAC SHA256 ──
     if settings.meta_app_secret:
         if not signature:
-            logger.warning("webhook_missing_signature")
+            logger.warning("META_WEBHOOK_MISSING_SIGNATURE")
             raise HTTPException(status_code=403, detail="Missing signature")
 
         expected_signature = "sha256=" + hmac.new(
@@ -60,57 +71,101 @@ async def receive_meta_webhook(
             hashlib.sha256,
         ).hexdigest()
 
-        if not hmac.compare_digest(expected_signature, signature):
-            logger.warning("webhook_signature_mismatch")
-            raise HTTPException(status_code=403, detail="Invalid signature")
+        # Debug logging (temporary — remove after confirming fix)
+        logger.info("META_WEBHOOK_RECEIVED")
+        logger.info(f"Signature header: {signature}")
+        logger.info(f"Expected signature: {expected_signature}")
+        logger.info(f"Body length: {len(raw_body)}")
 
-    # 3. Only AFTER verification — parse JSON
+        # Constant-time comparison
+        if not hmac.compare_digest(signature, expected_signature):
+            logger.warning("META_WEBHOOK_SIGNATURE_MISMATCH")
+            raise HTTPException(status_code=403, detail="Invalid signature")
+    else:
+        logger.warning("META_WEBHOOK_NO_SECRET_CONFIGURED — skipping verification")
+
+    # ── Step 4: Parse JSON only AFTER verification ──
     try:
         body = json.loads(raw_body)
     except json.JSONDecodeError:
         raise HTTPException(status_code=400, detail="Invalid JSON")
 
-    logger.debug("meta_webhook_received", object=body.get("object"))
-
     obj_type = body.get("object", "")
+    logger.info("META_WEBHOOK_PARSED", object_type=obj_type)
 
-    if obj_type not in ("page", "instagram"):
-        return {"status": "ok", "message": "unsupported object type"}
+    # ── Step 5: Route by object type ──
+    if obj_type == "page":
+        # Facebook Messenger
+        _route_entries(body, "facebook", background_tasks)
+    elif obj_type == "instagram":
+        # Instagram
+        _route_entries(body, "instagram", background_tasks)
+    else:
+        logger.info("META_WEBHOOK_UNSUPPORTED_OBJECT", object_type=obj_type)
 
-    # Process each entry
+    return {"status": "ok"}
+
+
+# ─── Event Router ─────────────────────────────────────────────────────
+
+def _route_entries(body: dict, platform: str, background_tasks: BackgroundTasks):
+    """Route all entries to background processing."""
     for entry in body.get("entry", []):
         page_id = entry.get("id", "")
-        platform = "instagram" if obj_type == "instagram" else "facebook"
 
-        # ── DM Messages ──
-        for messaging_event in entry.get("messaging", []):
-            sender_id = messaging_event.get("sender", {}).get("id", "")
+        # ── DM Messages (messaging) ──
+        for event in entry.get("messaging", []):
+            sender_id = event.get("sender", {}).get("id", "")
             background_tasks.add_task(
                 _process_and_log_event,
                 platform=platform,
                 event_type="message",
                 page_id=page_id,
                 sender_id=sender_id,
-                payload=messaging_event,
+                payload=event,
             )
 
-        # ── Comments (feed changes) ──
+        # ── Standby (messaging_handovers) ──
+        for event in entry.get("standby", []):
+            sender_id = event.get("sender", {}).get("id", "")
+            background_tasks.add_task(
+                _process_and_log_event,
+                platform=platform,
+                event_type="standby",
+                page_id=page_id,
+                sender_id=sender_id,
+                payload=event,
+            )
+
+        # ── Message Reactions ──
+        for event in entry.get("message_reactions", []):
+            sender_id = event.get("sender", {}).get("id", "")
+            background_tasks.add_task(
+                _process_and_log_event,
+                platform=platform,
+                event_type="reaction",
+                page_id=page_id,
+                sender_id=sender_id,
+                payload=event,
+            )
+
+        # ── Comments + Live Comments (changes) ──
         for change in entry.get("changes", []):
             field = change.get("field", "")
-            if field in ("feed", "comments"):
+            if field in ("feed", "comments", "live_comments"):
                 value = change.get("value", {})
                 sender_id = value.get("from", {}).get("id", "")
                 background_tasks.add_task(
                     _process_and_log_event,
                     platform=platform,
-                    event_type="comment",
+                    event_type="comment" if field != "live_comments" else "live_comment",
                     page_id=page_id,
                     sender_id=sender_id,
                     payload=value,
                 )
 
-    return {"status": "ok", "processed": True}
 
+# ─── Background Processing ────────────────────────────────────────────
 
 async def _process_and_log_event(
     platform: str,
@@ -126,6 +181,7 @@ async def _process_and_log_event(
     from datetime import datetime
 
     async with async_session_factory() as db:
+        event_log = None
         try:
             # Identify tenant from page_id
             tenant_id = None
@@ -160,7 +216,7 @@ async def _process_and_log_event(
             db.add(event_log)
             await db.commit()
 
-            # Route to existing channel handlers
+            # Route to existing channel handlers (only for messages and comments)
             if event_type == "message":
                 if platform == "facebook":
                     from app.channels.facebook import _process_messaging_event
@@ -169,7 +225,7 @@ async def _process_and_log_event(
                     from app.channels.instagram import _process_messaging_event
                     await _process_messaging_event(payload)
 
-            elif event_type == "comment":
+            elif event_type in ("comment", "live_comment"):
                 if platform == "facebook":
                     from app.channels.facebook import _process_comment_event
                     await _process_comment_event(page_id, payload)
@@ -183,13 +239,12 @@ async def _process_and_log_event(
 
         except Exception as e:
             logger.error(
-                "meta_event_processing_error",
+                "META_EVENT_PROCESSING_ERROR",
                 error=str(e),
                 platform=platform,
                 event_type=event_type,
                 page_id=page_id,
             )
-            # Try to mark the error
             try:
                 if event_log:
                     event_log.error_message = str(e)
