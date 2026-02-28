@@ -65,21 +65,23 @@ async def receive_meta_webhook(
             logger.warning("META_WEBHOOK_MISSING_SIGNATURE")
             raise HTTPException(status_code=403, detail="Missing signature")
 
+        # Strip any whitespace, quotes, newlines from env variable
+        clean_secret = settings.meta_app_secret.strip().strip('"').strip("'").strip()
+
         expected_signature = "sha256=" + hmac.new(
-            settings.meta_app_secret.encode(),
+            clean_secret.encode(),
             raw_body,
             hashlib.sha256,
         ).hexdigest()
 
         # Debug logging (temporary — remove after confirming fix)
-        secret = settings.meta_app_secret
-        secret_hint = f"{secret[:4]}...{secret[-4:]}" if len(secret) > 8 else "TOO_SHORT"
         logger.info("META_WEBHOOK_RECEIVED")
         logger.info(f"Signature header: {signature}")
         logger.info(f"Expected signature: {expected_signature}")
         logger.info(f"Body length: {len(raw_body)}")
-        logger.info(f"Secret hint: {secret_hint} (len={len(secret)})")
-        logger.info(f"Raw body first 100 chars: {raw_body[:100]}")
+        logger.info(f"Secret repr: {repr(settings.meta_app_secret)}")
+        logger.info(f"Clean secret repr: {repr(clean_secret)}")
+        logger.info(f"Clean secret len: {len(clean_secret)}")
 
         # Constant-time comparison
         if not hmac.compare_digest(signature, expected_signature):
