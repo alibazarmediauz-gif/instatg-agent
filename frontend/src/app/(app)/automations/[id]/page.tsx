@@ -14,6 +14,8 @@ import {
     Edge,
     Node,
     OnConnect,
+    OnNodesChange,
+    OnEdgesChange,
     ReactFlowProvider
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -48,8 +50,8 @@ function AutomationCanvas() {
     ];
     const initialEdges: Edge[] = [];
 
-    const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initialNodes);
-    const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
+    const [nodes, setNodes, onNodesChange]: [Node[], any, OnNodesChange] = useNodesState<Node>(initialNodes);
+    const [edges, setEdges, onEdgesChange]: [Edge[], any, OnEdgesChange] = useEdgesState<Edge>(initialEdges);
     const [name, setName] = useState('Yangi Avtomatizatsiya');
     const [saving, setSaving] = useState(false);
 

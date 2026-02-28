@@ -187,6 +187,22 @@ async def _handle_text_message(
     access_token: str, business_name: str,
 ) -> None:
     """Handle incoming Messenger text and reply."""
+    from app.services.automation_engine import process_automation_flow
+
+    async def _auto_reply(reply_text: str):
+        await _send_messenger_message(sender_id, reply_text, access_token)
+
+    handled = await process_automation_flow(
+        tenant_id=tenant_id,
+        message_text=text,
+        platform="facebook",
+        user_id=sender_id,
+        send_message_func=_auto_reply
+    )
+
+    if handled:
+        return
+
     response = await agent.generate_response(
         tenant_id=tenant_id,
         contact_id=f"fb_{sender_id}",

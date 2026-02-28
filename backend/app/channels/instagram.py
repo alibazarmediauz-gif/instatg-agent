@@ -198,6 +198,22 @@ async def _handle_text_message(
     business_name: str,
 ) -> None:
     """Handle incoming text DM and reply."""
+    from app.services.automation_engine import process_automation_flow
+
+    async def _auto_reply(reply_text: str):
+        await _send_instagram_message(sender_id, reply_text, access_token)
+
+    handled = await process_automation_flow(
+        tenant_id=tenant_id,
+        message_text=text,
+        platform="instagram",
+        user_id=sender_id,
+        send_message_func=_auto_reply
+    )
+
+    if handled:
+        return
+
     response = await agent.generate_response(
         tenant_id=tenant_id,
         contact_id=f"ig_{sender_id}",
