@@ -238,7 +238,11 @@
             "conversion": "Conversion",
             "response_time": "Response",
             "all_ok": "All Systems OK",
-            "per_month": "/mo"
+            "per_month": "/mo",
+            "snapshot_title": "Performance Snapshot",
+            "new_leads_label": "New Leads",
+            "conversion_label": "Conversion",
+            "response_time_label": "Response Time"
         }
     }
 }

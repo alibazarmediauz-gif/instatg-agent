@@ -60,8 +60,8 @@ export default function ControlCenter() {
         <div className="page-container animate-in" style={{ padding: '24px 32px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 24 }}>
                 <div>
-                    <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 4 }}>Control Center</h1>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Live operational and financial pulse.</p>
+                    <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 8 }}>Control Center</h1>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>Live operational and financial pulse.</p>
                 </div>
                 <div className="status-badge">
                     <div className="status-dot" />
@@ -72,9 +72,9 @@ export default function ControlCenter() {
             {/* ─── Top KPI Row ─── */}
             <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(7, 1fr)',
-                gap: 16,
-                marginBottom: 24
+                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                gap: 20,
+                marginBottom: 32
             }}>
                 <MiniStatCard label="Wallet Balance" value={`$1,240.50`} sub="Prepaid" icon={<DollarSign size={14} />} color="var(--success)" />
                 <MiniStatCard label="Revenue Today" value={`$${kpis.total_revenue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`} sub="+12.4%" icon={<TrendingUp size={14} />} color="var(--accent)" />
@@ -241,14 +241,16 @@ function MiniStatCard({ label, value, sub, icon, color, pulse = false }: any) {
             background: 'var(--bg-card)',
             border: '1px solid var(--border)',
             borderRadius: '10px',
-            padding: '14px 16px',
+            padding: '20px 24px',
             display: 'flex',
             flexDirection: 'column',
-            gap: 8,
-            boxShadow: pulse ? `0 0 15px -5px ${color}` : 'none'
+            gap: 12,
+            boxShadow: pulse ? `0 0 20px -5px ${color}` : 'none',
+            minHeight: '120px',
+            justifyContent: 'center'
         }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.02em' }}>{label}</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</span>
                 <div style={{ color, display: 'flex', alignItems: 'center' }}>
                     {pulse && <div className="status-dot" style={{ background: color, marginRight: 6 }} />}
                     {icon}
@@ -264,11 +266,11 @@ function MiniStatCard({ label, value, sub, icon, color, pulse = false }: any) {
 
 function ActivityRow({ time, type, detail, status, statusColor }: any) {
     return (
-        <tr>
-            <td style={{ fontSize: 12, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{time}</td>
-            <td><span className="badge neutral">{type}</span></td>
-            <td style={{ width: '100%' }}>{detail}</td>
-            <td><span style={{ fontSize: 12, fontWeight: 600, color: statusColor }}>{status}</span></td>
+        <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+            <td style={{ fontSize: 12, color: 'var(--text-muted)', whiteSpace: 'nowrap', padding: '16px 20px' }}>{time}</td>
+            <td style={{ padding: '16px 20px' }}><span className="badge neutral">{type}</span></td>
+            <td style={{ width: '100%', padding: '16px 20px' }}>{detail}</td>
+            <td style={{ padding: '16px 20px' }}><span style={{ fontSize: 12, fontWeight: 600, color: statusColor }}>{status}</span></td>
         </tr>
     );
 }

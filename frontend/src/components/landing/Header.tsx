@@ -1,51 +1,67 @@
 "use client";
 
-import React from "react";
-import { useLanguage } from "@/lib/LanguageContext";
-import { CheckCircle, Zap, Shield, BarChart3, Globe } from "lucide-react";
 import Link from "next/link";
-import ThemeToggle from "../ThemeToggle";
+import { Globe, Zap } from "lucide-react";
+import ThemeToggle from "@/components/ThemeToggle";
+import { useLanguage } from "@/lib/LanguageContext";
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 
-const Header: React.FC = () => {
+export default function Header() {
     const { t, locale, setLocale } = useLanguage();
+    const [scrolled, setScrolled] = useState(false);
 
-    const toggleLanguage = () => {
-        const next: Record<string, 'en' | 'ru' | 'uz'> = { 'uz': 'ru', 'ru': 'en', 'en': 'uz' };
+    const switchLang = () => {
+        const next: Record<string, "en" | "ru" | "uz"> = { uz: "ru", ru: "en", en: "uz" };
         setLocale(next[locale]);
     };
 
-    return (
-        <header className="fixed top-0 left-0 right-0 z-50 glass-header">
-            <div className="container max-w-7xl h-20 flex items-center justify-between px-6">
-                <div className="flex items-center gap-2.5 font-extrabold text-2xl tracking-tighter text-text-primary">
-                    <div className="w-9 h-9 bg-accent rounded-xl flex items-center justify-center shadow-lg shadow-accent/20">
-                        <Zap size={22} className="text-white fill-white" />
-                    </div>
-                    <span>{t('brand.name').replace('AI', '')}<span className="text-accent">AI</span></span>
-                </div>
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 20);
+        };
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
 
-                <nav className="hidden lg:flex items-center gap-10 text-sm font-semibold text-text-secondary tracking-tight">
-                    <a href="#features" className="hover:text-accent transition-all hover:scale-105 active:scale-95">{t('landing.header.features')}</a>
-                    <a href="#integrations" className="hover:text-accent transition-all hover:scale-105 active:scale-95">{t('landing.header.integrations')}</a>
-                    <a href="#pricing" className="hover:text-accent transition-all hover:scale-105 active:scale-95">{t('landing.header.pricing')}</a>
+    return (
+        <motion.header
+            className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${scrolled
+                ? "bg-slate-950/80 backdrop-blur-md border-b border-white/10 py-3"
+                : "bg-transparent py-5"
+                }`}
+            initial={{ y: -100 }}
+            animate={{ y: 0 }}
+            transition={{ duration: 0.5 }}
+        >
+            <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+                <Link href="/" className="flex items-center gap-2.5 group">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-blue-500 text-slate-950 shadow-lg shadow-cyan-500/20 group-hover:-translate-y-1 transition-transform duration-300">
+                        <Zap size={20} className="fill-current" />
+                    </div>
+                    <div className="text-2xl font-black tracking-tight text-white">
+                        Sales<span className="text-cyan-400">AI</span>
+                    </div>
+                </Link>
+
+                <nav className="hidden items-center gap-8 text-sm font-semibold text-slate-300 md:flex">
+                    <a href="#features" className="hover:text-cyan-300 transition-colors uppercase tracking-wider text-xs">Features</a>
+                    <a href="#pricing" className="hover:text-cyan-300 transition-colors uppercase tracking-wider text-xs">Pricing</a>
                 </nav>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                     <button
-                        onClick={toggleLanguage}
-                        className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-border text-[10px] font-black uppercase tracking-wider hover:bg-white/5 transition-all text-text-secondary"
+                        onClick={switchLang}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 px-3 py-1.5 text-xs font-bold uppercase text-slate-200 transition-colors"
                     >
-                        <Globe size={13} className="text-accent" />
-                        {locale}
+                        <Globe size={14} /> {locale}
                     </button>
                     <ThemeToggle />
-                    <Link href="/dashboard" className="hidden sm:flex btn-primary px-6 py-2.5 rounded-xl shadow-xl shadow-accent/20 hover:shadow-accent/40 transition-all font-bold tracking-tight text-sm">
-                        {t('nav.control_center')}
+                    <Link href="/dashboard" className="hidden rounded-xl bg-cyan-400 hover:bg-cyan-300 px-5 py-2.5 text-sm font-bold text-slate-950 transition-colors sm:inline-flex shadow-lg shadow-cyan-500/20">
+                        {t("nav.control_center")}
                     </Link>
                 </div>
             </div>
-        </header>
+        </motion.header>
     );
-};
-
-export default Header;
+}

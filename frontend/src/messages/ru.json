@@ -237,7 +237,11 @@
             "conversion": "Конверсия",
             "response_time": "Время ответа",
             "all_ok": "Все работает",
-            "per_month": "/мес"
+            "per_month": "/мес",
+            "snapshot_title": "Performance Snapshot",
+            "new_leads_label": "Новые лиды",
+            "conversion_label": "Конверсия",
+            "response_time_label": "Время ответа"
         }
     }
 }

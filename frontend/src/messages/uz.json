@@ -237,7 +237,11 @@
             "conversion": "Konversiya",
             "response_time": "Javob vaqti",
             "all_ok": "Hammasi ishlayapti",
-            "per_month": "/oy"
+            "per_month": "/oy",
+            "snapshot_title": "Performance Snapshot",
+            "new_leads_label": "Yangi lidlar",
+            "conversion_label": "Sotuvga aylangan",
+            "response_time_label": "Javob vaqti"
         }
     }
 }

@@ -1,52 +1,78 @@
 "use client";
 
-import React from "react";
+import { motion } from "framer-motion";
 import { useLanguage } from "@/lib/LanguageContext";
-import { Link2, MessageSquarePlus, UserPlus, GraduationCap, PlayCircle, BarChart } from "lucide-react";
 
-const HowItWorks: React.FC = () => {
+export default function HowItWorks() {
     const { t } = useLanguage();
 
     const steps = [
-        { title: t('landing.how_it_works.s1'), icon: <Link2 size={20} /> },
-        { title: t('landing.how_it_works.s2'), icon: <MessageSquarePlus size={20} /> },
-        { title: t('landing.how_it_works.s3'), icon: <UserPlus size={20} /> },
-        { title: t('landing.how_it_works.s4'), icon: <GraduationCap size={20} /> },
-        { title: t('landing.how_it_works.s5'), icon: <PlayCircle size={20} /> },
-        { title: t('landing.how_it_works.s6'), icon: <BarChart size={20} /> },
+        {
+            number: "01",
+            title: t("landing.problem.p1"),
+            desc: "Connect your Telegram channels and groups to our platform in one click.",
+        },
+        {
+            number: "02",
+            title: t("landing.problem.p2"),
+            desc: "Train your AI bot using your company's knowledge base and FAQs.",
+        },
+        {
+            number: "03",
+            title: t("landing.problem.p3"),
+            desc: "Start resolving customer inquiries automatically, 24/7 without delay.",
+        }
     ];
 
     return (
-        <section className="py-24 bg-bg-body overflow-hidden">
-            <div className="container max-w-6xl">
-                <div className="text-center mb-16">
-                    <h2 className="text-4xl font-bold tracking-tight mb-4">{t('landing.how_it_works.title')}</h2>
-                    <p className="text-text-secondary">{t('landing.how_it_works.desc')}</p>
+        <section className="py-24 relative overflow-hidden bg-slate-950">
+            {/* Soft background line */}
+            <div className="absolute left-1/2 top-0 bottom-0 w-[1px] bg-gradient-to-b from-transparent via-cyan-500/20 to-transparent hidden lg:block" />
+
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
+                <div className="text-center mb-20">
+                    <motion.h2
+                        className="text-4xl md:text-5xl font-black text-white tracking-tight"
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.5 }}
+                    >
+                        How It Works
+                    </motion.h2>
                 </div>
 
-                <div className="relative">
-                    {/* Progress Line */}
-                    <div className="absolute top-1/2 left-0 w-full h-0.5 bg-border -translate-y-1/2 hidden lg:block"></div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 relative z-10">
-                        {steps.map((step, idx) => (
-                            <div key={idx} className="flex flex-col items-center group">
-                                <div className="w-14 h-14 rounded-full bg-bg-card border border-border flex items-center justify-center text-text-muted mb-4 group-hover:border-accent group-hover:text-accent transition-all duration-300 shadow-sm relative">
-                                    <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-bg-body border border-border text-[10px] flex items-center justify-center font-bold">
-                                        {idx + 1}
-                                    </span>
-                                    {step.icon}
+                <div className="space-y-16 lg:space-y-24">
+                    {steps.map((step, idx) => (
+                        <motion.div
+                            key={idx}
+                            className={`flex flex-col ${idx % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} items-center gap-8 lg:gap-16`}
+                            initial={{ opacity: 0, y: 40 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, margin: "-100px" }}
+                            transition={{ duration: 0.6, delay: 0.1 }}
+                        >
+                            <div className={`w-full md:w-1/2 flex justify-center ${idx % 2 === 0 ? 'md:justify-end' : 'md:justify-start'}`}>
+                                <div className="relative">
+                                    <div className="text-8xl md:text-9xl lg:text-[180px] font-black leading-none text-slate-800/40 select-none">
+                                        {step.number}
+                                    </div>
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                        <div className="h-24 w-24 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-500 blur-xl opacity-20" />
+                                    </div>
                                 </div>
-                                <h4 className="text-sm font-bold text-center group-hover:text-text-primary transition-colors italic opacity-80 group-hover:opacity-100">
-                                    {step.title}
-                                </h4>
                             </div>
-                        ))}
-                    </div>
+
+                            <div className={`w-full md:w-1/2 text-center ${idx % 2 === 0 ? 'md:text-left' : 'md:text-right'}`}>
+                                <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">{step.title}</h3>
+                                <p className="text-lg text-slate-400 leading-relaxed max-w-md mx-auto md:mx-0">
+                                    {step.desc}
+                                </p>
+                            </div>
+                        </motion.div>
+                    ))}
                 </div>
             </div>
         </section>
     );
-};
-
-export default HowItWorks;
+}
