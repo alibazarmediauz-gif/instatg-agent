@@ -65,7 +65,7 @@ export default function ControlCenter() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 24 }}>
                 <div>
                     <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 8 }}>{t('nav.control_center')}</h1>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>{t('topbar.dashboard_subtitle')}</p>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>{t('topbar.dashboard_subtitle')} | {t('nav.test_key')}</p>
                 </div>
                 <div className="status-badge">
                     <div className="status-dot" />

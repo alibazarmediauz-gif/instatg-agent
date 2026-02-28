@@ -16,6 +16,7 @@
     },
     "nav": {
         "control_center": "Boshqaruv markazi",
+        "test_key": "VERIFIED_V3",
         "crm": "CRM (amoCRM Sync)",
         "contacts": "Mijozlar bazasi",
         "central_db": "Markaziy ma'lumotlar bazasi",
