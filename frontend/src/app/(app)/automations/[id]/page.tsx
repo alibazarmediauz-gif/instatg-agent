@@ -12,6 +12,7 @@ import {
     addEdge,
     Connection,
     Edge,
+    Node,
     ReactFlowProvider
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -36,7 +37,7 @@ function AutomationCanvas() {
     const reactFlowWrapper = useRef<HTMLDivElement>(null);
     const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
 
-    const [nodes, setNodes, onNodesChange] = useNodesState([
+    const [nodes, setNodes, onNodesChange] = useNodesState<Node>([
         {
             id: 'trigger-1',
             type: 'trigger',
@@ -44,11 +45,11 @@ function AutomationCanvas() {
             data: { keyword: 'start' },
         }
     ]);
-    const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+    const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
     const [name, setName] = useState('Yangi Avtomatizatsiya');
     const [saving, setSaving] = useState(false);
 
-    const onConnect = useCallback((params: Connection | Edge) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
+    const onConnect = useCallback((params: Connection | Edge) => setEdges((eds: Edge[]) => addEdge(params, eds)), [setEdges]);
 
     const onDragOver = useCallback((event: React.DragEvent) => {
         event.preventDefault();
@@ -69,14 +70,14 @@ function AutomationCanvas() {
                 y: event.clientY,
             });
 
-            const newNode = {
+            const newNode: Node = {
                 id: getId(),
                 type,
                 position,
                 data: { label: `${type} node` },
             };
 
-            setNodes((nds) => nds.concat(newNode));
+            setNodes((nds: Node[]) => nds.concat(newNode));
         },
         [reactFlowInstance, setNodes],
     );
@@ -209,14 +210,14 @@ function AutomationCanvas() {
                         <Background color="#ccc" gap={16} />
                         <Controls />
                         <MiniMap
-                            nodeStrokeColor={(n) => {
+                            nodeStrokeColor={(n: Node) => {
                                 if (n.type === 'trigger') return '#3B82F6';
                                 if (n.type === 'message') return '#10B981';
                                 if (n.type === 'aiStep') return '#8B5CF6';
                                 if (n.type === 'delay') return '#F59E0B';
                                 return '#eee';
                             }}
-                            nodeColor={(n) => {
+                            nodeColor={(n: Node) => {
                                 return 'var(--bg-card)';
                             }}
                         />
