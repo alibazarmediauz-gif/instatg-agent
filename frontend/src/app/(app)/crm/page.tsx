@@ -198,195 +198,261 @@ export default function CRMPage() {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--bg-main)', overflow: 'hidden' }}>
 
-            {/* ══ TOP BAR ════════════════════════════════════════════════════ */}
-            <div style={{
-                padding: '0 28px', height: 64, display: 'flex', alignItems: 'center',
-                justifyContent: 'space-between', borderBottom: '1px solid var(--border)',
-                background: 'var(--bg-card)', flexShrink: 0, gap: 16
-            }}>
-                {/* Left: title + stats */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-                    <div>
-                        <h1 style={{ fontSize: 18, fontWeight: 800, margin: 0 }}>{t('nav.crm')}</h1>
-                    </div>
-                    <div style={{ width: 1, height: 24, background: 'var(--border)' }} />
-                    <div style={{ display: 'flex', gap: 20 }}>
-                        <Stat label="Total Leads" value={totalLeads.toString()} />
-                        <Stat label="Pipeline Value" value={`$${totalPipelineValue.toLocaleString()}`} accent />
-                        <Stat label="Stages" value={displayStages.length.toString()} />
-                    </div>
-                </div>
-
-                {/* Right: actions */}
-                <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                    {/* search */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 8, padding: '0 12px', height: 36 }}>
-                        <Search size={13} color="var(--text-muted)" />
-                        <input
-                            value={search} onChange={e => setSearch(e.target.value)}
-                            placeholder="Search leads&hellip;"
-                            style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: 13, color: 'var(--text-primary)', width: 180 }}
-                        />
-                        {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 0, display: 'flex' }}><X size={13} /></button>}
-                    </div>
-
-                    <button onClick={() => fetchData(true)} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 8, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-muted)' }}>
-                        <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
-                    </button>
-
-                    <button onClick={() => setAutomModal(true)} style={{
-                        display: 'flex', alignItems: 'center', gap: 6, height: 36, padding: '0 14px',
-                        borderRadius: 8, border: '1px solid rgba(99,102,241,.4)',
-                        background: 'rgba(99,102,241,.08)', color: '#818cf8',
-                        fontSize: 13, fontWeight: 600, cursor: 'pointer'
+            {/* ══ CONDITIONAL RENDER: SETUP vs KANBAN ════════════════════════════════════ */}
+            {!amoConnected ? (
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px', overflowY: 'auto' }}>
+                    <div className="animate-in" style={{
+                        maxWidth: 900, width: '100%', background: 'var(--bg-main)', borderRadius: 32,
+                        border: '1px solid var(--border)', overflow: 'hidden',
+                        boxShadow: '0 40px 100px rgba(0,0,0,0.15)', display: 'flex'
                     }}>
-                        <Zap size={14} /> Automations
-                    </button>
-
-                    <button onClick={() => setLeadModal('new')} style={{
-                        display: 'flex', alignItems: 'center', gap: 6, height: 36, padding: '0 16px',
-                        borderRadius: 8, border: 'none',
-                        background: 'var(--accent)', color: '#fff',
-                        fontSize: 13, fontWeight: 700, cursor: 'pointer'
-                    }}>
-                        <Plus size={15} /> New Lead
-                    </button>
-                </div>
-            </div>
-
-            {/* ══ amoCRM SYNC BANNER ══════════════════════════════════════ */}
-            <div style={{ padding: '0 28px 16px', background: 'var(--bg-card)', borderBottom: '1px solid var(--border)' }}>
-                <div style={{
-                    padding: '16px 20px',
-                    background: amoConnected ? 'rgba(34, 197, 94, 0.05)' : 'rgba(99, 102, 241, 0.05)',
-                    border: `1px dashed ${amoConnected ? 'rgba(34, 197, 94, 0.3)' : 'rgba(99, 102, 241, 0.3)'}`,
-                    borderRadius: 12,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between'
-                }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                        <div style={{
-                            width: 44, height: 44, borderRadius: 10,
-                            background: amoConnected ? 'rgba(34, 197, 94, 0.1)' : 'rgba(99, 102, 241, 0.1)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', color: amoConnected ? '#22c55e' : '#6366f1'
-                        }}>
-                            <RefreshCw size={20} className={refreshing ? 'animate-spin' : ''} />
-                        </div>
-                        <div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-                                <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
-                                    {amoConnected ? t('integrations.connected_amo_label') : t('integrations.connect_amo_btn')}
-                                </h3>
-                                {amoConnected && <span style={{ fontSize: 9, background: 'rgba(34,197,94,0.15)', color: '#22c55e', padding: '1px 6px', borderRadius: 8, fontWeight: 800 }}>CONNECTED</span>}
+                        {/* Left Side: Setup Let's Go */}
+                        <div style={{ flex: 1, padding: '64px 48px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center' }}>
+                            <div style={{
+                                width: 64, height: 64, borderRadius: 16,
+                                background: 'linear-gradient(135deg, #1d4ed8, #3b82f6)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                fontSize: 24, fontWeight: 900, color: '#fff', marginBottom: 32,
+                                boxShadow: '0 12px 32px rgba(59, 130, 246, 0.3)',
+                            }}>
+                                amo
                             </div>
-                            <p style={{ margin: 0, fontSize: 12, color: 'var(--text-muted)' }}>
-                                {amoConnected
-                                    ? `${t('integrations.last_sync_label')}: ${lastSync ? new Date(lastSync).toLocaleTimeString() : t('integrations.never')}`
-                                    : t('integrations.amocrm_desc')}
+                            <h1 style={{ fontSize: 36, fontWeight: 900, marginBottom: 16, lineHeight: 1.1, letterSpacing: '-0.03em' }}>
+                                Connect your amoCRM
+                            </h1>
+                            <p style={{ fontSize: 16, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 48, maxWidth: 400 }}>
+                                {t('integrations.amocrm_desc')} Activate 2-way sync to manage leads, view AI chat history, and automate pipeline stages directly from this dashboard.
                             </p>
+                            <button
+                                onClick={() => setConnectModal(true)}
+                                style={{
+                                    padding: '16px 32px', borderRadius: 12,
+                                    background: 'linear-gradient(135deg, #1d4ed8, #3b82f6)', border: 'none',
+                                    color: '#fff', fontSize: 16, fontWeight: 800, cursor: 'pointer',
+                                    display: 'flex', alignItems: 'center', gap: 12,
+                                    boxShadow: '0 12px 24px rgba(59, 130, 246, 0.3)', transition: 'transform 0.2s',
+                                }}
+                                onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                                onMouseLeave={e => e.currentTarget.style.transform = 'none'}
+                            >
+                                <Zap size={20} fill="#fff" />
+                                {t('integrations.connect_amo_btn')}
+                            </button>
+                        </div>
+                        {/* Right Side: Benefits */}
+                        <div style={{ width: 400, background: 'var(--bg-card)', borderLeft: '1px solid var(--border)', padding: '64px 40px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                            <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 32 }}>What happens next?</h3>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+                                {[
+                                    { icon: <RefreshCw size={24} />, title: "Real-time 2-way sync", desc: "Changes in amoCRM reflect instantly here, and vice versa." },
+                                    { icon: <LayoutGrid size={24} />, title: "Pipeline mapping", desc: "Your pipelines and stages are automatically imported." },
+                                    { icon: <BotMessageSquare size={24} />, title: "Chat sync", desc: "AI conversations from all sources are attached to the lead card." }
+                                ].map((benefit, i) => (
+                                    <div key={i} style={{ display: 'flex', gap: 16 }}>
+                                        <div style={{ flexShrink: 0, width: 48, height: 48, borderRadius: 12, background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            {benefit.icon}
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>{benefit.title}</div>
+                                            <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>{benefit.desc}</div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                <>
+                    {/* ══ TOP BAR ════════════════════════════════════════════════════ */}
+                    <div style={{
+                        padding: '0 28px', height: 64, display: 'flex', alignItems: 'center',
+                        justifyContent: 'space-between', borderBottom: '1px solid var(--border)',
+                        background: 'var(--bg-card)', flexShrink: 0, gap: 16
+                    }}>
+                        {/* Left: title + stats */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+                            <div>
+                                <h1 style={{ fontSize: 18, fontWeight: 800, margin: 0 }}>{t('nav.crm')}</h1>
+                            </div>
+                            <div style={{ width: 1, height: 24, background: 'var(--border)' }} />
+                            <div style={{ display: 'flex', gap: 20 }}>
+                                <Stat label="Total Leads" value={totalLeads.toString()} />
+                                <Stat label="Pipeline Value" value={`$${totalPipelineValue.toLocaleString()}`} accent />
+                                <Stat label="Stages" value={displayStages.length.toString()} />
+                            </div>
+                        </div>
+
+                        {/* Right: actions */}
+                        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                            {/* search */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 8, padding: '0 12px', height: 36 }}>
+                                <Search size={13} color="var(--text-muted)" />
+                                <input
+                                    value={search} onChange={e => setSearch(e.target.value)}
+                                    placeholder="Search leads&hellip;"
+                                    style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: 13, color: 'var(--text-primary)', width: 180 }}
+                                />
+                                {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 0, display: 'flex' }}><X size={13} /></button>}
+                            </div>
+
+                            <button onClick={() => fetchData(true)} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 8, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-muted)' }}>
+                                <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
+                            </button>
+
+                            <button onClick={() => setAutomModal(true)} style={{
+                                display: 'flex', alignItems: 'center', gap: 6, height: 36, padding: '0 14px',
+                                borderRadius: 8, border: '1px solid rgba(99,102,241,.4)',
+                                background: 'rgba(99,102,241,.08)', color: '#818cf8',
+                                fontSize: 13, fontWeight: 600, cursor: 'pointer'
+                            }}>
+                                <Zap size={14} /> Automations
+                            </button>
+
+                            <button onClick={() => setLeadModal('new')} style={{
+                                display: 'flex', alignItems: 'center', gap: 6, height: 36, padding: '0 16px',
+                                borderRadius: 8, border: 'none',
+                                background: 'var(--accent)', color: '#fff',
+                                fontSize: 13, fontWeight: 700, cursor: 'pointer'
+                            }}>
+                                <Plus size={15} /> New Lead
+                            </button>
                         </div>
                     </div>
 
-                    <button
-                        onClick={amoConnected ? () => fetchData(true) : () => setConnectModal(true)}
-                        disabled={refreshing}
-                        style={{
-                            padding: '8px 16px', borderRadius: 6,
-                            background: amoConnected ? 'transparent' : 'var(--accent)',
-                            color: amoConnected ? 'var(--text-primary)' : 'white',
-                            border: amoConnected ? '1px solid var(--border)' : 'none',
-                            fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s'
-                        }}
-                    >
-                        {refreshing ? <Loader2 size={14} className="animate-spin" /> : amoConnected ? <RefreshCw size={14} /> : <Zap size={14} fill="currentColor" />}
-                        {amoConnected ? t('integrations.sync_now') : t('integrations.connect')}
-                    </button>
-                </div>
-            </div>
-
-            {/* ══ KANBAN BOARD ═══════════════════════════════════════════════ */}
-            <div style={{ flex: 1, overflowX: 'auto', overflowY: 'hidden', display: 'flex', gap: 0, padding: '16px 20px', paddingBottom: 0 }}>
-                {displayStages.map((stage, idx) => {
-                    const sc = stageColor(stage.name);
-                    const stageLeads = filtered.filter(l => l.pipeline_stage_id === stage.id || l.status === stage.name);
-                    const stageValue = stageLeads.reduce((s, l) => s + (l.clv || 0), 0);
-                    const isOver = dragOver === stage.id;
-                    const isLast = idx === displayStages.length - 1;
-
-                    return (
-                        <div
-                            key={stage.id}
-                            style={{ display: 'flex', alignItems: 'flex-start', gap: 0 }}
-                        >
-                            {/* Column */}
-                            <div
-                                style={{
-                                    width: 300, flexShrink: 0, display: 'flex', flexDirection: 'column',
-                                    height: 'calc(100vh - 128px)',
-                                    background: isOver ? `${sc}08` : 'transparent',
-                                    transition: 'background 0.15s',
-                                    borderRadius: 12, overflow: 'hidden',
-                                    border: isOver ? `1px solid ${sc}30` : '1px solid transparent',
-                                }}
-                                onDragOver={e => { e.preventDefault(); setDragOver(stage.id); }}
-                                onDragLeave={() => setDragOver(null)}
-                                onDrop={e => onDrop(e, stage.id)}
-                            >
-                                {/* Column header */}
-                                <div style={{ padding: '12px 14px 10px', flexShrink: 0 }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                            <div style={{ width: 8, height: 8, borderRadius: '50%', background: sc, flexShrink: 0 }} />
-                                            <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{stage.name}</span>
-                                        </div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                            <span style={{ fontSize: 11, fontWeight: 700, color: sc, background: `${sc}18`, padding: '2px 8px', borderRadius: 10 }}>{stageLeads.length}</span>
-                                        </div>
-                                    </div>
-                                    <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text-primary)', paddingLeft: 16, marginTop: 4 }}>
-                                        ${stageValue.toLocaleString()}
-                                    </div>
-                                    <div style={{ height: 2, background: `${sc}30`, borderRadius: 2, marginTop: 10 }}>
-                                        <div style={{ height: '100%', width: `${Math.min((stageLeads.length / Math.max(totalLeads, 1)) * 100, 100)}%`, background: sc, borderRadius: 2, transition: 'width 0.4s' }} />
-                                    </div>
+                    {/* ══ amoCRM SYNC BANNER ══════════════════════════════════════ */}
+                    <div style={{ padding: '0 28px 16px', background: 'var(--bg-card)', borderBottom: '1px solid var(--border)' }}>
+                        <div style={{
+                            padding: '16px 20px',
+                            background: 'rgba(34, 197, 94, 0.05)',
+                            border: '1px dashed rgba(34, 197, 94, 0.3)',
+                            borderRadius: 12,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                                <div style={{
+                                    width: 44, height: 44, borderRadius: 10,
+                                    background: 'rgba(34, 197, 94, 0.1)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#22c55e'
+                                }}>
+                                    <RefreshCw size={20} className={refreshing ? 'animate-spin' : ''} />
                                 </div>
-
-                                {/* Cards */}
-                                <div style={{ flex: 1, overflowY: 'auto', padding: '6px 10px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                                    {stageLeads.map(lead => (
-                                        <LeadCard
-                                            key={lead.id}
-                                            lead={lead}
-                                            stageColor={sc}
-                                            isDragging={draggedId === lead.id}
-                                            onDragStart={(e: React.DragEvent) => onDragStart(e, lead.id)}
-                                            onOpen={() => { setActiveLeadId(lead.id); setLeadModal('detail'); }}
-                                        />
-                                    ))}
-
-                                    {stageLeads.length === 0 && (
-                                        <div style={{
-                                            flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                                            padding: 24, color: 'var(--text-muted)', fontSize: 13, textAlign: 'center', gap: 8,
-                                            border: `1.5px dashed ${sc}30`, borderRadius: 10, minHeight: 100
-                                        }}>
-                                            <div style={{ width: 32, height: 32, borderRadius: '50%', background: `${sc}12`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                <Plus size={16} color={sc} />
-                                            </div>
-                                            <span>Drop leads here</span>
-                                        </div>
-                                    )}
+                                <div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                                        <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
+                                            {t('integrations.connected_amo_label')}
+                                        </h3>
+                                        <span style={{ fontSize: 9, background: 'rgba(34,197,94,0.15)', color: '#22c55e', padding: '1px 6px', borderRadius: 8, fontWeight: 800 }}>CONNECTED</span>
+                                    </div>
+                                    <p style={{ margin: 0, fontSize: 12, color: 'var(--text-muted)' }}>
+                                        {`${t('integrations.last_sync_label')}: ${lastSync ? new Date(lastSync).toLocaleTimeString() : t('integrations.never')}`}
+                                    </p>
                                 </div>
                             </div>
 
-                            {/* Divider */}
-                            {!isLast && <div style={{ width: 1, height: 'calc(100vh - 128px)', background: 'var(--border)', margin: '0 6px', flexShrink: 0, alignSelf: 'flex-start' }} />}
+                            <button
+                                onClick={() => fetchData(true)}
+                                disabled={refreshing}
+                                style={{
+                                    padding: '8px 16px', borderRadius: 6,
+                                    background: 'transparent',
+                                    color: 'var(--text-primary)',
+                                    border: '1px solid var(--border)',
+                                    fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                                    display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s'
+                                }}
+                            >
+                                {refreshing ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+                                {t('integrations.sync_now')}
+                            </button>
                         </div>
-                    );
-                })}
-            </div>
+                    </div>
+
+                    {/* ══ KANBAN BOARD ═══════════════════════════════════════════════ */}
+                    <div style={{ flex: 1, overflowX: 'auto', overflowY: 'hidden', display: 'flex', gap: 0, padding: '16px 20px', paddingBottom: 0 }}>
+                        {displayStages.map((stage, idx) => {
+                            const sc = stageColor(stage.name);
+                            const stageLeads = filtered.filter(l => l.pipeline_stage_id === stage.id || l.status === stage.name);
+                            const stageValue = stageLeads.reduce((s, l) => s + (l.clv || 0), 0);
+                            const isOver = dragOver === stage.id;
+                            const isLast = idx === displayStages.length - 1;
+
+                            return (
+                                <div
+                                    key={stage.id}
+                                    style={{ display: 'flex', alignItems: 'flex-start', gap: 0 }}
+                                >
+                                    {/* Column */}
+                                    <div
+                                        style={{
+                                            width: 300, flexShrink: 0, display: 'flex', flexDirection: 'column',
+                                            height: 'calc(100vh - 128px)',
+                                            background: isOver ? `${sc}08` : 'transparent',
+                                            transition: 'background 0.15s',
+                                            borderRadius: 12, overflow: 'hidden',
+                                            border: isOver ? `1px solid ${sc}30` : '1px solid transparent',
+                                        }}
+                                        onDragOver={e => { e.preventDefault(); setDragOver(stage.id); }}
+                                        onDragLeave={() => setDragOver(null)}
+                                        onDrop={e => onDrop(e, stage.id)}
+                                    >
+                                        {/* Column header */}
+                                        <div style={{ padding: '12px 14px 10px', flexShrink: 0 }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: sc, flexShrink: 0 }} />
+                                                    <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{stage.name}</span>
+                                                </div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                    <span style={{ fontSize: 11, fontWeight: 700, color: sc, background: `${sc}18`, padding: '2px 8px', borderRadius: 10 }}>{stageLeads.length}</span>
+                                                </div>
+                                            </div>
+                                            <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text-primary)', paddingLeft: 16, marginTop: 4 }}>
+                                                ${stageValue.toLocaleString()}
+                                            </div>
+                                            <div style={{ height: 2, background: `${sc}30`, borderRadius: 2, marginTop: 10 }}>
+                                                <div style={{ height: '100%', width: `${Math.min((stageLeads.length / Math.max(totalLeads, 1)) * 100, 100)}%`, background: sc, borderRadius: 2, transition: 'width 0.4s' }} />
+                                            </div>
+                                        </div>
+
+                                        {/* Cards */}
+                                        <div style={{ flex: 1, overflowY: 'auto', padding: '6px 10px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                            {stageLeads.map(lead => (
+                                                <LeadCard
+                                                    key={lead.id}
+                                                    lead={lead}
+                                                    stageColor={sc}
+                                                    isDragging={draggedId === lead.id}
+                                                    onDragStart={(e: React.DragEvent) => onDragStart(e, lead.id)}
+                                                    onOpen={() => { setActiveLeadId(lead.id); setLeadModal('detail'); }}
+                                                />
+                                            ))}
+
+                                            {stageLeads.length === 0 && (
+                                                <div style={{
+                                                    flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                                                    padding: 24, color: 'var(--text-muted)', fontSize: 13, textAlign: 'center', gap: 8,
+                                                    border: `1.5px dashed ${sc}30`, borderRadius: 10, minHeight: 100
+                                                }}>
+                                                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: `${sc}12`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        <Plus size={16} color={sc} />
+                                                    </div>
+                                                    <span>Drop leads here</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Divider */}
+                                    {!isLast && <div style={{ width: 1, height: 'calc(100vh - 128px)', background: 'var(--border)', margin: '0 6px', flexShrink: 0, alignSelf: 'flex-start' }} />}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </>
+            )}
 
             {/* ══ MODALS ═════════════════════════════════════════════════════ */}
 
@@ -586,63 +652,99 @@ export default function CRMPage() {
             )
             }
 
-            {/* amoCRM Connect Modal */}
-            {
-                connectModal && (
-                    <Overlay onClose={() => setConnectModal(false)}>
-                        <div style={{ width: 440 }}>
-                            <ModalHeader
-                                title={t('integrations.connect_amo_btn')}
-                                onClose={() => setConnectModal(false)}
-                                icon={<RefreshCw size={18} />}
-                            />
-                            <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <Field label="amoCRM Subdomain">
+            {/* amoCRM Connect Modal - Enterprise Redesign */}
+            {connectModal && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(12px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    onClick={e => { if (e.target === e.currentTarget && !saving && !refreshing) setConnectModal(false); }}>
+                    <div className="animate-in" style={{
+                        width: 480, background: 'var(--bg-main)', borderRadius: 24,
+                        border: '1px solid var(--border)', padding: '48px 40px',
+                        boxShadow: '0 40px 80px rgba(0,0,0,0.5)', textAlign: 'center',
+                        position: 'relative'
+                    }}>
+                        <button
+                            onClick={() => setConnectModal(false)}
+                            style={{ position: 'absolute', top: 24, right: 24, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '50%', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-muted)' }}
+                        >
+                            <X size={18} />
+                        </button>
+
+                        <div style={{
+                            width: 80, height: 80, borderRadius: 20,
+                            background: 'linear-gradient(135deg, #1d4ed8, #3b82f6)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 32, fontWeight: 900, color: '#fff', margin: '0 auto 24px',
+                            boxShadow: '0 12px 32px rgba(59, 130, 246, 0.3)',
+                        }}>
+                            amo
+                        </div>
+
+                        <h2 style={{ fontSize: 22, fontWeight: 900, marginBottom: 8 }}>
+                            {t('integrations.connect_amo_btn')}
+                        </h2>
+                        <p style={{ color: 'var(--text-muted)', fontSize: 14, lineHeight: 1.6, marginBottom: 32 }}>
+                            {t('integrations.amocrm_desc')} Follow the steps below to securely link your pipeline.
+                        </p>
+
+                        <div style={{
+                            background: 'var(--bg-card)', borderRadius: 16, padding: '24px',
+                            border: '1px solid var(--border)', marginBottom: 24, textAlign: 'left',
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, marginBottom: 24 }}>
+                                <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--accent)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, flexShrink: 0 }}>1</div>
+                                <div>
+                                    <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 8, color: 'var(--text-primary)' }}>Authorize in amoCRM</div>
                                     <input
                                         value={connectForm.subdomain}
                                         onChange={e => setConnectForm(p => ({ ...p, subdomain: e.target.value }))}
-                                        placeholder="your-company"
-                                        style={inputStyle}
+                                        placeholder="your-company (subdomain)"
+                                        style={{ ...inputStyle, marginBottom: 12, background: 'var(--bg-main)' }}
                                     />
-                                    <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
-                                        e.g., if your URL is your-company.amocrm.ru, enter "your-company"
-                                    </p>
-                                </Field>
+                                    <button
+                                        onClick={handleStartConnect}
+                                        disabled={!connectForm.subdomain || refreshing}
+                                        style={{ ...btnSec, width: '100%', height: 40, justifyContent: 'center', background: 'var(--bg-main)' }}
+                                    >
+                                        {refreshing ? <Loader2 size={14} className="animate-spin" /> : <ArrowUpRight size={14} />}
+                                        {refreshing ? 'Opening...' : 'Get Authorization Code'}
+                                    </button>
+                                </div>
+                            </div>
 
-                                <button
-                                    onClick={handleStartConnect}
-                                    disabled={!connectForm.subdomain || refreshing}
-                                    style={{ ...btnSec, width: '100%', height: 40, justifyContent: 'center' }}
-                                >
-                                    {refreshing ? <Loader2 size={14} className="animate-spin" /> : "Step 1: Get Authorization Code"}
-                                </button>
-
-                                <div style={{ height: 1, background: 'var(--border)', margin: '8px 0' }} />
-
-                                <Field label="Authorization Code">
+                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+                                <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, flexShrink: 0 }}>2</div>
+                                <div style={{ width: '100%' }}>
+                                    <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 8, color: 'var(--text-primary)' }}>Paste the Code</div>
                                     <input
                                         value={connectForm.code}
                                         onChange={e => setConnectForm(p => ({ ...p, code: e.target.value }))}
                                         placeholder="Paste code from amoCRM here..."
-                                        style={inputStyle}
+                                        style={{ ...inputStyle, background: 'var(--bg-main)' }}
                                     />
-                                </Field>
+                                </div>
                             </div>
-                            <ModalFooter>
-                                <button onClick={() => setConnectModal(false)} style={btnSec}>Cancel</button>
-                                <button
-                                    onClick={handleFinishConnect}
-                                    disabled={!connectForm.code || saving}
-                                    style={{ ...btnPri, opacity: !connectForm.code || saving ? 0.6 : 1 }}
-                                >
-                                    {saving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
-                                    {saving ? 'Connecting...' : 'Finish Connection'}
-                                </button>
-                            </ModalFooter>
                         </div>
-                    </Overlay>
-                )
-            }
+
+                        <button
+                            onClick={handleFinishConnect}
+                            disabled={!connectForm.code || saving}
+                            style={{
+                                width: '100%', padding: '16px',
+                                background: 'linear-gradient(135deg, #1d4ed8, #3b82f6)',
+                                border: 'none', borderRadius: 12,
+                                color: '#fff', fontWeight: 800, fontSize: 15,
+                                cursor: !connectForm.code || saving ? 'not-allowed' : 'pointer',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                                opacity: !connectForm.code || saving ? 0.7 : 1,
+                                boxShadow: '0 8px 24px rgba(59, 130, 246, 0.25)',
+                            }}
+                        >
+                            {saving ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+                            {saving ? 'Connecting...' : 'Finish Connection'}
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Automation Studio (Vo'ronka) - Visual Grid Layout */}
             {
