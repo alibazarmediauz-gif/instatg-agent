@@ -45,10 +45,14 @@ class Settings(BaseSettings):
     embedding_model: str = "text-embedding-3-small"
 
     # --- Alternative LLM Providers (optional) ---
-    # Choose provider for text/embeddings: 'openai'|'openrouter'|'huggingface'
+    # Choose provider for text/embeddings: 'openai'|'openrouter'|'huggingface'|'groq'|'google'
     llm_provider: str = "openai"
     openrouter_api_key: str = ""
     huggingface_api_key: str = ""
+    groq_api_key: str = ""
+    google_api_key: str = ""
+    orbit_api_key: str = ""
+
 
     # --- Pinecone ---
     pinecone_api_key: str = ""

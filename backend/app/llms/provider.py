@@ -22,32 +22,44 @@ async def get_embedding(text: str) -> List[float]:
         response = await client.embeddings.create(model=settings.embedding_model, input=text)
         return response.data[0].embedding
 
-    # Future: implement OpenRouter / HuggingFace embedding calls here
-    raise RuntimeError(f"Embedding provider '{provider}' not implemented. Set LLM_PROVIDER=openai or implement provider.")
+    # Google/Groq typically don't share the same embedding endpoint via OpenAI SDK
+    # We'll default to OpenAI if key is present, otherwise error
+    if settings.openai_api_key:
+        client = openai.AsyncOpenAI(api_key=settings.openai_api_key)
+        response = await client.embeddings.create(model=settings.embedding_model, input=text)
+        return response.data[0].embedding
+
+    raise RuntimeError(f"Embedding provider '{provider}' not implemented or no OpenAI key for embeddings.")
 
 
 async def generate_text(prompt: str, model: Optional[str] = None, max_tokens: int = 512) -> str:
-    """Generate text from `prompt` using configured provider.
-
-    Returns plain text string.
-    """
+    """Generate text from `prompt` using configured provider."""
     provider = (settings.llm_provider or "openai").lower()
-    model = model or settings.embedding_model
-
-    if provider == "openai":
+    
+    if provider == "groq":
+        client = openai.AsyncOpenAI(
+            api_key=settings.groq_api_key,
+            base_url="https://api.groq.com/openai/v1"
+        )
+        model = model or "llama-3.3-70b-versatile"
+    elif provider == "google":
+        client = openai.AsyncOpenAI(
+            api_key=settings.google_api_key,
+            base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
+        )
+        model = model or "gemini-1.5-flash"
+    else:
+        # Default to OpenAI
         client = openai.AsyncOpenAI(api_key=settings.openai_api_key)
-        # Use chat completion-ish interface if available, otherwise fall back
-        try:
-            resp = await client.chat.completions.create(
-                model=model,
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=max_tokens,
-            )
-            # Best-effort extract
-            return resp.choices[0].message.content
-        except Exception:
-            # Older response shape
-            resp = await client.completions.create(model=model, prompt=prompt, max_tokens=max_tokens)
-            return getattr(resp, "text", resp.choices[0].text)
+        model = model or "gpt-3.5-turbo"
 
-    raise RuntimeError(f"Text generation provider '{provider}' not implemented.")
+    try:
+        resp = await client.chat.completions.create(
+            model=model,
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=max_tokens,
+        )
+        return resp.choices[0].message.content
+    except Exception as e:
+        logger.error("llm_generation_failed", provider=provider, model=model, error=str(e))
+        raise
