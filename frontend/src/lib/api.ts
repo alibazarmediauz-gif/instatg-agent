@@ -300,17 +300,9 @@ export async function getCRMStatus(tenantId: string) {
     });
 }
 
-export async function getAmoAuthUrl(subdomain: string) {
+export async function getAmoAuthUrl(tenantId: string) {
     return apiClient('/api/integrations/amocrm/auth-url', {
-        params: { subdomain },
-    });
-}
-
-export async function connectAmoCRM(tenantId: string, subdomain: string, code: string) {
-    return apiClient('/api/integrations/amocrm/connect', {
-        method: 'POST',
         params: { tenant_id: tenantId },
-        body: JSON.stringify({ subdomain, code }),
     });
 }
 

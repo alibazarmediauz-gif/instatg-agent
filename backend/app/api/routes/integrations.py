@@ -60,58 +60,68 @@ class AmoCRMInit(BaseModel):
     subdomain: str
 
 @router.get("/amocrm/auth-url")
-async def get_amocrm_auth_url(subdomain: str = Query(...)):
-    """Generate the amoCRM authorization URL."""
+async def get_amocrm_auth_url(tenant_id: UUID = Query(...)):
+    """Generate the amoCRM authorization URL for the SaaS tenant."""
     from app.config import settings
-    client_id = settings.amocrm_client_id
-    redirect_uri = settings.amocrm_redirect_uri
     
-    # Standard amoCRM OAuth URL
+    # We pass the tenant_id in the 'state' parameter so when amoCRM redirects back,
+    # we know which tenant this connection belongs to.
+    state = str(tenant_id)
+    
     auth_url = (
-        f"https://www.amocrm.ru/oauth?client_id={client_id}"
-        f"&mode=post_message" # or popup
+        f"https://www.amocrm.ru/oauth?client_id={settings.amocrm_client_id}"
+        f"&state={state}"
+        f"&mode=post_message"
     )
-    # Note: Modern amoCRM often uses a different flow or requires specific redirect_uri in the console
     return {"url": auth_url}
 
-class AmoCRMAuthCode(BaseModel):
-    subdomain: str
-    code: str
-
-@router.post("/amocrm/connect")
-async def connect_amocrm(data: AmoCRMAuthCode, tenant_id: UUID = Query(...), db: AsyncSession = Depends(get_db)):
-    """Exchange code for tokens and save account."""
+@router.get("/amocrm/callback")
+async def amocrm_callback(
+    code: str = Query(..., description="The authorization code from amoCRM"),
+    referer: str = Query(..., description="The amoCRM domain that made the request"),
+    state: str = Query(..., description="The tenant_id passed during the initial request"),
+    db: AsyncSession = Depends(get_db)
+):
+    """Handle the OAuth redirect from amoCRM, exchange the code, and redirect the user."""
     from app.models import AmoCRMAccount
     from app.crm.amocrm import AmoCRMClient
+    from app.config import settings
+    from fastapi.responses import RedirectResponse
     
-    # Initialize a temporary client to exchange the code
-    # We don't have tokens yet, so we pass empty ones
-    temp_client = AmoCRMClient(data.subdomain, "", "")
+    tenant_id = UUID(state)
+    subdomain = referer.replace(".amocrm.ru", "")
+    
+    # Initialize temp client to exchange the code
+    temp_client = AmoCRMClient(subdomain, "", "")
     try:
-        token_data = await temp_client.exchange_code(data.code)
+        token_data = await temp_client.exchange_code(code)
         
         account_q = await db.execute(select(AmoCRMAccount).where(AmoCRMAccount.tenant_id == tenant_id))
         account = account_q.scalar_one_or_none()
 
         if account:
-            account.subdomain = data.subdomain
+            account.subdomain = subdomain
             account.access_token = token_data["access_token"]
             account.refresh_token = token_data["refresh_token"]
             account.is_active = True
         else:
             account = AmoCRMAccount(
                 tenant_id=tenant_id, 
-                subdomain=data.subdomain, 
+                subdomain=subdomain, 
                 access_token=token_data["access_token"],
                 refresh_token=token_data["refresh_token"]
             )
             db.add(account)
         
         await db.commit()
-        return {"status": "success", "connected": True}
+        
+        # Redirect the user back to the CRM dashboard
+        # Using the base frontend URL from settings
+        return RedirectResponse(url=f"{settings.frontend_url}/crm?amo_connected=true")
+        
     except Exception as e:
-        logger.error("amocrm_connection_failed", error=str(e))
-        return {"status": "error", "message": str(e)}
+        logger.error("amocrm_callback_failed", error=str(e), tenant_id=str(tenant_id))
+        return RedirectResponse(url=f"{settings.frontend_url}/crm?amo_error=token_exchange_failed")
 
 @router.post("/amocrm/disconnect")
 async def disconnect_amocrm(tenant_id: UUID = Query(...), db: AsyncSession = Depends(get_db)):

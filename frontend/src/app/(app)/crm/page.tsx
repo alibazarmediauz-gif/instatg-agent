@@ -9,7 +9,7 @@ import {
     Clock, Star, RefreshCw, Target, Users, TrendingUp, MoreHorizontal, Circle, ArrowRight, Filter, Save
 } from 'lucide-react';
 import { useTenant } from '@/lib/TenantContext';
-import { getLeads, createLead, updateLeadStage, getPipelines, createPipeline as apiCreatePipeline, getCRMStatus, getAmoAuthUrl, connectAmoCRM } from '@/lib/api';
+import { getLeads, createLead, updateLeadStage, getPipelines, createPipeline as apiCreatePipeline, getCRMStatus, getAmoAuthUrl } from '@/lib/api';
 import { useLanguage } from '@/lib/LanguageContext';
 
 const STAGE_COLORS: Record<string, string> = {
@@ -66,38 +66,36 @@ export default function CRMPage() {
 
     // amoCRM state from API
     const [amoSubdomain, setAmoSubdomain] = useState<string | null>(null);
+    // ammoCRM auth state
     const [connectModal, setConnectModal] = useState(false);
-    const [connectForm, setConnectForm] = useState({ subdomain: '', code: '' });
+
+    // Initial load & Check URL params
+    useEffect(() => {
+        fetchData();
+
+        // Handle OAuth callback redirects
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('amo_connected') === 'true') {
+            // Can be expanded to show a success toast here
+            setConnectModal(false);
+            window.history.replaceState({}, document.title, window.location.pathname);
+        } else if (params.get('amo_error')) {
+            alert("AmoCRM ulanishda xatolik yuz berdi. Iltimos qayta urinib ko'ring.");
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    }, [tenantId]);
 
     const handleStartConnect = async () => {
-        if (!connectForm.subdomain) return;
         setRefreshing(true);
         try {
-            const res = await getAmoAuthUrl(connectForm.subdomain) as any;
+            const res = await getAmoAuthUrl(tenantId) as any;
             if (res.url) {
-                // In a real app, we'd open a popup. For demo/simplified flow, we'll ask for code manually
-                // or redirect. For now, let's show the code input.
-                window.open(res.url, '_blank');
-                alert("Please authorize in amoCRM and paste the code below.");
+                // Redirect user to amoCRM to approve the app
+                window.location.href = res.url;
             }
         } catch (e) {
             alert("Error: " + e);
-        } finally {
             setRefreshing(false);
-        }
-    };
-
-    const handleFinishConnect = async () => {
-        if (!connectForm.code || !connectForm.subdomain) return;
-        setSaving(true);
-        try {
-            await connectAmoCRM(tenantId, connectForm.subdomain, connectForm.code);
-            setConnectModal(false);
-            fetchData(true);
-        } catch (e) {
-            alert("Failed to connect: " + e);
-        } finally {
-            setSaving(false);
         }
     };
 
@@ -683,64 +681,25 @@ export default function CRMPage() {
                             {t('integrations.connect_amo_btn')}
                         </h2>
                         <p style={{ color: 'var(--text-muted)', fontSize: 14, lineHeight: 1.6, marginBottom: 32 }}>
-                            {t('integrations.amocrm_desc')} Follow the steps below to securely link your pipeline.
+                            {t('integrations.amocrm_desc')} Bossangiz, xavfsiz ulanish uchun amoCRM saytiga yo'naltirilasiz.
                         </p>
 
-                        <div style={{
-                            background: 'var(--bg-card)', borderRadius: 16, padding: '24px',
-                            border: '1px solid var(--border)', marginBottom: 24, textAlign: 'left',
-                        }}>
-                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, marginBottom: 24 }}>
-                                <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--accent)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, flexShrink: 0 }}>1</div>
-                                <div>
-                                    <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 8, color: 'var(--text-primary)' }}>Authorize in amoCRM</div>
-                                    <input
-                                        value={connectForm.subdomain}
-                                        onChange={e => setConnectForm(p => ({ ...p, subdomain: e.target.value }))}
-                                        placeholder="your-company (subdomain)"
-                                        style={{ ...inputStyle, marginBottom: 12, background: 'var(--bg-main)' }}
-                                    />
-                                    <button
-                                        onClick={handleStartConnect}
-                                        disabled={!connectForm.subdomain || refreshing}
-                                        style={{ ...btnSec, width: '100%', height: 40, justifyContent: 'center', background: 'var(--bg-main)' }}
-                                    >
-                                        {refreshing ? <Loader2 size={14} className="animate-spin" /> : <ArrowUpRight size={14} />}
-                                        {refreshing ? 'Opening...' : 'Get Authorization Code'}
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
-                                <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, flexShrink: 0 }}>2</div>
-                                <div style={{ width: '100%' }}>
-                                    <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 8, color: 'var(--text-primary)' }}>Paste the Code</div>
-                                    <input
-                                        value={connectForm.code}
-                                        onChange={e => setConnectForm(p => ({ ...p, code: e.target.value }))}
-                                        placeholder="Paste code from amoCRM here..."
-                                        style={{ ...inputStyle, background: 'var(--bg-main)' }}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
                         <button
-                            onClick={handleFinishConnect}
-                            disabled={!connectForm.code || saving}
+                            onClick={handleStartConnect}
+                            disabled={refreshing}
                             style={{
                                 width: '100%', padding: '16px',
                                 background: 'linear-gradient(135deg, #1d4ed8, #3b82f6)',
                                 border: 'none', borderRadius: 12,
                                 color: '#fff', fontWeight: 800, fontSize: 15,
-                                cursor: !connectForm.code || saving ? 'not-allowed' : 'pointer',
+                                cursor: refreshing ? 'not-allowed' : 'pointer',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                                opacity: !connectForm.code || saving ? 0.7 : 1,
+                                opacity: refreshing ? 0.7 : 1,
                                 boxShadow: '0 8px 24px rgba(59, 130, 246, 0.25)',
                             }}
                         >
-                            {saving ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
-                            {saving ? 'Connecting...' : 'Finish Connection'}
+                            {refreshing ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+                            {refreshing ? "Yo'naltirilmoqda..." : "amoCRM bilan ulanish"}
                         </button>
                     </div>
                 </div>
