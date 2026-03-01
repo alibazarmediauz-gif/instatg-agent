@@ -59,6 +59,10 @@ async def get_crm_status(
 class AmoCRMInit(BaseModel):
     subdomain: str
 
+@router.get("/test-deploy")
+async def test_deploy():
+    return {"status": "deployed_properly_with_asyncsession_fix"}
+
 @router.get("/amocrm/auth-url")
 async def get_amocrm_auth_url(tenant_id: UUID = Query(...)):
     """Generate the amoCRM authorization URL for the SaaS tenant."""
