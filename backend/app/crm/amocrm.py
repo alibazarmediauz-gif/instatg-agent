@@ -11,6 +11,8 @@ from typing import Optional
 
 import httpx
 from tenacity import retry, stop_after_attempt, wait_exponential
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 from app.config import settings
 
