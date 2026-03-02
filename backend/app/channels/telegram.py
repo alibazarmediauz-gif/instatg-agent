@@ -31,6 +31,9 @@ logger = structlog.get_logger(__name__)
 # Active Pyrogram clients, keyed by tenant_id
 active_clients: dict[str, Client] = {}
 
+# Active Bot Tokens, keyed by tenant_id
+active_bots: dict[str, dict] = {}
+
 # Pending OTP verifications — stores temporary Client instances awaiting OTP
 _pending_otp: dict[str, dict] = {}
 
@@ -159,6 +162,14 @@ async def verify_otp(
         logger.error("otp_verification_failed", tenant=tenant_id, error=str(e))
         return {"status": "error", "detail": str(e)}
 
+def register_telegram_account(tenant_id: str, access_token: str, bot_username: str = None) -> None:
+    """Cache the decrypted bot token in memory."""
+    active_bots[tenant_id] = {
+        "access_token": access_token,
+        "username": bot_username,
+        "registered_at": datetime.utcnow()
+    }
+    logger.info("telegram_bot_registered_in_memory", tenant=tenant_id, bot=bot_username)
 
 # ─── Client Lifecycle ────────────────────────────────────────────────
 
@@ -275,6 +286,31 @@ async def process_telegram_message(
         contact_name=contact_name,
         media_type=str(message.media) if message.media else "text",
     )
+
+    # 1. Identify or Create Lead
+    from app.database import async_session_factory
+    from sqlalchemy import select
+    from app.models import Lead
+
+    async with async_session_factory() as db:
+        lead_result = await db.execute(
+            select(Lead).where(
+                Lead.tenant_id == tenant_id, 
+                Lead.phone == contact_id
+            )
+        )
+        lead = lead_result.scalar_one_or_none()
+        
+        if not lead:
+            lead = Lead(
+                tenant_id=tenant_id,
+                name=contact_name,
+                phone=contact_id,
+                source="telegram_personal",
+                status="new"
+            )
+            db.add(lead)
+            await db.commit()
 
     try:
         from app.api.routes.notifications import create_and_dispatch_notification

@@ -620,3 +620,35 @@ export async function checkMetaHealth(tenantId: string) {
         params: { tenant_id: tenantId },
     });
 }
+
+// ─── Telegram Integration ──────────────────────────────────────────
+
+export async function connectTelegramBot(tenantId: string, token: string) {
+    return apiClient('/api/integrations/telegram/connect', {
+        method: 'POST',
+        params: { tenant_id: tenantId },
+        body: JSON.stringify({ token }),
+    });
+}
+
+export async function requestTelegramOtp(tenantId: string, phone: string) {
+    return apiClient<{ status: string; phone_code_hash: string }>('/api/integrations/telegram/otp/request', {
+        method: 'POST',
+        params: { tenant_id: tenantId },
+        body: JSON.stringify({ phone }),
+    });
+}
+
+export async function verifyTelegramOtp(
+    tenantId: string,
+    phone: string,
+    code: string,
+    phoneCodeHash: string,
+    password?: string
+) {
+    return apiClient<{ status: string; detail?: string }>('/api/integrations/telegram/otp/verify', {
+        method: 'POST',
+        params: { tenant_id: tenantId },
+        body: JSON.stringify({ phone, code, phone_code_hash: phoneCodeHash, password }),
+    });
+}

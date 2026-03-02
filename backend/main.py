@@ -61,6 +61,7 @@ from app.api.websockets import router as websockets_router
 # in case new analytics endpoints are added later.
 from app.api.routes.analytics import router as analytics_router
 from app.api.routes.telegram_webhooks import router as telegram_webhooks_router
+from app.api.routes.telegram_auth import router as telegram_auth_router
 from app.api.routes.quality_monitoring import router as quality_monitoring_router
 
 logger = structlog.get_logger(__name__)
@@ -81,8 +82,14 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning("redis_connect_failed", error=str(e))
 
-    # # 3. Start Telegram clients for all active accounts
-    # await _start_telegram_clients()
+    # 3. Start Telegram clients for all active accounts
+    await _start_telegram_clients()
+
+    # 3.5 Register Telegram Bots for webhook handling
+    try:
+        await _register_telegram_bots()
+    except Exception as e:
+        logger.warning("telegram_bot_registration_failed", error=str(e))
 
     # 4. Register Instagram accounts for webhook handling
     try:
@@ -153,6 +160,40 @@ async def _start_telegram_clients():
 
     except Exception as e:
         logger.warning("telegram_startup_skipped", reason=str(e))
+
+
+async def _register_telegram_bots():
+    """Register all active Telegram Bot accounts into memory for webhooks."""
+    try:
+        from app.database import async_session_factory
+        from app.models import TelegramAccount, Tenant
+        from app.channels.telegram import register_telegram_account
+        from app.services.meta_oauth_service import decrypt_token
+        from sqlalchemy import select
+
+        async with async_session_factory() as db:
+            result = await db.execute(
+                select(TelegramAccount, Tenant.name)
+                .join(Tenant, TelegramAccount.tenant_id == Tenant.id)
+                .where(TelegramAccount.is_active == True)
+                .where(TelegramAccount.access_token.isnot(None))
+            )
+
+            count = 0
+            for row in result.all():
+                account = row[0]
+                business_name = row[1]
+                register_telegram_account(
+                    tenant_id=str(account.tenant_id),
+                    access_token=decrypt_token(account.access_token),
+                    bot_username=account.username,
+                )
+                count += 1
+            if count > 0:
+                logger.info("telegram_bots_registered", count=count)
+
+    except Exception as e:
+        logger.warning("telegram_bot_startup_skipped", reason=str(e))
 
 
 async def _register_instagram_accounts():
@@ -267,6 +308,7 @@ app.include_router(websockets_router)
 # analytics router deliberately not registered; dashboard stats live under
 # /api/dashboard/stats and the old analytics.dashboard endpoint is gone.
 app.include_router(telegram_webhooks_router)
+app.include_router(telegram_auth_router)
 app.include_router(quality_monitoring_router)
 
 
@@ -318,3 +360,9 @@ async def health():
 async def db_health(db: AsyncSession = Depends(get_db)):
     await db.execute(text("SELECT 1"))
     return {"status": "ok"}
+
+if __name__ == "__main__":
+    import uvicorn
+    import os
+    env_file = os.path.join(os.path.dirname(__file__), ".env")
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True, env_file=env_file)

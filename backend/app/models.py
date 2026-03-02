@@ -160,10 +160,18 @@ class TelegramAccount(Base):
 
     id = Column(UUID(), primary_key=True, default=uuid.uuid4)
     tenant_id = Column(UUID(), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, unique=True)
-    phone_number = Column(String(20), nullable=False)
+    
+    # ── MTProto (User Account) fields ──
+    phone_number = Column(String(20), nullable=True)
     encrypted_session_string = Column(Text, nullable=True)  # Fernet-encrypted session string
-    display_name = Column(String(255), nullable=True)
     is_premium = Column(Boolean, default=True)  # Telegram Premium account
+    
+    # ── Bot API fields ──
+    telegram_user_id = Column(String(100), nullable=True) # The bot's numeric ID
+    access_token = Column(Text, nullable=True) # encrypted Bot Token
+    username = Column(String(255), nullable=True)
+
+    display_name = Column(String(255), nullable=True)
     is_active = Column(Boolean, default=False)  # Only True after OTP verification
     connection_status = Column(String(50), default="disconnected")  # disconnected, otp_sent, connected, error
     last_connected_at = Column(DateTime(timezone=True), nullable=True)

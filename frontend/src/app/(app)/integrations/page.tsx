@@ -90,6 +90,15 @@ function IntegrationsPageContent() {
     const [healthLoading, setHealthLoading] = useState(false);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
+    // ── Telegram Modal State ──
+    const [telegramTab, setTelegramTab] = useState<'bot' | 'personal'>('bot');
+    const [telegramStep, setTelegramStep] = useState<'phone' | 'otp' | '2fa'>('phone');
+    const [telegramToken, setTelegramToken] = useState('');
+    const [telegramPhone, setTelegramPhone] = useState('');
+    const [telegramOtp, setTelegramOtp] = useState('');
+    const [telegramPassword, setTelegramPassword] = useState('');
+    const [telegramPhoneHash, setTelegramPhoneHash] = useState('');
+
     // ── Data Loading ──
     const loadStatus = useCallback(async () => {
         try {
@@ -295,7 +304,7 @@ function IntegrationsPageContent() {
                                 if (!implemented) {
                                     setActiveIntegration(source.id);
                                 } else if (source.id === 'telegram') {
-                                    router.push('/settings?tab=telegram');
+                                    setConnectModal('telegram');
                                 } else if (connected) {
                                     setSettingsModal(source.id);
                                 } else {
@@ -484,6 +493,286 @@ function IntegrationsPageContent() {
                                 {connecting ? 'Redirecting...' : 'Connect with Meta'}
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ── Telegram Connect Modal ─────────────── */}
+            {connectModal === 'telegram' && (
+                <div
+                    style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(12px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    onClick={e => { if (e.target === e.currentTarget && !connecting) setConnectModal(null); }}
+                >
+                    <div className="animate-in" style={{
+                        width: 440, background: 'var(--bg-main)', borderRadius: 24,
+                        border: '1px solid var(--border)', padding: '48px 40px',
+                        boxShadow: '0 40px 80px rgba(0,0,0,0.5)', textAlign: 'center',
+                    }}>
+                        <div style={{
+                            width: 80, height: 80, borderRadius: 20,
+                            background: '#0088cc',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 36, color: '#fff', margin: '0 auto 24px',
+                            boxShadow: '0 12px 32px rgba(0,136,204,0.3)',
+                        }}>
+                            ✈️
+                        </div>
+
+                        <h2 style={{ fontSize: 22, fontWeight: 900, marginBottom: 8 }}>
+                            Connect Telegram Bot
+                        </h2>
+                        <div style={{ display: 'flex', gap: 8, marginBottom: 24, background: 'var(--bg-elevated)', padding: 4, borderRadius: 12 }}>
+                            <button
+                                onClick={() => { setTelegramTab('bot'); setTelegramStep('phone'); }}
+                                style={{
+                                    flex: 1, padding: '8px', fontSize: 13, fontWeight: 700,
+                                    borderRadius: 10, border: 'none', cursor: 'pointer', transition: 'all 0.2s',
+                                    background: telegramTab === 'bot' ? 'var(--bg-card)' : 'transparent',
+                                    color: telegramTab === 'bot' ? 'var(--text-primary)' : 'var(--text-muted)',
+                                    boxShadow: telegramTab === 'bot' ? '0 2px 8px rgba(0,0,0,0.1)' : 'none'
+                                }}
+                            >
+                                Bot Token
+                            </button>
+                            <button
+                                onClick={() => setTelegramTab('personal')}
+                                style={{
+                                    flex: 1, padding: '8px', fontSize: 13, fontWeight: 700,
+                                    borderRadius: 10, border: 'none', cursor: 'pointer', transition: 'all 0.2s',
+                                    background: telegramTab === 'personal' ? 'var(--bg-card)' : 'transparent',
+                                    color: telegramTab === 'personal' ? 'var(--text-primary)' : 'var(--text-muted)',
+                                    boxShadow: telegramTab === 'personal' ? '0 2px 8px rgba(0,0,0,0.1)' : 'none'
+                                }}
+                            >
+                                Personal Account
+                            </button>
+                        </div>
+
+                        {telegramTab === 'bot' && (
+                            <>
+                                <p style={{ color: 'var(--text-muted)', fontSize: 14, lineHeight: 1.6, marginBottom: 24 }}>
+                                    Enter your Telegram Bot Token below. You can get this from <a href="https://t.me/BotFather" target="_blank" rel="noreferrer" style={{ color: 'var(--accent)', textDecoration: 'underline' }}>@BotFather</a> in Telegram.
+                                </p>
+                                <div style={{ textAlign: 'left', marginBottom: 24 }}>
+                                    <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8 }}>Bot Token</label>
+                                    <input
+                                        type="text"
+                                        value={telegramToken}
+                                        onChange={(e) => setTelegramToken(e.target.value)}
+                                        placeholder="Paste your 123456:ABC-DEF1234... token here"
+                                        style={{
+                                            width: '100%', padding: '12px 16px', borderRadius: 12,
+                                            background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+                                            color: 'var(--text-primary)', outline: 'none',
+                                            fontSize: 14, fontFamily: 'monospace'
+                                        }}
+                                    />
+                                </div>
+                                <div style={{ display: 'flex', gap: 12 }}>
+                                    <button
+                                        onClick={() => setConnectModal(null)}
+                                        disabled={connecting}
+                                        style={{
+                                            flex: 1, padding: '14px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12,
+                                            color: 'var(--text-secondary)', fontWeight: 700, fontSize: 14, cursor: 'pointer',
+                                        }}
+                                    >Cancel</button>
+                                    <button
+                                        onClick={async () => {
+                                            if (!telegramToken.trim()) return;
+                                            setConnecting(true);
+                                            try {
+                                                const api = await import('@/lib/api');
+                                                await api.connectTelegramBot(tenantId, telegramToken.trim());
+                                                setToast({ message: '✅ Telegram Bot connected!', type: 'success' });
+                                                setConnectModal(null);
+                                                loadStatus();
+                                            } catch (e: any) {
+                                                setToast({ message: `❌ Failed to connect: ${e.message}`, type: 'error' });
+                                            } finally {
+                                                setConnecting(false);
+                                            }
+                                        }}
+                                        disabled={connecting || !telegramToken.trim()}
+                                        style={{
+                                            flex: 2, padding: '14px', background: '#0088cc', border: 'none', borderRadius: 12,
+                                            color: '#fff', fontWeight: 800, fontSize: 14, cursor: connecting || !telegramToken.trim() ? 'not-allowed' : 'pointer',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: connecting || !telegramToken.trim() ? 0.7 : 1,
+                                        }}
+                                    >
+                                        {connecting ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />} Save Token
+                                    </button>
+                                </div>
+                            </>
+                        )}
+
+                        {telegramTab === 'personal' && (
+                            <>
+                                {telegramStep === 'phone' && (
+                                    <>
+                                        <p style={{ color: 'var(--text-muted)', fontSize: 14, lineHeight: 1.6, marginBottom: 24 }}>
+                                            Connect your personal Telegram account to allow the AI agent to reply to direct messages automatically. Enter your phone number with country code.
+                                        </p>
+                                        <div style={{ textAlign: 'left', marginBottom: 24 }}>
+                                            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8 }}>Phone Number</label>
+                                            <input
+                                                type="text"
+                                                value={telegramPhone}
+                                                onChange={(e) => setTelegramPhone(e.target.value)}
+                                                placeholder="+1234567890"
+                                                style={{
+                                                    width: '100%', padding: '12px 16px', borderRadius: 12,
+                                                    background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+                                                    color: 'var(--text-primary)', outline: 'none',
+                                                    fontSize: 16, fontFamily: 'monospace', letterSpacing: '1px'
+                                                }}
+                                            />
+                                        </div>
+                                        <div style={{ display: 'flex', gap: 12 }}>
+                                            <button
+                                                onClick={() => setConnectModal(null)}
+                                                disabled={connecting}
+                                                style={{ flex: 1, padding: '14px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, color: 'var(--text-secondary)', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
+                                            >Cancel</button>
+                                            <button
+                                                onClick={async () => {
+                                                    if (!telegramPhone.trim()) return;
+                                                    setConnecting(true);
+                                                    try {
+                                                        const api = await import('@/lib/api');
+                                                        const res = await api.requestTelegramOtp(tenantId, telegramPhone.trim());
+                                                        if (res.status === 'otp_sent') {
+                                                            setTelegramPhoneHash(res.phone_code_hash);
+                                                            setTelegramStep('otp');
+                                                        }
+                                                    } catch (e: any) {
+                                                        setToast({ message: `❌ Failed to send OTP: ${e.message}`, type: 'error' });
+                                                    } finally {
+                                                        setConnecting(false);
+                                                    }
+                                                }}
+                                                disabled={connecting || !telegramPhone.trim()}
+                                                style={{ flex: 2, padding: '14px', background: '#0088cc', border: 'none', borderRadius: 12, color: '#fff', fontWeight: 800, fontSize: 14, cursor: connecting || !telegramPhone.trim() ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: connecting || !telegramPhone.trim() ? 0.7 : 1 }}
+                                            >
+                                                {connecting ? <Loader2 size={16} className="animate-spin" /> : 'Send Code'}
+                                            </button>
+                                        </div>
+                                    </>
+                                )}
+
+                                {telegramStep === 'otp' && (
+                                    <>
+                                        <p style={{ color: 'var(--text-muted)', fontSize: 14, lineHeight: 1.6, marginBottom: 24 }}>
+                                            We sent a code to your Telegram app on <strong>{telegramPhone}</strong>. Enter it below.
+                                        </p>
+                                        <div style={{ textAlign: 'left', marginBottom: 24 }}>
+                                            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8 }}>Login Code</label>
+                                            <input
+                                                type="text"
+                                                value={telegramOtp}
+                                                onChange={(e) => setTelegramOtp(e.target.value)}
+                                                placeholder="12345"
+                                                style={{
+                                                    width: '100%', padding: '12px 16px', borderRadius: 12,
+                                                    background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+                                                    color: 'var(--text-primary)', outline: 'none',
+                                                    fontSize: 24, fontFamily: 'monospace', letterSpacing: '8px', textAlign: 'center'
+                                                }}
+                                            />
+                                        </div>
+                                        <div style={{ display: 'flex', gap: 12 }}>
+                                            <button
+                                                onClick={() => setTelegramStep('phone')}
+                                                disabled={connecting}
+                                                style={{ flex: 1, padding: '14px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, color: 'var(--text-secondary)', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
+                                            >Back</button>
+                                            <button
+                                                onClick={async () => {
+                                                    if (!telegramOtp.trim()) return;
+                                                    setConnecting(true);
+                                                    try {
+                                                        const api = await import('@/lib/api');
+                                                        const res = await api.verifyTelegramOtp(tenantId, telegramPhone.trim(), telegramOtp.trim(), telegramPhoneHash);
+                                                        if (res.status === '2fa_required') {
+                                                            setTelegramStep('2fa');
+                                                        } else if (res.status === 'connected') {
+                                                            setToast({ message: '✅ Phone connected successfully!', type: 'success' });
+                                                            setConnectModal(null);
+                                                            loadStatus();
+                                                        } else {
+                                                            setToast({ message: `❌ Error: ${res.detail}`, type: 'error' });
+                                                        }
+                                                    } catch (e: any) {
+                                                        setToast({ message: `❌ Verification failed: ${e.message}`, type: 'error' });
+                                                    } finally {
+                                                        setConnecting(false);
+                                                    }
+                                                }}
+                                                disabled={connecting || telegramOtp.length < 4}
+                                                style={{ flex: 2, padding: '14px', background: '#0088cc', border: 'none', borderRadius: 12, color: '#fff', fontWeight: 800, fontSize: 14, cursor: connecting || telegramOtp.length < 4 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: connecting || telegramOtp.length < 4 ? 0.7 : 1 }}
+                                            >
+                                                {connecting ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />} Verify
+                                            </button>
+                                        </div>
+                                    </>
+                                )}
+
+                                {telegramStep === '2fa' && (
+                                    <>
+                                        <p style={{ color: 'var(--text-muted)', fontSize: 14, lineHeight: 1.6, marginBottom: 24 }}>
+                                            This account is protected with Two-Step Verification. Enter your password.
+                                        </p>
+                                        <div style={{ textAlign: 'left', marginBottom: 24 }}>
+                                            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8 }}>Password</label>
+                                            <input
+                                                type="password"
+                                                value={telegramPassword}
+                                                onChange={(e) => setTelegramPassword(e.target.value)}
+                                                placeholder="••••••••"
+                                                style={{
+                                                    width: '100%', padding: '12px 16px', borderRadius: 12,
+                                                    background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+                                                    color: 'var(--text-primary)', outline: 'none',
+                                                    fontSize: 14
+                                                }}
+                                            />
+                                        </div>
+                                        <div style={{ display: 'flex', gap: 12 }}>
+                                            <button
+                                                onClick={() => setTelegramStep('otp')}
+                                                disabled={connecting}
+                                                style={{ flex: 1, padding: '14px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, color: 'var(--text-secondary)', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
+                                            >Back</button>
+                                            <button
+                                                onClick={async () => {
+                                                    if (!telegramPassword.trim()) return;
+                                                    setConnecting(true);
+                                                    try {
+                                                        const api = await import('@/lib/api');
+                                                        const res = await api.verifyTelegramOtp(tenantId, telegramPhone.trim(), telegramOtp.trim(), telegramPhoneHash, telegramPassword);
+                                                        if (res.status === 'connected') {
+                                                            setToast({ message: '✅ Password accepted! Connected.', type: 'success' });
+                                                            setConnectModal(null);
+                                                            loadStatus();
+                                                        } else {
+                                                            setToast({ message: `❌ Error: ${res.detail}`, type: 'error' });
+                                                        }
+                                                    } catch (e: any) {
+                                                        setToast({ message: `❌ Password incorrect: ${e.message}`, type: 'error' });
+                                                    } finally {
+                                                        setConnecting(false);
+                                                    }
+                                                }}
+                                                disabled={connecting || !telegramPassword.trim()}
+                                                style={{ flex: 2, padding: '14px', background: '#0088cc', border: 'none', borderRadius: 12, color: '#fff', fontWeight: 800, fontSize: 14, cursor: connecting || !telegramPassword.trim() ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: connecting || !telegramPassword.trim() ? 0.7 : 1 }}
+                                            >
+                                                {connecting ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />} Login
+                                            </button>
+                                        </div>
+                                    </>
+                                )}
+                            </>
+                        )}
                     </div>
                 </div>
             )}

@@ -57,6 +57,11 @@ async def init_db() -> None:
         # create_all doesn't ALTER existing tables to add new columns.
         # These statements safely add them if they don't exist yet.
         migrations = [
+            # telegram_accounts — Bot OAuth fields
+            "ALTER TABLE telegram_accounts ALTER COLUMN phone_number DROP NOT NULL",
+            "ALTER TABLE telegram_accounts ADD COLUMN IF NOT EXISTS telegram_user_id VARCHAR(100)",
+            "ALTER TABLE telegram_accounts ADD COLUMN IF NOT EXISTS access_token TEXT",
+            "ALTER TABLE telegram_accounts ADD COLUMN IF NOT EXISTS username VARCHAR(255)",
             # instagram_accounts — ALL columns that may be missing
             "ALTER TABLE instagram_accounts ADD COLUMN IF NOT EXISTS username VARCHAR(255)",
             "ALTER TABLE instagram_accounts ADD COLUMN IF NOT EXISTS token_expires_at TIMESTAMPTZ",
