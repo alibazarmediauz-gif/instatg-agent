@@ -195,7 +195,11 @@ function IntegrationsPageContent() {
         setDisconnecting(true);
         try {
             const api = await import('@/lib/api');
-            await api.disconnectMetaIntegration(tenantId, provider);
+            if (provider === 'telegram') {
+                await api.disconnectTelegram(tenantId);
+            } else {
+                await api.disconnectMetaIntegration(tenantId, provider);
+            }
             setToast({ message: `${provider} disconnected.`, type: 'success' });
             setSettingsModal(null);
             await loadStatus();
@@ -211,8 +215,12 @@ function IntegrationsPageContent() {
         setHealthResult(null);
         try {
             const api = await import('@/lib/api');
-            const result = await api.checkMetaHealth(tenantId);
-            setHealthResult(result as Record<string, any>);
+            if (settingsModal === 'telegram') {
+                setHealthResult({ error: 'Health ping not supported for MTProto' });
+            } else {
+                const result = await api.checkMetaHealth(tenantId);
+                setHealthResult(result as Record<string, any>);
+            }
         } catch {
             setHealthResult({ error: 'Health check failed' });
         } finally {
@@ -224,6 +232,16 @@ function IntegrationsPageContent() {
         if (!metaStatus) return [];
         if (provider === 'instagram') return metaStatus.instagram?.accounts || [];
         if (provider === 'facebook') return metaStatus.facebook?.accounts || [];
+        if (provider === 'telegram') {
+            // Fake a meta info structure for UI compatibility
+            return [{
+                page_id: 'telegram',
+                page_name: 'Pyrogram Business',
+                username: 'Unknown TG',
+                connection_status: 'connected',
+                created_at: new Date().toISOString()
+            } as any];
+        }
         return [];
     };
 

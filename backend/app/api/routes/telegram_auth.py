@@ -181,3 +181,36 @@ async def verify_telegram_otp_endpoint(
     except Exception as e:
         logger.error("telegram_otp_verify_error", error=str(e), tenant=str(tenant_id))
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/disconnect")
+async def disconnect_telegram_account(
+    tenant_id: UUID = Query(...),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Disconnects the active Telegram account for the tenant.
+    Stops the Pyrogram client, deletes active_bots caches, and removes credentials from DB.
+    """
+    try:
+        from app.channels.telegram import stop_telegram_client, active_bots
+        
+        # Stop client if running
+        await stop_telegram_client(str(tenant_id))
+        
+        # Remove active bot token if any
+        if str(tenant_id) in active_bots:
+            del active_bots[str(tenant_id)]
+
+        # Delete database row entirely
+        await db.execute(
+            delete(TelegramAccount).where(TelegramAccount.tenant_id == tenant_id)
+        )
+        await db.commit()
+
+        logger.info("telegram_account_disconnected", tenant=str(tenant_id))
+        return {"status": "success", "message": "Telegram account disconnected successfully"}
+
+    except Exception as e:
+        logger.error("telegram_disconnect_error", error=str(e), tenant=str(tenant_id))
+        raise HTTPException(status_code=500, detail=str(e))

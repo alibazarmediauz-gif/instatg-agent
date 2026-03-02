@@ -652,3 +652,10 @@ export async function verifyTelegramOtp(
         body: JSON.stringify({ phone, code, phone_code_hash: phoneCodeHash, password }),
     });
 }
+
+export async function disconnectTelegram(tenantId: string) {
+    return apiClient('/api/integrations/telegram/disconnect', {
+        method: 'POST',
+        params: { tenant_id: tenantId },
+    });
+}
