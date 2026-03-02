@@ -364,21 +364,50 @@ export default function CRMPage() {
                                 </div>
                             </div>
 
-                            <button
-                                onClick={() => fetchData(true)}
-                                disabled={refreshing}
-                                style={{
-                                    padding: '8px 16px', borderRadius: 6,
-                                    background: 'transparent',
-                                    color: 'var(--text-primary)',
-                                    border: '1px solid var(--border)',
-                                    fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                                    display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s'
-                                }}
-                            >
-                                {refreshing ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
-                                {t('integrations.sync_now')}
-                            </button>
+                            <div style={{ display: 'flex', gap: 12 }}>
+                                <button
+                                    onClick={async () => {
+                                        if (confirm("Haqiqatan ham amoCRM tizimidan uzmoqchimisiz?")) {
+                                            setRefreshing(true);
+                                            try {
+                                                const { disconnectAmoCRM } = await import('@/lib/api');
+                                                await disconnectAmoCRM(tenantId);
+                                                fetchData(true);
+                                            } catch (e) {
+                                                alert("Ulanishni uzishda xatolik yuz berdi");
+                                                setRefreshing(false);
+                                            }
+                                        }
+                                    }}
+                                    disabled={refreshing}
+                                    style={{
+                                        padding: '8px 16px', borderRadius: 6,
+                                        background: 'transparent',
+                                        color: '#ef4444',
+                                        border: '1px solid rgba(239, 68, 68, 0.3)',
+                                        fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                                        display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s'
+                                    }}
+                                >
+                                    <X size={14} />
+                                    Uzish
+                                </button>
+                                <button
+                                    onClick={() => fetchData(true)}
+                                    disabled={refreshing}
+                                    style={{
+                                        padding: '8px 16px', borderRadius: 6,
+                                        background: 'transparent',
+                                        color: 'var(--text-primary)',
+                                        border: '1px solid var(--border)',
+                                        fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                                        display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s'
+                                    }}
+                                >
+                                    {refreshing ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+                                    {t('integrations.sync_now')}
+                                </button>
+                            </div>
                         </div>
                     </div>
 
