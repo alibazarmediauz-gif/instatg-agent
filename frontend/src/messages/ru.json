@@ -15,6 +15,8 @@
         "loading": "Загрузка..."
     },
     "nav": {
+        "grid": "Сетка",
+        "list": "Список",
         "control_center": "Панель управления",
         "crm": "CRM (amoCRM Sync)",
         "contacts": "База контактов",
@@ -116,8 +118,11 @@
     },
     "stages": {
         "new": "Новые",
+        "contacted": "На связи",
         "in_progress": "В работе",
         "qualified": "Квалифицированы",
+        "proposal": "Предложение",
+        "negotiation": "Переговоры",
         "won": "Успешно",
         "lost": "Проиграно",
         "follow_up": "В резерве"
@@ -255,6 +260,7 @@
         "chat_agents_mood": "Начальный настрой"
     },
     "dashboard_metrics": {
+        "all_ok": "Все работает",
         "wallet_balance": "Баланс кошелька",
         "prepaid": "Предоплата",
         "revenue_today": "Выручка сегодня",
@@ -275,5 +281,32 @@
         "first_response_time": "Время первого ответа",
         "escalation_resolution": "Решение эскалации",
         "sla_breach": "Риск нарушения SLA"
+    },
+    "analytics": {
+        "title": "Аналитика доходов и эффективности",
+        "subtitle": "ROI, потери и сравнительные метрики ИИ/Человек.",
+        "loading": "Агрегация корпоративной аналитики...",
+        "last_7": "Последние 7 дней",
+        "last_30": "Последние 30 дней",
+        "this_quarter": "Этот квартал",
+        "export_csv": "Экспорт CSV",
+        "total_revenue": "Общий доход",
+        "total_cost": "Затраты на ИИ",
+        "campaign_roi": "ROI кампании",
+        "cost_per_lead": "Стоимость лида",
+        "revenue_vs_cost": "Доход vs Затраты (ИИ vs Человек)",
+        "voice_rev": "Доход Voice AI",
+        "chat_rev": "Доход Chat AI",
+        "compute_cost": "Затраты на вычисления ИИ",
+        "regional": "Региональное распределение (UZ)",
+        "leads": "лидов",
+        "lead_source": "Эффективность источников лидов",
+        "source": "Источник",
+        "total_leads": "Всего лидов",
+        "conv": "Конв%",
+        "revenue": "Доход",
+        "retention": "Удержание и восстановление",
+        "active": "Активные",
+        "recovered": "Восстановленные"
     }
 }

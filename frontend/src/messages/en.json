@@ -15,6 +15,8 @@
         "loading": "Loading..."
     },
     "nav": {
+        "grid": "Grid View",
+        "list": "List View",
         "control_center": "Control Center",
         "crm": "CRM (amoCRM Sync)",
         "contacts": "Central Database",
@@ -118,8 +120,11 @@
     },
     "stages": {
         "new": "New Leads",
+        "contacted": "Contacted",
         "in_progress": "In Progress",
         "qualified": "Qualified",
+        "proposal": "Proposal",
+        "negotiation": "Negotiation",
         "won": "Won",
         "lost": "Lost",
         "follow_up": "Follow Up"
@@ -257,6 +262,7 @@
         "chat_agents_mood": "Initial Mood"
     },
     "dashboard_metrics": {
+        "all_ok": "All Systems Operational",
         "wallet_balance": "Wallet Balance",
         "prepaid": "Prepaid",
         "revenue_today": "Revenue Today",
@@ -277,5 +283,32 @@
         "first_response_time": "First Response Time",
         "escalation_resolution": "Escalation Resolution",
         "sla_breach": "SLA Breach Risk"
+    },
+    "analytics": {
+        "title": "Revenue & Performance Analytics",
+        "subtitle": "ROI, drop-offs, and comparative AI/Human efficiency metrics.",
+        "loading": "Aggregating Enterprise Analytics...",
+        "last_7": "Last 7 Days",
+        "last_30": "Last 30 Days",
+        "this_quarter": "This Quarter",
+        "export_csv": "Export CSV",
+        "total_revenue": "Total Revenue Generated",
+        "total_cost": "Total AI Cost",
+        "campaign_roi": "Campaign ROI",
+        "cost_per_lead": "Blended Cost per Lead",
+        "revenue_vs_cost": "Revenue vs Cost (AI vs Human)",
+        "voice_rev": "Voice AI Rev",
+        "chat_rev": "Chat AI Rev",
+        "compute_cost": "AI Compute Cost",
+        "regional": "Regional Distribution (UZ)",
+        "leads": "leads",
+        "lead_source": "Lead Source Performance",
+        "source": "Source",
+        "total_leads": "Total Leads",
+        "conv": "Conv%",
+        "revenue": "Revenue",
+        "retention": "Auto-Retention & Recovery",
+        "active": "Active",
+        "recovered": "Recovered"
     }
 }

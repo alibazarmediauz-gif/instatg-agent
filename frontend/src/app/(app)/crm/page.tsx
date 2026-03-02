@@ -444,7 +444,7 @@ export default function CRMPage() {
                                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: sc, flexShrink: 0 }} />
-                                                    <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{stage.name}</span>
+                                                    <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t(`stages.${stage.name.toLowerCase().replace(' ', '_')}`) || stage.name}</span>
                                                 </div>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                                     <span style={{ fontSize: 11, fontWeight: 700, color: sc, background: `${sc}18`, padding: '2px 8px', borderRadius: 10 }}>{stageLeads.length}</span>
@@ -772,7 +772,7 @@ export default function CRMPage() {
                                             <div key={stage.id} style={{ width: 280, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
                                                 {/* Stage Label */}
                                                 <div style={{ padding: '0 12px' }}>
-                                                    <div style={{ fontSize: 12, fontWeight: 800, color: sc, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>{stage.name}</div>
+                                                    <div style={{ fontSize: 12, fontWeight: 800, color: sc, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>{t(`stages.${stage.name.toLowerCase().replace(' ', '_')}`) || stage.name}</div>
                                                     <div style={{ height: 3, width: 40, background: sc, borderRadius: 2 }} />
                                                 </div>
 

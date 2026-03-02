@@ -139,3 +139,32 @@ async def get_usage_logs(
             } for log in logs
         ]
     }
+
+@router.get("/wallet")
+async def get_wallet(tenant_id: UUID = Query(...), db: AsyncSession = Depends(get_db)):
+    """Get the current wallet balance."""
+    result = await db.execute(select(Wallet).where(Wallet.tenant_id == tenant_id))
+    wallet = result.scalars().first()
+    if not wallet:
+        wallet = Wallet(tenant_id=tenant_id, balance=0.0)
+        db.add(wallet)
+        await db.commit()
+    return {"status": "success", "balance": wallet.balance}
+
+@router.post("/top-up")
+async def top_up_wallet(
+    payload: Dict[str, Any],
+    tenant_id: UUID = Query(...), 
+    db: AsyncSession = Depends(get_db)
+):
+    """Top up wallet balance."""
+    amount = payload.get("amount", 0)
+    result = await db.execute(select(Wallet).where(Wallet.tenant_id == tenant_id))
+    wallet = result.scalars().first()
+    if not wallet:
+        wallet = Wallet(tenant_id=tenant_id, balance=0.0)
+        db.add(wallet)
+    
+    wallet.balance += amount
+    await db.commit()
+    return {"status": "success", "balance": wallet.balance, "message": f"Successfully added {amount} UZS."}

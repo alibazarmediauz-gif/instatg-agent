@@ -15,6 +15,8 @@
         "loading": "Yuklanmoqda..."
     },
     "nav": {
+        "grid": "Jadval turi",
+        "list": "Ro'yxat turi",
         "control_center": "Boshqaruv markazi",
         "test_key": "VERIFIED_V3",
         "crm": "CRM (amoCRM Sync)",
@@ -118,7 +120,10 @@
     },
     "stages": {
         "new": "Yangi",
+        "contacted": "Bog'lanildi",
         "in_progress": "Jarayonda",
+        "proposal": "Taklif qilingan",
+        "negotiation": "Muzokara qilinmoqda",
         "qualified": "Saralangan",
         "won": "Yutildi",
         "lost": "Yutqazildi",
@@ -257,6 +262,7 @@
         "chat_agents_mood": "Boshlang'ich kayfiyat"
     },
     "dashboard_metrics": {
+        "all_ok": "Hammasi ishlayapti",
         "wallet_balance": "Balans",
         "prepaid": "Prepaid",
         "revenue_today": "Bugungi tushum",
@@ -277,5 +283,32 @@
         "first_response_time": "Birinchi javob vaqti",
         "escalation_resolution": "Eskalatsiyani hal qilish",
         "sla_breach": "SLA buzilish xavfi"
+    },
+    "analytics": {
+        "title": "Daromad va Samaradorlik Tahlili",
+        "subtitle": "ROI, tushib qolishlar va AI/Inson samaradorligi ko'rsatkichlari.",
+        "loading": "Korporativ tahlillar yuklanmoqda...",
+        "last_7": "Oxirgi 7 kun",
+        "last_30": "Oxirgi 30 kun",
+        "this_quarter": "Joriy chorak",
+        "export_csv": "CSV eksport",
+        "total_revenue": "Jami daromad",
+        "total_cost": "AI xarajatlari",
+        "campaign_roi": "Kampaniya ROI",
+        "cost_per_lead": "Lid narxi",
+        "revenue_vs_cost": "Daromad va Xarajat (AI va Inson)",
+        "voice_rev": "Ovozli AI daromadi",
+        "chat_rev": "Chat AI daromadi",
+        "compute_cost": "AI hisoblash xarajati",
+        "regional": "Mintaqaviy taqsimot (UZ)",
+        "leads": "lidlar",
+        "lead_source": "Lid manbai samaradorligi",
+        "source": "Manba",
+        "total_leads": "Jami lidlar",
+        "conv": "Konv%",
+        "revenue": "Daromad",
+        "retention": "Avto-Ushlab turish va Qaytarish",
+        "active": "Faol",
+        "recovered": "Qaytarilgan"
     }
 }
