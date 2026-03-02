@@ -140,7 +140,10 @@ async def _start_telegram_clients():
                 .where(TelegramAccount.encrypted_session_string.isnot(None))
             )
 
-            for row in result.all():
+            rows = result.all()
+            logger.info("telegram_startup_accounts_found", count=len(rows))
+
+            for row in rows:
                 account = row[0]
                 business_name = row[1]
                 try:
@@ -150,16 +153,27 @@ async def _start_telegram_clients():
                         phone_number=account.phone_number,
                         display_name=business_name,
                     )
+                    # Update connection_status in DB
+                    account.connection_status = "connected"
+                    await db.commit()
+                    logger.info(
+                        "telegram_client_reconnected_on_startup",
+                        tenant=str(account.tenant_id),
+                        phone=account.phone_number,
+                    )
                 except Exception as e:
                     logger.error(
                         "telegram_client_start_failed",
                         tenant=str(account.tenant_id),
                         phone=account.phone_number,
                         error=str(e),
+                        error_type=type(e).__name__,
                     )
+                    account.connection_status = "disconnected"
+                    await db.commit()
 
     except Exception as e:
-        logger.warning("telegram_startup_skipped", reason=str(e))
+        logger.warning("telegram_startup_skipped", reason=str(e), error_type=type(e).__name__)
 
 
 async def _register_telegram_bots():
@@ -360,6 +374,27 @@ async def health():
 async def db_health(db: AsyncSession = Depends(get_db)):
     await db.execute(text("SELECT 1"))
     return {"status": "ok"}
+
+
+@app.get("/api/debug/telegram")
+async def debug_telegram():
+    """Diagnostic endpoint to check Telegram client and AI configuration status."""
+    from app.channels.telegram import active_clients, active_bots
+
+    return {
+        "active_pyrogram_clients": list(active_clients.keys()),
+        "active_bot_tokens": list(active_bots.keys()),
+        "telegram_api_id_set": settings.telegram_api_id != 0,
+        "telegram_api_hash_set": bool(settings.telegram_api_hash),
+        "secret_key_default": settings.secret_key == "change-me-in-production",
+        "llm_provider": settings.llm_provider,
+        "openai_key_set": bool(settings.openai_api_key),
+        "anthropic_key_set": bool(settings.anthropic_api_key),
+        "groq_key_set": bool(settings.groq_api_key),
+        "openrouter_key_set": bool(settings.openrouter_api_key),
+        "orbit_key_set": bool(settings.orbit_api_key),
+    }
+
 
 if __name__ == "__main__":
     import uvicorn
