@@ -66,6 +66,7 @@ export default function CRMPage() {
 
     // amoCRM state from API
     const [amoSubdomain, setAmoSubdomain] = useState<string | null>(null);
+    const [connError, setConnError] = useState<string | null>(null);
     // ammoCRM auth state
     const [connectModal, setConnectModal] = useState(false);
 
@@ -73,15 +74,14 @@ export default function CRMPage() {
     useEffect(() => {
         fetchData();
 
-        // Handle OAuth callback redirects
-        const params = new URLSearchParams(window.location.search);
-        if (params.get('amo_connected') === 'true') {
-            // Can be expanded to show a success toast here
-            setConnectModal(false);
-            window.history.replaceState({}, document.title, window.location.pathname);
-        } else if (params.get('amo_error')) {
-            alert("AmoCRM ulanishda xatolik yuz berdi. Iltimos qayta urinib ko'ring.");
-            window.history.replaceState({}, document.title, window.location.pathname);
+        // Handle OAuth callback redirects safely without crashing Next.js
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('amo_connected') === 'true') {
+                setConnectModal(false);
+            } else if (params.get('amo_error')) {
+                setConnError("AmoCRM ulanishda xatolik yuz berdi. Iltimos ruxsatnomalarni (keys) tekshirib qayta urinib koring.");
+            }
         }
     }, [tenantId]);
 
@@ -218,9 +218,23 @@ export default function CRMPage() {
                             <h1 style={{ fontSize: 36, fontWeight: 900, marginBottom: 16, lineHeight: 1.1, letterSpacing: '-0.03em' }}>
                                 Connect your amoCRM
                             </h1>
-                            <p style={{ fontSize: 16, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 48, maxWidth: 400 }}>
+                            <p style={{ fontSize: 16, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: connError ? 24 : 48, maxWidth: 400 }}>
                                 {t('integrations.amocrm_desc')} Activate 2-way sync to manage leads, view AI chat history, and automate pipeline stages directly from this dashboard.
                             </p>
+
+                            {connError && (
+                                <div style={{
+                                    padding: '16px 20px', background: 'rgba(239, 68, 68, 0.1)',
+                                    border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: 12,
+                                    color: '#ef4444', fontSize: 14, fontWeight: 500, marginBottom: 32,
+                                    display: 'flex', gap: 12, alignItems: 'flex-start', maxWidth: 400
+                                }}>
+                                    <AlertCircle size={20} style={{ flexShrink: 0, marginTop: 2 }} />
+                                    <div style={{ lineHeight: 1.5 }}>
+                                        {connError}
+                                    </div>
+                                </div>
+                            )}
                             <button
                                 onClick={() => setConnectModal(true)}
                                 style={{
