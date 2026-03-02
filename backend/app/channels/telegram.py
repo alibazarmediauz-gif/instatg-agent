@@ -39,7 +39,9 @@ _pending_otp: dict[str, dict] = {}
 
 # ─── Encryption Helpers ──────────────────────────────────────────────
 
-_fernet_key = settings.secret_key.encode()[:32].ljust(32, b'\0')
+# Use encryption_key if set (Railway default), otherwise fallback to secret_key
+_raw_key = settings.encryption_key or settings.secret_key
+_fernet_key = _raw_key.encode()[:32].ljust(32, b'\0')
 import base64
 _fernet = Fernet(base64.urlsafe_b64encode(_fernet_key))
 
@@ -51,7 +53,11 @@ def encrypt_session_string(session_string: str) -> str:
 
 def decrypt_session_string(encrypted: str) -> str:
     """Decrypt a stored session string."""
-    return _fernet.decrypt(encrypted.encode()).decode()
+    try:
+        return _fernet.decrypt(encrypted.encode()).decode()
+    except Exception as e:
+        logger.error("telegram_session_decryption_failed", error=str(e))
+        raise RuntimeError(f"Session decryption failed: {str(e)}")
 
 
 # ─── OTP-Based Session Flow ─────────────────────────────────────────
@@ -205,9 +211,16 @@ async def create_telegram_client(
     # Register message handler
     @client.on_message(filters.private & filters.incoming)
     async def handle_private_message(client_instance: Client, message: Message):
-        await process_telegram_message(tenant_id, display_name, client_instance, message)
+        try:
+            await process_telegram_message(tenant_id, display_name, client_instance, message)
+        except Exception as e:
+            logger.error("telegram_message_processing_failed", tenant=tenant_id, error=str(e))
 
-    await client.start()
+    try:
+        await client.start()
+    except Exception as e:
+        logger.error("pyrogram_client_start_failed", tenant=tenant_id, error=str(e))
+        raise
     active_clients[tenant_id] = client
 
     logger.info(

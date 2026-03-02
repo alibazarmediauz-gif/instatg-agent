@@ -143,9 +143,7 @@ async def _start_telegram_clients():
             rows = result.all()
             logger.info("telegram_startup_accounts_found", count=len(rows))
 
-            for row in rows:
-                account = row[0]
-                business_name = row[1]
+            async def start_and_update(account, business_name):
                 try:
                     await create_telegram_client(
                         tenant_id=str(account.tenant_id),
@@ -154,8 +152,14 @@ async def _start_telegram_clients():
                         display_name=business_name,
                     )
                     # Update connection_status in DB
-                    account.connection_status = "connected"
-                    await db.commit()
+                    async with async_session_factory() as local_db:
+                        await local_db.execute(
+                            update(TelegramAccount)
+                            .where(TelegramAccount.id == account.id)
+                            .values(connection_status="connected")
+                        )
+                        await local_db.commit()
+                    
                     logger.info(
                         "telegram_client_reconnected_on_startup",
                         tenant=str(account.tenant_id),
@@ -169,8 +173,19 @@ async def _start_telegram_clients():
                         error=str(e),
                         error_type=type(e).__name__,
                     )
-                    account.connection_status = "disconnected"
-                    await db.commit()
+                    async with async_session_factory() as local_db:
+                        await local_db.execute(
+                            update(TelegramAccount)
+                            .where(TelegramAccount.id == account.id)
+                            .values(connection_status="disconnected")
+                        )
+                        await local_db.commit()
+
+            # Start all in parallel
+            from sqlalchemy import update
+            tasks = [start_and_update(row[0], row[1]) for row in rows]
+            if tasks:
+                await asyncio.gather(*tasks)
 
     except Exception as e:
         logger.warning("telegram_startup_skipped", reason=str(e), error_type=type(e).__name__)

@@ -90,8 +90,8 @@ class ClaudeAgent:
     """AI Sales Agent powered by Claude claude-sonnet-4-5."""
 
     def __init__(self):
-        self.client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
-        self.model = settings.claude_model
+        """Initialize the agent. Routing is now handled by the LLM Router."""
+        pass
 
     async def generate_response(
         self,
@@ -147,18 +147,24 @@ class ClaudeAgent:
                 custom_persona=f"\nADDITIONAL INSTRUCTIONS:\n{final_persona}" if final_persona else "",
             )
 
-            # 5. Build message history for Claude
-            claude_messages = self._build_message_history(context_messages, user_message, message_type, image_data)
+            # 5. Build message history for LLM
+            history_for_llm = self._build_message_history(context_messages, user_message, message_type, image_data)
+            
+            # Extract system prompt and user messages for the router
+            system_msg = {"role": "system", "content": system_prompt}
+            full_history = [system_msg] + history_for_llm[:-1] # All except current user msg
+            current_user_msg = history_for_llm[-1]["content"]
 
-            # 6. Call Claude API
-            response = await self.client.messages.create(
-                model=self.model,
-                max_tokens=1024,
-                system=system_prompt,
-                messages=claude_messages,
+            # 6. Call Unified LLM Router (handles fallbacks: Groq, OpenRouter, Orbit)
+            from app.services.llm_router import generate_response as router_generate
+            
+            router_result = await router_generate(
+                message=current_user_msg if isinstance(current_user_msg, str) else str(current_user_msg),
+                conversation_history=full_history,
+                mode="chat"
             )
 
-            raw_reply = response.content[0].text
+            raw_reply = router_result["response"]
 
             # 7. Parse response and metadata
             agent_response = self._parse_response(raw_reply)
