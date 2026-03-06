@@ -14,7 +14,8 @@ from sqlalchemy import select, func, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models import CRMLead, LeadStage, ChannelType
+from app.models import CRMLead, LeadStage, ChannelType, Tenant
+from app.api.routes.auth import get_current_tenant
 
 logger = structlog.get_logger(__name__)
 router = APIRouter(prefix="/api/integrations", tags=["Integrations"])
@@ -22,14 +23,14 @@ router = APIRouter(prefix="/api/integrations", tags=["Integrations"])
 
 @router.get("/crm-status")
 async def get_crm_status(
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
 ):
     """Get CRM integration status and lead pipeline summary."""
     from app.models import AmoCRMAccount, Lead
     from sqlalchemy import select, func
     
-    account_q = await db.execute(select(AmoCRMAccount).where(AmoCRMAccount.tenant_id == tenant_id, AmoCRMAccount.is_active == True))
+    account_q = await db.execute(select(AmoCRMAccount).where(AmoCRMAccount.tenant_id == current_tenant.id, AmoCRMAccount.is_active == True))
     account = account_q.scalar_one_or_none()
     is_connected = account is not None
 
@@ -39,7 +40,7 @@ async def get_crm_status(
         # Get count per stage from our Lead table
         stages_q = await db.execute(
             select(Lead.status, func.count(Lead.id))
-            .where(Lead.tenant_id == tenant_id)
+            .where(Lead.tenant_id == current_tenant.id)
             .group_by(Lead.status)
         )
         for status, count in stages_q.all():
@@ -64,13 +65,13 @@ async def test_deploy():
     return {"status": "deployed_properly_with_asyncsession_fix"}
 
 @router.get("/amocrm/auth-url")
-async def get_amocrm_auth_url(tenant_id: UUID = Query(...)):
+async def get_amocrm_auth_url(current_tenant: Tenant = Depends(get_current_tenant)):
     """Generate the amoCRM authorization URL for the SaaS tenant."""
     from app.config import settings
     
     # We pass the tenant_id in the 'state' parameter so when amoCRM redirects back,
     # we know which tenant this connection belongs to.
-    state = str(tenant_id)
+    state = str(current_tenant.id)
     
     auth_url = (
         f"https://www.amocrm.ru/oauth?client_id={settings.amocrm_client_id}"
@@ -128,9 +129,9 @@ async def amocrm_callback(
         return RedirectResponse(url=f"{settings.frontend_url}/crm?amo_error=token_exchange_failed")
 
 @router.post("/amocrm/disconnect")
-async def disconnect_amocrm(tenant_id: UUID = Query(...), db: AsyncSession = Depends(get_db)):
+async def disconnect_amocrm(current_tenant: Tenant = Depends(get_current_tenant), db: AsyncSession = Depends(get_db)):
     from app.models import AmoCRMAccount
-    account_q = await db.execute(select(AmoCRMAccount).where(AmoCRMAccount.tenant_id == tenant_id))
+    account_q = await db.execute(select(AmoCRMAccount).where(AmoCRMAccount.tenant_id == current_tenant.id))
     account = account_q.scalar_one_or_none()
     if account:
         account.is_active = False
@@ -141,12 +142,12 @@ async def disconnect_amocrm(tenant_id: UUID = Query(...), db: AsyncSession = Dep
 
 @router.get("/crm-leads")
 async def list_crm_leads(
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     stage: str = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
     """List CRM leads with optional stage filter."""
-    query = select(CRMLead).where(CRMLead.tenant_id == tenant_id)
+    query = select(CRMLead).where(CRMLead.tenant_id == current_tenant.id)
     if stage:
         query = query.where(CRMLead.stage == LeadStage(stage))
 

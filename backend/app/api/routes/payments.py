@@ -8,7 +8,8 @@ from uuid import UUID
 
 from app.config import settings
 from app.database import get_db
-from app.models import Lead, Transaction
+from app.models import Lead, Transaction, Tenant
+from app.api.routes.auth import get_current_tenant
 
 logger = structlog.get_logger(__name__)
 
@@ -21,7 +22,7 @@ router = APIRouter(prefix="/api/payments", tags=["Payments & Transactions"])
 @router.post("/create-payment-link")
 async def create_payment_link(
     payload: Dict[str, Any],
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db)
 ):
     """

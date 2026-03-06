@@ -13,7 +13,8 @@ from sqlalchemy import select, and_, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models import KnowledgeDocument
+from app.models import KnowledgeDocument, Tenant
+from app.api.routes.auth import get_current_tenant
 from app.knowledge.uploader import ingest_document
 
 logger = structlog.get_logger(__name__)
@@ -22,13 +23,13 @@ router = APIRouter(prefix="/api/knowledge-base", tags=["Knowledge Base"])
 
 @router.get("")
 async def list_documents(
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
 ):
     """List all knowledge base documents for a tenant."""
     result = await db.execute(
         select(KnowledgeDocument)
-        .where(KnowledgeDocument.tenant_id == tenant_id)
+        .where(KnowledgeDocument.tenant_id == current_tenant.id)
         .order_by(desc(KnowledgeDocument.created_at))
     )
     docs = result.scalars().all()
@@ -51,7 +52,7 @@ async def list_documents(
 
 @router.post("/upload")
 async def upload_document(
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
 ):
@@ -72,7 +73,7 @@ async def upload_document(
 
     # Create DB record
     doc = KnowledgeDocument(
-        tenant_id=tenant_id,
+        tenant_id=current_tenant.id,
         filename=file.filename,
         file_type=ext,
         file_size=len(file_data),
@@ -85,7 +86,7 @@ async def upload_document(
     try:
         # Ingest into Pinecone
         result = await ingest_document(
-            tenant_id=str(tenant_id),
+            tenant_id=str(current_tenant.id),
             file_data=file_data,
             filename=file.filename,
             document_id=doc_id,
@@ -95,7 +96,7 @@ async def upload_document(
         doc.status = "completed"
         await db.flush()
 
-        logger.info("document_uploaded", tenant=str(tenant_id), filename=file.filename, chunks=result["chunk_count"])
+        logger.info("document_uploaded", tenant=str(current_tenant.id), filename=file.filename, chunks=result["chunk_count"])
 
         return {
             "id": doc_id,
@@ -112,7 +113,7 @@ async def upload_document(
 @router.post("/scrape")
 async def scrape_website(
     url: str = Query(...),
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
 ):
     """Scrape a website and ingest its content into the knowledge base."""
@@ -124,7 +125,7 @@ async def scrape_website(
 
     # Log the action in DB
     doc = KnowledgeDocument(
-        tenant_id=tenant_id,
+        tenant_id=current_tenant.id,
         filename=f"Scraped: {url}",
         file_type="web",
         file_size=0,
@@ -134,7 +135,7 @@ async def scrape_website(
     await db.flush()
     
     try:
-        result = await scraper.scrape_and_ingest(str(tenant_id), url)
+        result = await scraper.scrape_and_ingest(str(current_tenant.id), url)
         
         if result["status"] == "success":
             doc.status = "completed"
@@ -161,15 +162,15 @@ class ManualKnowledgeCreate(BaseModel):
     media_url: Optional[str] = None
 
 @router.get("/manual")
-async def list_manual_knowledge(tenant_id: UUID = Query(...), db: AsyncSession = Depends(get_db)):
+async def list_manual_knowledge(current_tenant: Tenant = Depends(get_current_tenant), db: AsyncSession = Depends(get_db)):
     from app.models import ManualKnowledge
-    result = await db.execute(select(ManualKnowledge).where(ManualKnowledge.tenant_id == tenant_id, ManualKnowledge.is_active == True))
+    result = await db.execute(select(ManualKnowledge).where(ManualKnowledge.tenant_id == current_tenant.id, ManualKnowledge.is_active == True))
     return {"manual": [{"id": str(k.id), "question": k.question, "answer": k.answer, "media_url": k.media_url, "created_at": k.created_at.isoformat()} for k in result.scalars().all()]}
 
 @router.post("/manual")
-async def create_manual_knowledge(data: ManualKnowledgeCreate, tenant_id: UUID = Query(...), db: AsyncSession = Depends(get_db)):
+async def create_manual_knowledge(data: ManualKnowledgeCreate, current_tenant: Tenant = Depends(get_current_tenant), db: AsyncSession = Depends(get_db)):
     from app.models import ManualKnowledge
-    new_kb = ManualKnowledge(tenant_id=tenant_id, question=data.question, answer=data.answer, media_url=data.media_url)
+    new_kb = ManualKnowledge(tenant_id=current_tenant.id, question=data.question, answer=data.answer, media_url=data.media_url)
     db.add(new_kb)
     await db.commit()
     
@@ -179,9 +180,9 @@ async def create_manual_knowledge(data: ManualKnowledgeCreate, tenant_id: UUID =
     return {"status": "success", "id": str(new_kb.id)}
 
 @router.delete("/manual/{item_id}")
-async def delete_manual_knowledge(item_id: UUID, tenant_id: UUID = Query(...), db: AsyncSession = Depends(get_db)):
+async def delete_manual_knowledge(item_id: UUID, current_tenant: Tenant = Depends(get_current_tenant), db: AsyncSession = Depends(get_db)):
     from app.models import ManualKnowledge
-    result = await db.execute(select(ManualKnowledge).where(ManualKnowledge.id == item_id, ManualKnowledge.tenant_id == tenant_id))
+    result = await db.execute(select(ManualKnowledge).where(ManualKnowledge.id == item_id, ManualKnowledge.tenant_id == current_tenant.id))
     doc = result.scalar_one_or_none()
     if doc:
         await db.delete(doc)
@@ -195,16 +196,16 @@ class ObjectionCreate(BaseModel):
     rebuttal: str
 
 @router.get("/objections")
-async def list_objections(tenant_id: UUID = Query(...), db: AsyncSession = Depends(get_db)):
+async def list_objections(current_tenant: Tenant = Depends(get_current_tenant), db: AsyncSession = Depends(get_db)):
     from app.models import ManualKnowledge
     # We tag objections in the question field or use a dedicated column if exists (modeling as question/answer for now)
-    result = await db.execute(select(ManualKnowledge).where(ManualKnowledge.tenant_id == tenant_id, ManualKnowledge.question.like("OBJECTION:%")))
+    result = await db.execute(select(ManualKnowledge).where(ManualKnowledge.tenant_id == current_tenant.id, ManualKnowledge.question.like("OBJECTION:%")))
     return {"objections": [{"id": str(k.id), "term": k.question.replace("OBJECTION:", ""), "response": k.answer} for k in result.scalars().all()]}
 
 @router.post("/objections")
-async def create_objection(data: ObjectionCreate, tenant_id: UUID = Query(...), db: AsyncSession = Depends(get_db)):
+async def create_objection(data: ObjectionCreate, current_tenant: Tenant = Depends(get_current_tenant), db: AsyncSession = Depends(get_db)):
     from app.models import ManualKnowledge
-    new_kb = ManualKnowledge(tenant_id=tenant_id, question=f"OBJECTION:{data.objection}", answer=data.rebuttal)
+    new_kb = ManualKnowledge(tenant_id=current_tenant.id, question=f"OBJECTION:{data.objection}", answer=data.rebuttal)
     db.add(new_kb)
     await db.commit()
     return {"status": "success", "id": str(new_kb.id)}
@@ -216,13 +217,13 @@ class SimulationRequest(BaseModel):
     agent_id: Optional[UUID] = None
 
 @router.post("/simulate")
-async def simulate_ai_response(data: SimulationRequest, tenant_id: UUID = Query(...), db: AsyncSession = Depends(get_db)):
+async def simulate_ai_response(data: SimulationRequest, current_tenant: Tenant = Depends(get_current_tenant), db: AsyncSession = Depends(get_db)):
     """Test how the AI would respond given the current knowledge base."""
     from app.agents.claude_agent import agent
     
     # Use the existing agent logic but with a 'simulation' flag if needed
     response = await agent.generate_response(
-        tenant_id=str(tenant_id),
+        tenant_id=str(current_tenant.id),
         contact_id="sim_user_123",
         user_message=data.user_query,
         message_type="text",
@@ -238,13 +239,13 @@ async def simulate_ai_response(data: SimulationRequest, tenant_id: UUID = Query(
 @router.delete("/{document_id}")
 async def delete_document(
     document_id: UUID,
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
 ):
     """Delete a knowledge base document and its vectors."""
     result = await db.execute(
         select(KnowledgeDocument).where(
-            and_(KnowledgeDocument.id == document_id, KnowledgeDocument.tenant_id == tenant_id)
+            and_(KnowledgeDocument.id == document_id, KnowledgeDocument.tenant_id == current_tenant.id)
         )
     )
     doc = result.scalar_one_or_none()
@@ -259,13 +260,13 @@ async def delete_document(
         # Delete vectors by ID prefix
         vector_ids = [f"{document_id}_{i}" for i in range(doc.chunk_count)]
         if vector_ids:
-            index.delete(ids=vector_ids, namespace=str(tenant_id))
+            index.delete(ids=vector_ids, namespace=str(current_tenant.id))
     except Exception as e:
         logger.warning("vector_delete_warning", error=str(e), document_id=str(document_id))
 
     await db.delete(doc)
     await db.commit()
 
-    logger.info("document_deleted", tenant=str(tenant_id), document_id=str(document_id))
+    logger.info("document_deleted", tenant=str(current_tenant.id), document_id=str(document_id))
 
     return {"status": "deleted", "id": str(document_id)}

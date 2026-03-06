@@ -6,13 +6,14 @@ from typing import Dict, Any, List
 from uuid import UUID
 
 from app.database import get_db
-from app.models import ConversationAnalysis, Conversation
+from app.models import ConversationAnalysis, Conversation, Tenant
+from app.api.routes.auth import get_current_tenant
 
 router = APIRouter(prefix="/api/qa", tags=["QA Control Center"])
 
 @router.get("/flagged")
 async def get_flagged_interactions(
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db)
 ):
     """Get all flagged conversation analyses for QA Manager review."""
@@ -21,7 +22,7 @@ async def get_flagged_interactions(
         .join(Conversation, ConversationAnalysis.conversation_id == Conversation.id)
         .options(selectinload(ConversationAnalysis.conversation))
         .where(
-            Conversation.tenant_id == tenant_id,
+            Conversation.tenant_id == current_tenant.id,
             or_(
                 ConversationAnalysis.is_toxic == True,
                 ConversationAnalysis.has_hallucination == True,
@@ -34,7 +35,7 @@ async def get_flagged_interactions(
     flagged = result.scalars().all()
     
     # Calculate some stats
-    total_result = await db.execute(select(ConversationAnalysis).join(Conversation).where(Conversation.tenant_id == tenant_id))
+    total_result = await db.execute(select(ConversationAnalysis).join(Conversation).where(Conversation.tenant_id == current_tenant.id))
     total_passed = len(total_result.scalars().all()) - len(flagged)
     
     return {
@@ -65,7 +66,7 @@ async def get_flagged_interactions(
 async def submit_audit(
     analysis_id: UUID,
     payload: Dict[str, Any],
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db)
 ):
     """Manager submits their audit review."""

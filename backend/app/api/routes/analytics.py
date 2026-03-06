@@ -13,7 +13,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
-from app.models import Conversation, ConversationAnalysis
+from app.models import Conversation, ConversationAnalysis, Tenant
+from app.api.routes.auth import get_current_tenant
 
 router = APIRouter(prefix="/api/analytics", tags=["SaaS Analytics"])
 
@@ -30,7 +31,7 @@ async def deprecated_dashboard_endpoint():
 @router.get("/conversation-analysis/{id}")
 async def get_conversation_analysis(
     id: UUID,
-    tenant_id: Optional[UUID] = Query(None),
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -49,8 +50,7 @@ async def get_conversation_analysis(
         )
     )
 
-    if tenant_id is not None:
-        query = query.where(Conversation.tenant_id == tenant_id)
+    query = query.where(Conversation.tenant_id == current_tenant.id)
 
     result = await db.execute(query)
     analysis = result.scalar_one_or_none()

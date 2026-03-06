@@ -15,7 +15,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
-from app.models import Conversation, Message, ConversationAnalysis, ChannelType, SalesOutcome
+from app.models import Conversation, Message, ConversationAnalysis, ChannelType, SalesOutcome, Tenant
+from app.api.routes.auth import get_current_tenant
 
 logger = structlog.get_logger(__name__)
 router = APIRouter(prefix="/api/conversations", tags=["Conversations"])
@@ -23,7 +24,7 @@ router = APIRouter(prefix="/api/conversations", tags=["Conversations"])
 
 @router.get("")
 async def list_conversations(
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     channel: Optional[str] = Query(None),
     outcome: Optional[str] = Query(None),
     days: int = Query(30, ge=1, le=365),
@@ -40,7 +41,7 @@ async def list_conversations(
         select(Conversation)
         .options(selectinload(Conversation.analysis))
         .where(
-            and_(Conversation.tenant_id == tenant_id, Conversation.created_at >= start)
+            and_(Conversation.tenant_id == current_tenant.id, Conversation.created_at >= start)
         )
     )
 
@@ -99,7 +100,7 @@ async def list_conversations(
 @router.get("/{conversation_id}")
 async def get_conversation(
     conversation_id: UUID,
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
 ):
     """Get full conversation with messages and analysis."""
@@ -111,7 +112,7 @@ async def get_conversation(
             selectinload(Conversation.voice_analyses),
         )
         .where(
-            and_(Conversation.id == conversation_id, Conversation.tenant_id == tenant_id)
+            and_(Conversation.id == conversation_id, Conversation.tenant_id == current_tenant.id)
         )
     )
     conversation = result.scalar_one_or_none()

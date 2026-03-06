@@ -80,13 +80,13 @@ export default function ControlCenter() {
                 gap: 20,
                 marginBottom: 32
             }}>
-                <MiniStatCard label={t('dashboard_metrics.wallet_balance') || 'Wallet Balance'} value={formatCurrency(1240.50)} sub={t('dashboard_metrics.prepaid') || 'Prepaid'} icon={<DollarSign size={14} />} color="var(--success)" />
-                <MiniStatCard label={t('dashboard_metrics.revenue_today') || 'Revenue Today'} value={formatCurrency(kpis.total_revenue || 0, 0, 0)} sub="+12.4%" icon={<TrendingUp size={14} />} color="var(--accent)" />
-                <MiniStatCard label={t('dashboard_metrics.ai_cost_today') || 'AI Cost Today'} value={formatCurrency(kpis.total_cost || 0, 2, 4)} sub="0.003/msg" icon={<Cpu size={14} />} color="var(--warning)" />
-                <MiniStatCard label={t('dashboard_metrics.profit_margin') || 'Profit Margin'} value={`${Math.max(0, 100 - (kpis.total_cost / (kpis.total_revenue || 1) * 100)).toFixed(1)}%`} sub="Target: 95%" icon={<Activity size={14} />} color="var(--success)" />
-                <MiniStatCard label={t('dashboard_metrics.calls_today') || 'Calls Today'} value={funnelData[0]?.value || 0} sub={t('dashboard_metrics.outbound') || 'Outbound'} icon={<Phone size={14} />} color="var(--purple)" />
-                <MiniStatCard label={t('dashboard_metrics.active_calls') || 'Active Calls'} value="0" sub={t('dashboard_metrics.live_pulse') || 'Live Pulse'} icon={<Activity size={14} />} color="var(--danger)" pulse />
-                <MiniStatCard label={t('dashboard_metrics.ai_conv_rate') || 'AI Conv. Rate'} value={`${Number(kpis.roi) > 0 ? '14.2' : '0'}%`} sub="+2.1% w/w" icon={<Zap size={14} />} color="var(--accent)" />
+                <MiniStatCard label={t('dashboard_metrics.wallet_balance') || 'Wallet Balance'} value={formatCurrency(1240.50)} sub={t('dashboard_metrics.prepaid') || 'Prepaid'} icon={<DollarSign size={14} />} color="var(--success)" index={0} />
+                <MiniStatCard label={t('dashboard_metrics.revenue_today') || 'Revenue Today'} value={formatCurrency(kpis.total_revenue || 0, 0, 0)} sub="+12.4%" icon={<TrendingUp size={14} />} color="var(--accent)" index={1} />
+                <MiniStatCard label={t('dashboard_metrics.ai_cost_today') || 'AI Cost Today'} value={formatCurrency(kpis.total_cost || 0, 2, 4)} sub="0.003/msg" icon={<Cpu size={14} />} color="var(--warning)" index={2} />
+                <MiniStatCard label={t('dashboard_metrics.profit_margin') || 'Profit Margin'} value={`${Math.max(0, 100 - (kpis.total_cost / (kpis.total_revenue || 1) * 100)).toFixed(1)}%`} sub="Target: 95%" icon={<Activity size={14} />} color="var(--success)" index={3} />
+                <MiniStatCard label={t('dashboard_metrics.calls_today') || 'Calls Today'} value={funnelData[0]?.value || 0} sub={t('dashboard_metrics.outbound') || 'Outbound'} icon={<Phone size={14} />} color="var(--purple)" index={4} />
+                <MiniStatCard label={t('dashboard_metrics.active_calls') || 'Active Calls'} value="0" sub={t('dashboard_metrics.live_pulse') || 'Live Pulse'} icon={<Activity size={14} />} color="var(--danger)" pulse index={5} />
+                <MiniStatCard label={t('dashboard_metrics.ai_conv_rate') || 'AI Conv. Rate'} value={`${Number(kpis.roi) > 0 ? '14.2' : '0'}%`} sub="+2.1% w/w" icon={<Zap size={14} />} color="var(--accent)" index={6} />
             </div>
 
             {/* ─── Main Content Grid ─── */}
@@ -115,11 +115,11 @@ export default function ControlCenter() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <ActivityRow time="10:42:15" type="inbound_call" detail="+1 (555) 019-2831 connected to VoiceAgent-Alpha" status="Processing" statusColor="var(--warning)" />
-                                    <ActivityRow time="10:42:12" type="payment_intent" detail="Stripe captured $140.00 (Lead ID: 8991)" status="Success" statusColor="var(--success)" />
-                                    <ActivityRow time="10:42:05" type="webhook_recv" detail="Meta Graph API message from ig_user_991" status="Success" statusColor="var(--success)" />
-                                    <ActivityRow time="10:41:58" type="llm_generation" detail="Generated 240 tokens in 410ms (GPT-4o)" status="Success" statusColor="var(--success)" />
-                                    <ActivityRow time="10:41:10" type="outbound_dial" detail="Campaign 'Q3 Reactivation' dialed +1 (555) 991-0021" status="Failed" statusColor="var(--danger)" />
+                                    <tr>
+                                        <td colSpan={4} style={{ textAlign: 'center', padding: '32px', color: 'var(--text-muted)', fontSize: 13 }}>
+                                            {t('dashboard_metrics.no_activity') || 'No recent activity recorded.'}
+                                        </td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -132,9 +132,8 @@ export default function ControlCenter() {
                                 <ShieldAlert size={16} color="var(--danger)" />
                                 {t('dashboard_metrics.escalation_alerts') || 'Escalation Alerts'}
                             </h3>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                <AlertItem title="Angry Customer Detected" desc="Voice sentiment hit -0.85" id="Call-9912" time="2m ago" />
-                                <AlertItem title="Complex Query" desc="Knowledge base returned 0.1 confidence" id="Chat-1102" time="5m ago" />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center', padding: '20px', color: 'var(--text-muted)', fontSize: 13 }}>
+                                {t('dashboard_metrics.no_alerts') || 'All clear. No active alerts.'}
                             </div>
                         </div>
 
@@ -143,21 +142,8 @@ export default function ControlCenter() {
                                 <Clock size={16} color="var(--warning)" />
                                 {t('dashboard_metrics.human_sla') || 'Human SLA Timer'}
                             </h3>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 6 }}>
-                                        <span style={{ color: 'var(--text-secondary)' }}>{t('dashboard_metrics.first_response_time') || 'First Response Time'}</span>
-                                        <span style={{ fontWeight: 600, color: 'var(--success)' }}>1m 12s</span>
-                                    </div>
-                                    <div className="progress-bar"><div className="progress-fill" style={{ width: '15%', background: 'var(--success)' }} /></div>
-                                </div>
-                                <div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 6 }}>
-                                        <span style={{ color: 'var(--text-secondary)' }}>{t('dashboard_metrics.escalation_resolution') || 'Escalation Resolution'}</span>
-                                        <span style={{ fontWeight: 600, color: 'var(--danger)' }}>14m 30s ({t('dashboard_metrics.sla_breach') || 'SLA Breach Risk'})</span>
-                                    </div>
-                                    <div className="progress-bar"><div className="progress-fill" style={{ width: '85%', background: 'var(--danger)' }} /></div>
-                                </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center', padding: '20px', color: 'var(--text-muted)', fontSize: 13 }}>
+                                {t('dashboard_metrics.no_slas') || 'No active escalations tracking SLA.'}
                             </div>
                         </div>
                     </div>
@@ -171,30 +157,45 @@ export default function ControlCenter() {
 
 /* ─── Components ─── */
 
-function MiniStatCard({ label, value, sub, icon, color, pulse = false }: any) {
+function MiniStatCard({ label, value, sub, icon, color, pulse = false, index = 0 }: any) {
     return (
-        <div style={{
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border)',
-            borderRadius: '10px',
-            padding: '20px 24px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 12,
-            boxShadow: pulse ? `0 0 20px -5px ${color}` : 'none',
-            minHeight: '120px',
-            justifyContent: 'center'
-        }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</span>
-                <div style={{ color, display: 'flex', alignItems: 'center' }}>
-                    {pulse && <div className="status-dot" style={{ background: color, marginRight: 6 }} />}
+        <div
+            className="card card-premium animate-entrance"
+            style={{
+                padding: '24px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 16,
+                minHeight: '140px',
+                justifyContent: 'center',
+                animationDelay: `${index * 0.1}s`,
+                background: 'rgba(255, 255, 255, 0.03)',
+                borderRadius: 24,
+                position: 'relative',
+                overflow: 'hidden'
+            }}
+        >
+            {/* Background glow for the card */}
+            <div style={{
+                position: 'absolute', top: '-20%', right: '-20%', width: '50%', height: '50%',
+                background: color, filter: 'blur(40px)', opacity: 0.1, zIndex: 0
+            }} />
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative', zIndex: 1 }}>
+                <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{label}</span>
+                <div style={{
+                    width: 32, height: 32, borderRadius: 10, background: `${color}15`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', color
+                }}>
                     {icon}
                 </div>
             </div>
-            <div>
-                <div style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1.1 }}>{value}</div>
-                <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 4 }}>{sub}</div>
+            <div style={{ position: 'relative', zIndex: 1 }}>
+                <div style={{ fontSize: 24, fontWeight: 900, letterSpacing: '-0.02em', lineHeight: 1.1, color: 'var(--text-primary)' }}>{value}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
+                    {pulse && <div className="status-dot animate-pulse" style={{ background: color, width: 6, height: 6 }} />}
+                    <div style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 600 }}>{sub}</div>
+                </div>
             </div>
         </div>
     );

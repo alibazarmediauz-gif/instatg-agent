@@ -41,43 +41,42 @@
 }
 
 :root {
-  /* Light Mode (New Default) */
-  --bg-primary: var(--color-bg-primary);
-  --bg-secondary: var(--color-bg-secondary);
-  --bg-card: var(--color-bg-card);
-  --bg-card-hover: var(--color-bg-card-hover);
-  --bg-input: var(--color-bg-input);
-  --bg-elevated: var(--color-bg-elevated);
+  /* Light Mode (New SaaS Premium) */
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f1f5f9;
+  --bg-input: #f8fafc;
+  --bg-elevated: #ffffff;
 
-  --border: var(--color-border);
-  --border-hover: var(--color-border-hover);
-  --border-accent: var(--color-border-accent);
+  --border: rgba(0, 0, 0, 0.08);
+  --border-hover: rgba(0, 0, 0, 0.12);
+  --border-accent: rgba(59, 130, 246, 0.2);
 
-  --text-primary: var(--color-text-primary);
-  --text-secondary: var(--color-text-secondary);
-  --text-muted: var(--color-text-muted);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
 
-  --accent: var(--color-accent);
-  --accent-hover: var(--color-accent-hover);
-  --accent-glow: var(--color-accent-glow);
-  --accent-bg: var(--color-accent-bg);
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --accent-glow: rgba(59, 130, 246, 0.1);
+  --accent-bg: rgba(59, 130, 246, 0.05);
 
-  --success: var(--color-success);
-  --success-bg: var(--color-success-bg);
-  --warning: var(--color-warning);
-  --warning-bg: var(--color-warning-bg);
-  --danger: var(--color-danger);
-  --danger-bg: var(--color-danger-bg);
+  --success: #10b981;
+  --success-bg: rgba(16, 185, 129, 0.1);
+  --warning: #f59e0b;
+  --warning-bg: rgba(245, 158, 11, 0.1);
+  --danger: #ef4444;
+  --danger-bg: rgba(239, 68, 68, 0.1);
 
-  --info: var(--color-info);
-  --purple: var(--color-purple);
-  --pink: var(--color-pink);
+  --info: #0ea5e9;
+  --purple: #8b5cf6;
+  --pink: #ec4899;
 
   --radius: var(--radius-md);
-  /* other vars preserved... */
 
   --sidebar-width: 250px;
-  --transition-theme: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  --transition-theme: background 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .dark {
@@ -116,6 +115,9 @@
   --gradient-1: linear-gradient(135deg, #3b82f6, #6366f1);
   --gradient-2: linear-gradient(135deg, #22c55e, #10b981);
   --gradient-3: linear-gradient(135deg, #f59e0b, #ef4444);
+  --gradient-premium: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
+
+  --shadow-premium: 0 20px 50px rgba(0, 0, 0, 0.3), 0 0 20px rgba(59, 130, 246, 0.1);
 }
 
 * {
@@ -490,6 +492,48 @@ body {
   z-index: 0;
 }
 
+.premium-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: var(--bg-primary);
+  overflow: hidden;
+}
+
+.premium-bg::before {
+  content: '';
+  position: absolute;
+  top: -10%;
+  left: -10%;
+  width: 40%;
+  height: 40%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.1), transparent 70%);
+  filter: blur(80px);
+  animation: float 20s ease-in-out infinite alternate;
+}
+
+.premium-bg::after {
+  content: '';
+  position: absolute;
+  bottom: -10%;
+  right: -10%;
+  width: 50%;
+  height: 50%;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.08), transparent 70%);
+  filter: blur(100px);
+  animation: float 25s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes float {
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+
+  to {
+    transform: translate(10%, 10%) scale(1.1);
+  }
+}
+
 .animate-entrance {
   animation: entrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   opacity: 0;
@@ -777,13 +821,23 @@ body {
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px;
-  transition: border-color 0.2s;
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .card:hover {
-  border-color: var(--border-hover);
+  border-color: var(--accent-glow);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.card-premium {
+  background: rgba(20, 24, 32, 0.4);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
 }
 
 .card-grid {

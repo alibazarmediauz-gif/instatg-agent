@@ -13,7 +13,8 @@ from sqlalchemy import select, and_, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models import DailyReport
+from app.models import DailyReport, Tenant
+from app.api.routes.auth import get_current_tenant
 from app.analytics.reports import report_generator
 
 logger = structlog.get_logger(__name__)
@@ -22,7 +23,7 @@ router = APIRouter(prefix="/api/reports", tags=["Reports"])
 
 @router.get("")
 async def list_reports(
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     days: int = Query(30, ge=1, le=365),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
@@ -34,7 +35,7 @@ async def list_reports(
 
     result = await db.execute(
         select(DailyReport)
-        .where(and_(DailyReport.tenant_id == tenant_id, DailyReport.report_date >= start))
+        .where(and_(DailyReport.tenant_id == current_tenant.id, DailyReport.report_date >= start))
         .order_by(desc(DailyReport.report_date))
         .offset(offset)
         .limit(page_size)
@@ -62,13 +63,13 @@ async def list_reports(
 @router.get("/{report_id}")
 async def get_report(
     report_id: UUID,
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
 ):
     """Get full report details."""
     result = await db.execute(
         select(DailyReport).where(
-            and_(DailyReport.id == report_id, DailyReport.tenant_id == tenant_id)
+            and_(DailyReport.id == report_id, DailyReport.tenant_id == current_tenant.id)
         )
     )
     report = result.scalar_one_or_none()
@@ -94,14 +95,14 @@ async def get_report(
 
 @router.post("/generate")
 async def generate_report_now(
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     date: str = Query(None, description="Date in YYYY-MM-DD format"),
     db: AsyncSession = Depends(get_db),
 ):
     """Manually trigger report generation."""
     try:
         report_date = datetime.strptime(date, "%Y-%m-%d") if date else None
-        report = await report_generator.generate_daily_report(db, str(tenant_id), report_date)
+        report = await report_generator.generate_daily_report(db, str(current_tenant.id), report_date)
         return {"status": "generated", "report": report}
     except Exception as e:
         logger.error("manual_report_error", error=str(e))

@@ -11,7 +11,9 @@ from fastapi import APIRouter, HTTPException, Depends, Header
 from pydantic import BaseModel, EmailStr
 import httpx
 
-from app.config import settings
+from app.database import async_session_factory, get_db
+from app.models import Tenant
+from sqlalchemy import select
 
 logger = structlog.get_logger(__name__)
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
@@ -66,6 +68,28 @@ async def verify_jwt(authorization: Optional[str] = Header(None)) -> dict:
     except httpx.RequestError as e:
         logger.error("auth_verification_error", error=str(e))
         raise HTTPException(status_code=503, detail="Authentication service unavailable")
+
+
+async def get_current_tenant(
+    user: dict = Depends(verify_jwt),
+    db: AsyncSession = Depends(get_db)
+) -> Tenant:
+    """
+    Dependency to get the current tenant based on the authenticated user's email.
+    Ensures that the user is authorized for their specific tenant data.
+    """
+    email = user.get("email")
+    if not email:
+        raise HTTPException(status_code=401, detail="Invalid user data in token")
+
+    result = await db.execute(select(Tenant).where(Tenant.owner_email == email))
+    tenant = result.scalar_one_or_none()
+
+    if not tenant:
+        logger.warning("tenant_not_found_for_user", email=email)
+        raise HTTPException(status_code=403, detail="No tenant associated with this account")
+
+    return tenant
 
 
 @router.post("/signup", response_model=TokenResponse)

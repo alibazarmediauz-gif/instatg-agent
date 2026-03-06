@@ -15,8 +15,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.models import (
     Conversation, ConversationAnalysis, Message,
-    SalesOutcome,
+    SalesOutcome, Tenant
 )
+from app.api.routes.auth import get_current_tenant
 
 logger = structlog.get_logger(__name__)
 router = APIRouter(prefix="/api/dashboard", tags=["Dashboard"])
@@ -24,7 +25,7 @@ router = APIRouter(prefix="/api/dashboard", tags=["Dashboard"])
 
 @router.get("/stats")
 async def get_dashboard_stats(
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     days: int = Query(7, ge=0, le=365),
     db: AsyncSession = Depends(get_db),
 ):
@@ -36,7 +37,7 @@ async def get_dashboard_stats(
     # Total conversations
     total_q = await db.execute(
         select(func.count(Conversation.id)).where(
-            and_(Conversation.tenant_id == tenant_id, Conversation.created_at >= start)
+            and_(Conversation.tenant_id == current_tenant.id, Conversation.created_at >= start)
         )
     )
     total = total_q.scalar() or 0
@@ -46,7 +47,7 @@ async def get_dashboard_stats(
     active_q = await db.execute(
         select(func.count(Conversation.id)).where(
             and_(
-                Conversation.tenant_id == tenant_id,
+                Conversation.tenant_id == current_tenant.id,
                 Conversation.last_message_at >= active_threshold,
             )
         )
@@ -59,7 +60,7 @@ async def get_dashboard_stats(
             Conversation, ConversationAnalysis.conversation_id == Conversation.id
         ).where(
             and_(
-                Conversation.tenant_id == tenant_id,
+                Conversation.tenant_id == current_tenant.id,
                 Conversation.created_at >= start,
                 ConversationAnalysis.sales_outcome == SalesOutcome.WON,
             )
@@ -72,7 +73,7 @@ async def get_dashboard_stats(
         select(func.count(Message.id)).join(
             Conversation, Message.conversation_id == Conversation.id
         ).where(
-            and_(Conversation.tenant_id == tenant_id, Message.created_at >= start)
+            and_(Conversation.tenant_id == current_tenant.id, Message.created_at >= start)
         )
     )
     total_messages = msgs_q.scalar() or 0
@@ -83,7 +84,7 @@ async def get_dashboard_stats(
             Conversation.channel,
             func.count(Conversation.id),
         ).where(
-            and_(Conversation.tenant_id == tenant_id, Conversation.created_at >= start)
+            and_(Conversation.tenant_id == current_tenant.id, Conversation.created_at >= start)
         ).group_by(Conversation.channel)
     )
     channel_totals = {row[0].value: row[1] for row in channel_totals_q.all()}
@@ -96,7 +97,7 @@ async def get_dashboard_stats(
             ConversationAnalysis, ConversationAnalysis.conversation_id == Conversation.id
         ).where(
             and_(
-                Conversation.tenant_id == tenant_id,
+                Conversation.tenant_id == current_tenant.id,
                 Conversation.created_at >= start,
                 ConversationAnalysis.sales_outcome == SalesOutcome.WON,
             )
@@ -131,20 +132,9 @@ async def get_dashboard_stats(
             "cpl": cpl,
         },
         # revenueData/channelData/regionData/funnelData mirror analytics.py structure
-        "revenueData": [
-            {"name": "Mon", "voice": 4000, "chat": 2400, "cost": 800},
-            {"name": "Tue", "voice": 3000, "chat": 1398, "cost": 600},
-            {"name": "Wed", "voice": 2000, "chat": 9800, "cost": 1200},
-            {"name": "Thu", "voice": 2780, "chat": 3908, "cost": 900},
-            {"name": "Fri", "voice": 1890, "chat": 4800, "cost": 750},
-            {"name": "Sat", "voice": 2390, "chat": 3800, "cost": 800},
-            {"name": "Sun", "voice": 3490, "chat": 4300, "cost": 1000},
-        ],
+        "revenueData": [],
         "channelData": channel_data,
-        "regionData": [
-            {"city": "Tashkent", "leads": total},
-            {"city": "Samarkand", "leads": 0},
-        ],
+        "regionData": [],
         "funnelData": [
             {"name": "Total Leads", "value": total},
             {"name": "Qualified", "value": active},
@@ -156,7 +146,7 @@ async def get_dashboard_stats(
 
 @router.get("/conversion-graph")
 async def get_conversion_graph(
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     days: int = Query(7, ge=1, le=90),
     db: AsyncSession = Depends(get_db),
 ):
@@ -171,7 +161,7 @@ async def get_conversion_graph(
         convos_q = await db.execute(
             select(func.count(Conversation.id)).where(
                 and_(
-                    Conversation.tenant_id == tenant_id,
+                    Conversation.tenant_id == current_tenant.id,
                     Conversation.created_at >= date,
                     Conversation.created_at < next_date,
                 )
@@ -184,7 +174,7 @@ async def get_conversion_graph(
                 Conversation, ConversationAnalysis.conversation_id == Conversation.id
             ).where(
                 and_(
-                    Conversation.tenant_id == tenant_id,
+                    Conversation.tenant_id == current_tenant.id,
                     Conversation.created_at >= date,
                     Conversation.created_at < next_date,
                     ConversationAnalysis.sales_outcome == SalesOutcome.WON,
@@ -205,7 +195,7 @@ async def get_conversion_graph(
 
 @router.get("/channel-breakdown")
 async def get_channel_breakdown(
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     days: int = Query(7, ge=1, le=90),
     db: AsyncSession = Depends(get_db),
 ):
@@ -217,7 +207,7 @@ async def get_channel_breakdown(
             Conversation.channel,
             func.count(Conversation.id),
         ).where(
-            and_(Conversation.tenant_id == tenant_id, Conversation.created_at >= start)
+            and_(Conversation.tenant_id == current_tenant.id, Conversation.created_at >= start)
         ).group_by(Conversation.channel)
     )
 

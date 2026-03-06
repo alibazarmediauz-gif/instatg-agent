@@ -6,16 +6,25 @@ from uuid import UUID
 import hashlib
 
 from app.database import get_db
-from app.models import PromptVersion
+from app.models import PromptVersion, ChatAgent
+from app.api.deps import get_current_tenant, CurrentTenant
 
 router = APIRouter(prefix="/api/prompts", tags=["Prompt Management"])
 
 @router.get("/{agent_id}")
 async def get_prompt_versions(
     agent_id: UUID,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_tenant: CurrentTenant = Depends(get_current_tenant)
 ):
     """Get all prompt versions for a specific agent (for A/B testing)."""
+    # Verify agent belongs to tenant
+    agent_check = await db.execute(
+        select(ChatAgent).where(ChatAgent.id == agent_id, ChatAgent.tenant_id == current_tenant.id)
+    )
+    if not agent_check.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Agent not found")
+
     result = await db.execute(
         select(PromptVersion)
         .where(PromptVersion.agent_id == agent_id)
@@ -28,9 +37,16 @@ async def get_prompt_versions(
 async def create_prompt_version(
     agent_id: UUID,
     payload: Dict[str, Any],
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_tenant: CurrentTenant = Depends(get_current_tenant)
 ):
     """Create a new prompt version and generate its hash."""
+    # Verify agent belongs to tenant
+    agent_check = await db.execute(
+        select(ChatAgent).where(ChatAgent.id == agent_id, ChatAgent.tenant_id == current_tenant.id)
+    )
+    if not agent_check.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Agent not found")
     system_prompt = payload.get("system_prompt", "")
     version_hash = hashlib.sha256(system_prompt.encode('utf-8')).hexdigest()[:8]
     
@@ -59,14 +75,21 @@ async def create_prompt_version(
 async def activate_prompt(
     prompt_id: UUID,
     payload: Dict[str, Any],
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_tenant: CurrentTenant = Depends(get_current_tenant)
 ):
     """Activate a specific prompt, enabling rollback."""
-    agent_id_str = payload.get("agent_id")
-    if not agent_id_str:
-        raise HTTPException(status_code=400, detail="Must provide agent_id")
+    # Verify prompt belongs to an agent owned by tenant
+    prompt_check = await db.execute(
+        select(PromptVersion)
+        .join(ChatAgent, PromptVersion.agent_id == ChatAgent.id)
+        .where(PromptVersion.id == prompt_id, ChatAgent.tenant_id == current_tenant.id)
+    )
+    prompt = prompt_check.scalar_one_or_none()
+    if not prompt:
+        raise HTTPException(status_code=404, detail="Prompt not found")
         
-    agent_id = UUID(agent_id_str)
+    agent_id = prompt.agent_id
 
     # Deactivate all
     await db.execute(

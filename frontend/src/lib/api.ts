@@ -249,7 +249,7 @@ export async function verifyTelegramOTP(
 }
 
 export async function disconnectTelegram(tenantId: string) {
-    return apiClient('/api/settings/telegram/disconnect', {
+    return apiClient('/api/integrations/telegram/disconnect', {
         method: 'POST',
         params: { tenant_id: tenantId },
     });
@@ -551,17 +551,16 @@ export async function deleteContact(tenantId: string, id: string) {
 }
 
 // ─── Prompts ─────────────────────────────────────────────────────
+// Note: tenant isolation is now handled by backend via JWT.
+// agent_id is required in the path for prompt versions.
 
-export async function getPrompts(tenantId: string) {
-    return apiClient('/api/prompts', {
-        params: { tenant_id: tenantId },
-    });
+export async function getPrompts(tenantId: string, agentId: string) {
+    return apiClient<{ status: string; data: any[] }>(`/api/prompts/${agentId}`);
 }
 
-export async function createPrompt(tenantId: string, data: Record<string, unknown>) {
-    return apiClient('/api/prompts', {
+export async function createPrompt(tenantId: string, agentId: string, data: Record<string, unknown>) {
+    return apiClient<{ status: string; data: any }>(`/api/prompts/${agentId}`, {
         method: 'POST',
-        params: { tenant_id: tenantId },
         body: JSON.stringify(data),
     });
 }
@@ -584,7 +583,7 @@ export async function deletePrompt(tenantId: string, id: string) {
 export async function setActivePrompt(tenantId: string, id: string) {
     return apiClient(`/api/prompts/${id}/activate`, {
         method: 'POST',
-        params: { tenant_id: tenantId },
+        body: JSON.stringify({}), // Payload handled by backends discovery logic
     });
 }
 

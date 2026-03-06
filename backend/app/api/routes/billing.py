@@ -3,9 +3,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import Dict, Any
 from uuid import UUID
+from datetime import datetime
 
 from app.database import get_db
-from app.models import Wallet, UsageLog
+from app.models import Wallet, UsageLog, Tenant
+from app.api.routes.auth import get_current_tenant
 
 router = APIRouter(prefix="/api/billing", tags=["Billing & Usage"])
 
@@ -18,15 +20,15 @@ SUBSCRIPTION_PLANS = {
 }
 
 @router.get("/subscription")
-async def get_subscription(tenant_id: UUID = Query(...), db: AsyncSession = Depends(get_db)):
+async def get_subscription(current_tenant: Tenant = Depends(get_current_tenant), db: AsyncSession = Depends(get_db)):
     """Check current subscription tier and usage."""
-    # Simplified: every tenant starts on Pro for demo
+    # Production logic: fetch from DB. For now, we'll return an empty/basic state if no usage exists.
     return {
-        "tier": "pro",
-        "limits": SUBSCRIPTION_PLANS["pro"],
+        "tier": "basic",
+        "limits": SUBSCRIPTION_PLANS["basic"],
         "usage": {
-            "calls": 142,
-            "chats": 2840
+            "calls": 0,
+            "chats": 0
         }
     }
 
@@ -115,13 +117,13 @@ async def click_callback(
 
 @router.get("/usage-logs")
 async def get_usage_logs(
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db)
 ):
     """Get ledger of usage."""
     result = await db.execute(
         select(UsageLog)
-        .where(UsageLog.tenant_id == tenant_id)
+        .where(UsageLog.tenant_id == current_tenant.id)
         .order_by(UsageLog.created_at.desc())
         .limit(50)
     )
@@ -141,12 +143,12 @@ async def get_usage_logs(
     }
 
 @router.get("/wallet")
-async def get_wallet(tenant_id: UUID = Query(...), db: AsyncSession = Depends(get_db)):
+async def get_wallet(current_tenant: Tenant = Depends(get_current_tenant), db: AsyncSession = Depends(get_db)):
     """Get the current wallet balance."""
-    result = await db.execute(select(Wallet).where(Wallet.tenant_id == tenant_id))
+    result = await db.execute(select(Wallet).where(Wallet.tenant_id == current_tenant.id))
     wallet = result.scalars().first()
     if not wallet:
-        wallet = Wallet(tenant_id=tenant_id, balance=0.0)
+        wallet = Wallet(tenant_id=current_tenant.id, balance=0.0)
         db.add(wallet)
         await db.commit()
     return {"status": "success", "balance": wallet.balance}
@@ -154,15 +156,15 @@ async def get_wallet(tenant_id: UUID = Query(...), db: AsyncSession = Depends(ge
 @router.post("/top-up")
 async def top_up_wallet(
     payload: Dict[str, Any],
-    tenant_id: UUID = Query(...), 
+    current_tenant: Tenant = Depends(get_current_tenant), 
     db: AsyncSession = Depends(get_db)
 ):
     """Top up wallet balance."""
     amount = payload.get("amount", 0)
-    result = await db.execute(select(Wallet).where(Wallet.tenant_id == tenant_id))
+    result = await db.execute(select(Wallet).where(Wallet.tenant_id == current_tenant.id))
     wallet = result.scalars().first()
     if not wallet:
-        wallet = Wallet(tenant_id=tenant_id, balance=0.0)
+        wallet = Wallet(tenant_id=current_tenant.id, balance=0.0)
         db.add(wallet)
     
     wallet.balance += amount

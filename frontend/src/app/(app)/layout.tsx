@@ -10,6 +10,7 @@ export default function AppLayout({
 }) {
     return (
         <div className="app-layout">
+            <div className="premium-bg" />
             <Sidebar />
             <main className="main-content">
                 <TopBar />

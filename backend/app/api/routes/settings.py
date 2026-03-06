@@ -17,6 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.models import Tenant, TelegramAccount, InstagramAccount
+from app.api.routes.auth import get_current_tenant
 
 logger = structlog.get_logger(__name__)
 router = APIRouter(prefix="/api/settings", tags=["Settings"])
@@ -54,12 +55,10 @@ class InstagramAccountCreate(BaseModel):
 
 @router.get("/tenant")
 async def get_tenant_settings(
-    tenant_id: UUID = Query(...),
-    db: AsyncSession = Depends(get_db),
+    current_tenant: Tenant = Depends(get_current_tenant),
 ):
     """Get tenant settings."""
-    result = await db.execute(select(Tenant).where(Tenant.id == tenant_id))
-    tenant = result.scalar_one_or_none()
+    tenant = current_tenant
 
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
@@ -80,12 +79,11 @@ async def get_tenant_settings(
 @router.patch("/tenant")
 async def update_tenant_settings(
     data: TenantUpdate,
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
 ):
     """Update tenant settings."""
-    result = await db.execute(select(Tenant).where(Tenant.id == tenant_id))
-    tenant = result.scalar_one_or_none()
+    tenant = current_tenant
 
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
@@ -95,7 +93,7 @@ async def update_tenant_settings(
         setattr(tenant, key, value)
 
     await db.flush()
-    logger.info("tenant_updated", tenant=str(tenant_id), fields=list(update_data.keys()))
+    logger.info("tenant_updated", tenant=str(current_tenant.id), fields=list(update_data.keys()))
 
     return {"status": "updated", "fields": list(update_data.keys())}
 
@@ -104,12 +102,12 @@ async def update_tenant_settings(
 
 @router.get("/telegram")
 async def get_telegram_account(
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
 ):
     """Get the dedicated Telegram business account for this tenant."""
     result = await db.execute(
-        select(TelegramAccount).where(TelegramAccount.tenant_id == tenant_id)
+        select(TelegramAccount).where(TelegramAccount.tenant_id == current_tenant.id)
     )
     account = result.scalar_one_or_none()
 
@@ -125,7 +123,7 @@ async def get_telegram_account(
 
     # Check live client status
     from app.channels.telegram import get_client_status
-    live_status = get_client_status(str(tenant_id))
+    live_status = get_client_status(str(current_tenant.id))
 
     return {
         "connected": True,
@@ -143,7 +141,7 @@ async def get_telegram_account(
 @router.post("/telegram/send-otp")
 async def send_telegram_otp(
     data: TelegramOTPRequest,
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -154,7 +152,7 @@ async def send_telegram_otp(
 
     # Check if tenant already has a connected account
     result = await db.execute(
-        select(TelegramAccount).where(TelegramAccount.tenant_id == tenant_id)
+        select(TelegramAccount).where(TelegramAccount.tenant_id == current_tenant.id)
     )
     existing = result.scalar_one_or_none()
 
@@ -165,7 +163,7 @@ async def send_telegram_otp(
         )
 
     try:
-        otp_result = await initiate_otp(str(tenant_id), data.phone_number)
+        otp_result = await initiate_otp(str(current_tenant.id), data.phone_number)
 
         # Create or update the account record
         if existing:
@@ -174,7 +172,7 @@ async def send_telegram_otp(
             existing.is_active = False
         else:
             account = TelegramAccount(
-                tenant_id=tenant_id,
+                tenant_id=current_tenant.id,
                 phone_number=data.phone_number,
                 connection_status="otp_sent",
                 is_active=False,
@@ -190,14 +188,14 @@ async def send_telegram_otp(
         }
 
     except Exception as e:
-        logger.error("otp_send_error", error=str(e), tenant=str(tenant_id))
+        logger.error("otp_send_error", error=str(e), tenant=str(current_tenant.id))
         raise HTTPException(status_code=500, detail=f"Failed to send OTP: {str(e)}")
 
 
 @router.post("/telegram/verify-otp")
 async def verify_telegram_otp(
     data: TelegramOTPVerify,
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -208,7 +206,7 @@ async def verify_telegram_otp(
     from app.channels.telegram import verify_otp, create_telegram_client
 
     result = await db.execute(
-        select(TelegramAccount).where(TelegramAccount.tenant_id == tenant_id)
+        select(TelegramAccount).where(TelegramAccount.tenant_id == current_tenant.id)
     )
     account = result.scalar_one_or_none()
 
@@ -217,7 +215,7 @@ async def verify_telegram_otp(
 
     try:
         verify_result = await verify_otp(
-            tenant_id=str(tenant_id),
+            tenant_id=str(current_tenant.id),
             phone_number=data.phone_number,
             code=data.code,
             phone_code_hash=data.phone_code_hash,
@@ -244,11 +242,11 @@ async def verify_telegram_otp(
         # Start the userbot
         try:
             # Get tenant name for display
-            tenant_result = await db.execute(select(Tenant.name).where(Tenant.id == tenant_id))
+            tenant_result = await db.execute(select(Tenant.name).where(Tenant.id == current_tenant.id))
             tenant_name = tenant_result.scalar() or "Business"
 
             await create_telegram_client(
-                tenant_id=str(tenant_id),
+                tenant_id=str(current_tenant.id),
                 encrypted_session=account.encrypted_session_string,
                 phone_number=account.phone_number,
                 display_name=tenant_name,
@@ -256,7 +254,7 @@ async def verify_telegram_otp(
         except Exception as e:
             logger.warning("userbot_start_delayed", error=str(e))
 
-        logger.info("telegram_connected", tenant=str(tenant_id), phone=data.phone_number)
+        logger.info("telegram_connected", tenant=str(current_tenant.id), phone=data.phone_number)
 
         return {
             "status": "connected",
@@ -268,20 +266,20 @@ async def verify_telegram_otp(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error("otp_verify_error", error=str(e), tenant=str(tenant_id))
+        logger.error("otp_verify_error", error=str(e), tenant=str(current_tenant.id))
         raise HTTPException(status_code=500, detail=f"Verification failed: {str(e)}")
 
 
 @router.post("/telegram/disconnect")
 async def disconnect_telegram(
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
 ):
     """Disconnect the Telegram business account."""
     from app.channels.telegram import stop_telegram_client
 
     result = await db.execute(
-        select(TelegramAccount).where(TelegramAccount.tenant_id == tenant_id)
+        select(TelegramAccount).where(TelegramAccount.tenant_id == current_tenant.id)
     )
     account = result.scalar_one_or_none()
 
@@ -289,7 +287,7 @@ async def disconnect_telegram(
         raise HTTPException(status_code=404, detail="No Telegram account found")
 
     # Stop the live client
-    await stop_telegram_client(str(tenant_id))
+    await stop_telegram_client(str(current_tenant.id))
 
     # Update DB
     account.is_active = False
@@ -297,7 +295,7 @@ async def disconnect_telegram(
     account.encrypted_session_string = None
     await db.flush()
 
-    logger.info("telegram_disconnected", tenant=str(tenant_id))
+    logger.info("telegram_disconnected", tenant=str(current_tenant.id))
 
     return {"status": "disconnected", "message": "Telegram account disconnected."}
 
@@ -306,12 +304,12 @@ async def disconnect_telegram(
 
 @router.get("/instagram-accounts")
 async def list_instagram_accounts(
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
 ):
     """List connected Instagram accounts."""
     result = await db.execute(
-        select(InstagramAccount).where(InstagramAccount.tenant_id == tenant_id)
+        select(InstagramAccount).where(InstagramAccount.tenant_id == current_tenant.id)
     )
     accounts = result.scalars().all()
 
@@ -332,12 +330,12 @@ async def list_instagram_accounts(
 @router.post("/instagram-accounts")
 async def add_instagram_account(
     data: InstagramAccountCreate,
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
 ):
     """Add a new Instagram account."""
     account = InstagramAccount(
-        tenant_id=tenant_id,
+        tenant_id=current_tenant.id,
         instagram_user_id=data.instagram_user_id,
         page_id=data.page_id,
         access_token=data.access_token,
@@ -349,13 +347,13 @@ async def add_instagram_account(
     from app.channels.instagram import register_instagram_account
     register_instagram_account(
         instagram_user_id=data.instagram_user_id,
-        tenant_id=str(tenant_id),
+        tenant_id=str(current_tenant.id),
         access_token=data.access_token,
         page_id=data.page_id,
         display_name=data.username or data.instagram_user_id,
     )
 
-    logger.info("instagram_account_added", tenant=str(tenant_id), user_id=data.instagram_user_id)
+    logger.info("instagram_account_added", tenant=str(current_tenant.id), user_id=data.instagram_user_id)
 
     return {"id": str(account.id), "status": "created"}
 
@@ -363,13 +361,13 @@ async def add_instagram_account(
 @router.delete("/instagram-accounts/{account_id}")
 async def remove_instagram_account(
     account_id: UUID,
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
 ):
     """Remove an Instagram account."""
     result = await db.execute(
         select(InstagramAccount).where(
-            and_(InstagramAccount.id == account_id, InstagramAccount.tenant_id == tenant_id)
+            and_(InstagramAccount.id == account_id, InstagramAccount.tenant_id == current_tenant.id)
         )
     )
     account = result.scalar_one_or_none()

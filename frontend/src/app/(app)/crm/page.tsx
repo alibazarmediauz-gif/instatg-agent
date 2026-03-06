@@ -58,11 +58,7 @@ export default function CRMPage() {
     const [lastSync, setLastSync] = useState<string | null>(null);
 
     // automations
-    const [automations, setAutomations] = useState([
-        { id: 'a1', trigger: 'Moved to "Contacted"', action: 'Send welcome message + AI follow-up', enabled: true },
-        { id: 'a2', trigger: 'Qualified > 3 days idle', action: 'Launch AI Voice Call (outbound)', enabled: true },
-        { id: 'a3', trigger: 'Moved to "Won"', action: 'Send invoice & success email', enabled: false },
-    ]);
+    const [automations, setAutomations] = useState<any[]>([]);
 
     // amoCRM state from API
     const [amoSubdomain, setAmoSubdomain] = useState<string | null>(null);
@@ -412,7 +408,19 @@ export default function CRMPage() {
                     </div>
 
                     {/* ══ KANBAN BOARD ═══════════════════════════════════════════════ */}
-                    <div style={{ flex: 1, overflowX: 'auto', overflowY: 'hidden', display: 'flex', gap: 0, padding: '16px 20px', paddingBottom: 0 }}>
+                    <div
+                        className="custom-scrollbar"
+                        style={{
+                            flex: 1,
+                            overflowX: 'auto',
+                            overflowY: 'hidden',
+                            display: 'flex',
+                            gap: 20,
+                            padding: '24px',
+                            paddingBottom: 20,
+                            scrollBehavior: 'smooth'
+                        }}
+                    >
                         {displayStages.map((stage, idx) => {
                             const sc = stageColor(stage.name);
                             const stageLeads = filtered.filter(l => l.pipeline_stage_id === stage.id || l.status === stage.name);
@@ -423,17 +431,23 @@ export default function CRMPage() {
                             return (
                                 <div
                                     key={stage.id}
-                                    style={{ display: 'flex', alignItems: 'flex-start', gap: 0 }}
+                                    style={{ display: 'flex', alignItems: 'flex-start', gap: 0, flexShrink: 0 }}
                                 >
                                     {/* Column */}
                                     <div
                                         style={{
-                                            width: 300, flexShrink: 0, display: 'flex', flexDirection: 'column',
-                                            height: 'calc(100vh - 128px)',
-                                            background: isOver ? `${sc}08` : 'transparent',
-                                            transition: 'background 0.15s',
-                                            borderRadius: 12, overflow: 'hidden',
-                                            border: isOver ? `1px solid ${sc}30` : '1px solid transparent',
+                                            width: 320,
+                                            flexShrink: 0,
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            height: 'calc(100vh - 160px)',
+                                            background: isOver ? 'rgba(59, 130, 246, 0.05)' : 'rgba(255, 255, 255, 0.02)',
+                                            backdropFilter: 'blur(10px)',
+                                            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                            borderRadius: 20,
+                                            overflow: 'hidden',
+                                            border: isOver ? '1px solid var(--accent)' : '1px solid var(--border)',
+                                            boxShadow: isOver ? '0 0 20px rgba(59, 130, 246, 0.1)' : 'none',
                                         }}
                                         onDragOver={e => { e.preventDefault(); setDragOver(stage.id); }}
                                         onDragLeave={() => setDragOver(null)}
@@ -486,8 +500,7 @@ export default function CRMPage() {
                                         </div>
                                     </div>
 
-                                    {/* Divider */}
-                                    {!isLast && <div style={{ width: 1, height: 'calc(100vh - 128px)', background: 'var(--border)', margin: '0 6px', flexShrink: 0, alignSelf: 'flex-start' }} />}
+                                    {/* Divider skipped for cleaner gap-based look */}
                                 </div>
                             );
                         })}

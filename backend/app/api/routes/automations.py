@@ -13,7 +13,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
 
 from app.database import get_db
-from app.models import Automation
+from app.models import Automation, Tenant
+from app.api.routes.auth import get_current_tenant
 
 logger = structlog.get_logger(__name__)
 router = APIRouter(prefix="/api/automations", tags=["Automations"])
@@ -36,8 +37,8 @@ class AutomationUpdate(BaseModel):
 
 
 @router.get("")
-async def list_automations(tenant_id: UUID = Query(...), db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Automation).where(Automation.tenant_id == tenant_id).order_by(Automation.created_at.desc()))
+async def list_automations(current_tenant: Tenant = Depends(get_current_tenant), db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Automation).where(Automation.tenant_id == current_tenant.id).order_by(Automation.created_at.desc()))
     items = result.scalars().all()
     return {
         "automations": [
@@ -56,8 +57,8 @@ async def list_automations(tenant_id: UUID = Query(...), db: AsyncSession = Depe
 
 
 @router.get("/{auto_id}")
-async def get_automation(auto_id: UUID, tenant_id: UUID = Query(...), db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Automation).where(Automation.id == auto_id, Automation.tenant_id == tenant_id))
+async def get_automation(auto_id: UUID, current_tenant: Tenant = Depends(get_current_tenant), db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Automation).where(Automation.id == auto_id, Automation.tenant_id == current_tenant.id))
     item = result.scalar_one_or_none()
     if not item:
         raise HTTPException(status_code=404, detail="Automation not found")
@@ -73,9 +74,9 @@ async def get_automation(auto_id: UUID, tenant_id: UUID = Query(...), db: AsyncS
 
 
 @router.post("")
-async def create_automation(data: AutomationCreate, tenant_id: UUID = Query(...), db: AsyncSession = Depends(get_db)):
+async def create_automation(data: AutomationCreate, current_tenant: Tenant = Depends(get_current_tenant), db: AsyncSession = Depends(get_db)):
     item = Automation(
-        tenant_id=tenant_id,
+        tenant_id=current_tenant.id,
         name=data.name,
         is_active=data.is_active,
         trigger_type=data.trigger_type,
@@ -90,9 +91,9 @@ async def create_automation(data: AutomationCreate, tenant_id: UUID = Query(...)
 
 @router.patch("/{auto_id}")
 async def update_automation(
-    auto_id: UUID, data: AutomationUpdate, tenant_id: UUID = Query(...), db: AsyncSession = Depends(get_db)
+    auto_id: UUID, data: AutomationUpdate, current_tenant: Tenant = Depends(get_current_tenant), db: AsyncSession = Depends(get_db)
 ):
-    result = await db.execute(select(Automation).where(Automation.id == auto_id, Automation.tenant_id == tenant_id))
+    result = await db.execute(select(Automation).where(Automation.id == auto_id, Automation.tenant_id == current_tenant.id))
     item = result.scalar_one_or_none()
     if not item:
         raise HTTPException(status_code=404, detail="Automation not found")
@@ -106,8 +107,8 @@ async def update_automation(
 
 
 @router.delete("/{auto_id}")
-async def delete_automation(auto_id: UUID, tenant_id: UUID = Query(...), db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Automation).where(Automation.id == auto_id, Automation.tenant_id == tenant_id))
+async def delete_automation(auto_id: UUID, current_tenant: Tenant = Depends(get_current_tenant), db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Automation).where(Automation.id == auto_id, Automation.tenant_id == current_tenant.id))
     item = result.scalar_one_or_none()
     if not item:
         raise HTTPException(status_code=404, detail="Automation not found")

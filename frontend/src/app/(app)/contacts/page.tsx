@@ -139,14 +139,25 @@ export default function ContactsPage() {
 
             {/* ── Filters ─────────────────────────────────────────── */}
             <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap', alignItems: 'center' }}>
-                <div style={{ flex: '1 1 300px', display: 'flex', alignItems: 'center', background: 'var(--bg-card)', padding: '0 14px', borderRadius: 10, border: '1px solid var(--border)' }}>
-                    <Search size={15} color="var(--text-muted)" />
+                <div style={{
+                    flex: '1 1 300px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    backdropFilter: 'blur(10px)',
+                    padding: '0 18px',
+                    borderRadius: 16,
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+                }}>
+                    <Search size={16} color="var(--text-muted)" />
                     <input
                         value={search} onChange={e => setSearch(e.target.value)}
-                        type="text" placeholder="Search..."
-                        style={{ border: 'none', background: 'transparent', padding: '11px 10px', width: '100%', color: 'var(--text-primary)', outline: 'none', fontSize: 14 }}
+                        type="text" placeholder="Search contacts, phone, or email..."
+                        style={{ border: 'none', background: 'transparent', padding: '12px 12px', width: '100%', color: 'var(--text-primary)', outline: 'none', fontSize: 14 }}
                     />
-                    {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 4 }}><X size={14} /></button>}
+                    {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 4 }}><X size={16} /></button>}
                 </div>
 
                 <div style={{ display: 'flex', gap: 6 }}>
@@ -220,15 +231,18 @@ function ContactCard({ contact: c, onClick }: { contact: any; onClick: () => voi
     const ch = CHANNEL_CONFIG[c.channel] || CHANNEL_CONFIG.chat;
     return (
         <div
-            className="card"
+            className="card card-premium"
             onClick={onClick}
             style={{
-                padding: 24, cursor: 'pointer', borderRadius: 16, border: '1px solid var(--border)',
-                background: 'var(--bg-card)', transition: 'all 0.22s cubic-bezier(0.16,1,0.3,1)',
-                position: 'relative', overflow: 'hidden'
+                padding: '24px',
+                cursor: 'pointer',
+                borderRadius: 24,
+                position: 'relative',
+                overflow: 'hidden',
+                transition: 'all 0.4s cubic-bezier(.16,1,.3,1)',
             }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 12px 32px rgba(0,0,0,0.12)'; e.currentTarget.style.borderColor = 'var(--accent)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'var(--border)'; }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-8px)'; e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.3)'; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 20px 50px rgba(0,0,0,0.2)'; }}
         >
             {/* Top accent line */}
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: c.status === 'active' ? 'var(--accent)' : 'var(--border)' }} />

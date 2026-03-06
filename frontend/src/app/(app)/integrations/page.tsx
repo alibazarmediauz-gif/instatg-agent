@@ -59,18 +59,18 @@ interface CRMLead {
 
 // ── Integration Data with Brand Colors ─────────────────────────────
 const SOURCES = [
-    { id: 'whatsapp', name: 'WhatsApp', icon: '📱', color: '#25D366', type: 'messenger', desc: 'Sync WhatsApp chats & automate with AI agents.' },
-    { id: 'telegram', name: 'Telegram', icon: '✈️', color: '#0088cc', type: 'messenger', desc: 'Connect Telegram bots or business accounts.' },
-    { id: 'instagram', name: 'Instagram', icon: '📸', color: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)', type: 'social', desc: 'Monitor IG DMs and comments automatically.', metaProvider: 'instagram' },
-    { id: 'facebook', name: 'Facebook', icon: 'facebook', iconText: 'fb', color: '#1877F2', type: 'social', desc: 'Connect Facebook Pages for sales automation.', metaProvider: 'facebook' },
-    { id: 'vk', name: 'VKontakte', icon: 'vk', iconText: 'VK', color: '#4C75A3', type: 'social', desc: 'Popular CIS social network integration.' },
-    { id: 'viber', name: 'Viber', icon: '💬', color: '#7360f2', type: 'messenger', desc: 'Automate customer support on Viber.' },
-    { id: 'avito', name: 'Avito', icon: '🏷️', color: '#01AAFF', type: 'marketplace', desc: 'Sync marketplace leads to your CRM pipeline.' },
-    { id: 'wechat', name: 'WeChat', icon: '💹', color: '#07C160', type: 'messenger', desc: 'Global messaging for international sales.' },
-    { id: 'forms', name: 'Form Builder', icon: '📝', color: '#3b82f6', type: 'tool', desc: 'Create custom forms to capture leads.' },
-    { id: 'plugin', name: 'CRM Plugin', icon: '🔌', color: '#4285F4', type: 'tool', desc: 'Embeddable widgets for your website.' },
-    { id: 'site', name: 'Business Card', icon: '🌐', color: '#4B7BEC', type: 'tool', desc: 'AI-powered landing page for your lead gen.' },
-    { id: 'emails', name: 'Email Sync', icon: '📧', color: '#3867d6', type: 'tool', desc: 'Auto-process incoming sales emails.' },
+    { id: 'whatsapp', name: 'WhatsApp', icon: '📱', color: '#25D366', type: 'messenger', descKey: 'whatsapp' },
+    { id: 'telegram', name: 'Telegram', icon: '✈️', color: '#0088cc', type: 'messenger', descKey: 'telegram' },
+    { id: 'instagram', name: 'Instagram', icon: '📸', color: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)', type: 'social', descKey: 'instagram', metaProvider: 'instagram' },
+    { id: 'facebook', name: 'Facebook', icon: 'facebook', iconText: 'fb', color: '#1877F2', type: 'social', descKey: 'facebook', metaProvider: 'facebook' },
+    { id: 'vk', name: 'VKontakte', icon: 'vk', iconText: 'VK', color: '#4C75A3', type: 'social', descKey: 'vk' },
+    { id: 'viber', name: 'Viber', icon: '💬', color: '#7360f2', type: 'messenger', descKey: 'viber' },
+    { id: 'avito', name: 'Avito', icon: '🏷️', color: '#01AAFF', type: 'marketplace', descKey: 'avito' },
+    { id: 'wechat', name: 'WeChat', icon: '💹', color: '#07C160', type: 'messenger', descKey: 'wechat' },
+    { id: 'forms', name: 'Form Builder', icon: '📝', color: '#3b82f6', type: 'tool', descKey: 'forms' },
+    { id: 'plugin', name: 'CRM Plugin', icon: '🔌', color: '#4285F4', type: 'tool', descKey: 'plugin' },
+    { id: 'site', name: 'Business Card', icon: '🌐', color: '#4B7BEC', type: 'tool', descKey: 'site' },
+    { id: 'emails', name: 'Email Sync', icon: '📧', color: '#3867d6', type: 'tool', descKey: 'emails' },
 ];
 
 function IntegrationsPageContent() {
@@ -98,6 +98,7 @@ function IntegrationsPageContent() {
     const [telegramOtp, setTelegramOtp] = useState('');
     const [telegramPassword, setTelegramPassword] = useState('');
     const [telegramPhoneHash, setTelegramPhoneHash] = useState('');
+    const [telegramAccount, setTelegramAccount] = useState<any>(null);
 
     // ── Data Loading ──
     const loadStatus = useCallback(async () => {
@@ -106,6 +107,9 @@ function IntegrationsPageContent() {
             const api = await import('@/lib/api');
             const status = await api.getMetaIntegrationStatus(tenantId) as MetaStatus;
             setMetaStatus(status);
+
+            const tgAccount = await api.getTelegramAccount(tenantId);
+            setTelegramAccount(tgAccount);
         } catch {
             // Fallback if API unavailable
             setMetaStatus({
@@ -113,6 +117,7 @@ function IntegrationsPageContent() {
                 instagram: { connected: false, status: 'disconnected', count: 0, accounts: [] },
                 last_event_at: null,
             });
+            setTelegramAccount(null);
         } finally {
             setLoading(false);
         }
@@ -128,12 +133,12 @@ function IntegrationsPageContent() {
         const error = searchParams.get('error');
 
         if (connected) {
-            setToast({ message: `✅ ${connected.replace(',', ' + ')} connected successfully!`, type: 'success' });
+            setToast({ message: t('integrations.connected_succ', { name: connected.replace(',', ' + ') }), type: 'success' });
             loadStatus();
             // Clean URL
             window.history.replaceState({}, '', '/integrations');
         } else if (error) {
-            setToast({ message: `❌ Connection failed: ${error.replace(/_/g, ' ')}`, type: 'error' });
+            setToast({ message: t('integrations.conn_failed', { error: error.replace(/_/g, ' ') }), type: 'error' });
             window.history.replaceState({}, '', '/integrations');
         }
     }, [searchParams, loadStatus]);
@@ -151,14 +156,15 @@ function IntegrationsPageContent() {
         if (!metaStatus) return false;
         if (sourceId === 'instagram') return metaStatus.instagram?.connected;
         if (sourceId === 'facebook') return metaStatus.facebook?.connected;
-        if (sourceId === 'telegram') return true; // Handled separately
+        if (sourceId === 'telegram') return !!telegramAccount;
         return false;
     };
 
     const getStatusColor = (sourceId: string) => {
         if (!metaStatus) return '#888';
         const platform = sourceId === 'instagram' ? metaStatus.instagram : sourceId === 'facebook' ? metaStatus.facebook : null;
-        if (!platform) return sourceId === 'telegram' ? '#22c55e' : '#888';
+        if (sourceId === 'telegram') return telegramAccount ? '#22c55e' : '#888';
+        if (!platform) return '#888';
         if (!platform.connected) return '#888';
         if (platform.status === 'error') return '#ef4444';
         if (platform.status === 'needs_review') return '#f59e0b';
@@ -168,11 +174,14 @@ function IntegrationsPageContent() {
     const getStatusLabel = (sourceId: string) => {
         if (!metaStatus) return '';
         const platform = sourceId === 'instagram' ? metaStatus.instagram : sourceId === 'facebook' ? metaStatus.facebook : null;
-        if (!platform || !platform.connected) return '';
+        const connected = isConnected(sourceId);
+        if (!connected) return '';
+        if (sourceId === 'telegram') return telegramAccount?.phone || 'Connected';
+        if (!platform) return '';
         const acc = platform.accounts[0];
         if (sourceId === 'instagram' && acc?.username) return `@${acc.username}`;
         if (sourceId === 'facebook' && acc?.page_name) return acc.page_name;
-        return 'Connected';
+        return t('integrations.connected');
     };
 
     const handleConnect = async (provider: string) => {
@@ -185,7 +194,7 @@ function IntegrationsPageContent() {
                     : 'http://localhost:8000');
             window.location.href = `${API_URL}/api/integrations/meta/connect?tenant_id=${tenantId}&provider=${provider}`;
         } catch {
-            setToast({ message: '❌ Failed to start connection. Check backend.', type: 'error' });
+            setToast({ message: t('integrations.conn_failed', { error: 'Check backend' }), type: 'error' });
             setConnecting(false);
         }
     };
@@ -200,11 +209,9 @@ function IntegrationsPageContent() {
             } else {
                 await api.disconnectMetaIntegration(tenantId, provider);
             }
-            setToast({ message: `${provider} disconnected.`, type: 'success' });
-            setSettingsModal(null);
             await loadStatus();
         } catch {
-            setToast({ message: '❌ Disconnect failed.', type: 'error' });
+            setToast({ message: t('integrations.disconnect_failed'), type: 'error' });
         } finally {
             setDisconnecting(false);
         }
@@ -233,20 +240,20 @@ function IntegrationsPageContent() {
         if (provider === 'instagram') return metaStatus.instagram?.accounts || [];
         if (provider === 'facebook') return metaStatus.facebook?.accounts || [];
         if (provider === 'telegram') {
-            // Fake a meta info structure for UI compatibility
+            if (!telegramAccount) return [];
             return [{
                 page_id: 'telegram',
-                page_name: 'Pyrogram Business',
-                username: 'Unknown TG',
+                page_name: telegramAccount.bot_username ? `@${telegramAccount.bot_username}` : 'Telegram Personal',
+                username: telegramAccount.phone || 'User',
                 connection_status: 'connected',
-                created_at: new Date().toISOString()
+                created_at: telegramAccount.created_at || new Date().toISOString()
             } as any];
         }
         return [];
     };
 
     // ── Badge Counts ──
-    const tgCount = 1; // Telegram is always managed separately
+    const tgCount = telegramAccount ? 1 : 0;
     const igCount = metaStatus?.instagram?.count || 0;
     const fbCount = metaStatus?.facebook?.count || 0;
 
@@ -260,7 +267,7 @@ function IntegrationsPageContent() {
     );
 
     return (
-        <div className="page-container animate-in" style={{ padding: '0 40px 40px' }}>
+        <div className="page-container animate-in" style={{ padding: '0 40px 40px', position: 'relative', zIndex: 1 }}>
 
             {/* ── Toast Notification ──────────────────────────── */}
             {toast && (
@@ -289,21 +296,25 @@ function IntegrationsPageContent() {
             {/* ── Page Header ────────────────────────────────── */}
             <div style={{ marginBottom: 40, paddingTop: 40, borderBottom: '1px solid var(--border)', paddingBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                 <div>
-                    <h1 style={{ fontSize: 28, fontWeight: 900, marginBottom: 8, letterSpacing: '-0.02em' }}>Lead Sources</h1>
-                    <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>Connect messengers, social networks and tools to capture leads directly into your pipeline.</p>
+                    <h1 style={{ fontSize: 28, fontWeight: 900, marginBottom: 8, letterSpacing: '-0.02em' }}>{t('integrations.sources_title')}</h1>
+                    <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>{t('integrations.sources_subtitle')}</p>
                 </div>
 
                 {/* Connected badge */}
                 <div style={{
                     display: 'flex', gap: 8, alignItems: 'center',
-                    padding: '8px 16px', borderRadius: 10,
-                    background: 'var(--bg-card)', border: '1px solid var(--border)',
-                    fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)'
+                    padding: '8px 20px', borderRadius: 12,
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid var(--border)',
+                    fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                 }}>
-                    {tgCount > 0 && <span style={{ color: '#0088cc' }}>{tgCount} TG</span>}
-                    {igCount > 0 && <><span style={{ opacity: 0.3 }}>•</span><span style={{ color: '#dc2743' }}>{igCount} IG</span></>}
-                    {fbCount > 0 && <><span style={{ opacity: 0.3 }}>•</span><span style={{ color: '#1877F2' }}>{fbCount} FB</span></>}
-                    <Wifi size={14} style={{ color: '#22c55e', marginLeft: 4 }} />
+                    {tgCount > 0 && <span style={{ color: '#0088cc', display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 6, height: 6, borderRadius: '50%', background: '#0088cc' }} /> {tgCount} TG</span>}
+                    {igCount > 0 && <><span style={{ opacity: 0.3 }}>•</span><span style={{ color: '#dc2743', display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 6, height: 6, borderRadius: '50%', background: '#dc2743' }} /> {igCount} IG</span></>}
+                    {fbCount > 0 && <><span style={{ opacity: 0.3 }}>•</span><span style={{ color: '#1877F2', display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 6, height: 6, borderRadius: '50%', background: '#1877F2' }} /> {fbCount} FB</span></>}
+                    <div style={{ width: 1, height: 16, background: 'var(--border)', margin: '0 4px' }} />
+                    <Wifi size={14} style={{ color: '#22c55e' }} />
                 </div>
             </div>
 
@@ -321,8 +332,6 @@ function IntegrationsPageContent() {
                             onClick={() => {
                                 if (!implemented) {
                                     setActiveIntegration(source.id);
-                                } else if (source.id === 'telegram') {
-                                    setConnectModal('telegram');
                                 } else if (connected) {
                                     setSettingsModal(source.id);
                                 } else {
@@ -331,21 +340,22 @@ function IntegrationsPageContent() {
                             }}
                             style={{
                                 background: source.color,
-                                height: 160,
-                                borderRadius: 16,
+                                height: 180,
+                                borderRadius: 24,
                                 display: 'flex',
                                 flexDirection: 'column',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 cursor: 'pointer',
                                 position: 'relative',
-                                transition: 'all 0.25s cubic-bezier(.4,0,.2,1)',
-                                boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+                                transition: 'all 0.4s cubic-bezier(.16,1,.3,1)',
+                                boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
                                 overflow: 'hidden',
-                                opacity: implemented ? 1 : 0.6
+                                opacity: implemented ? 1 : 0.6,
+                                border: '1px solid rgba(255,255,255,0.1)'
                             }}
-                            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-6px) scale(1.02)'; e.currentTarget.style.boxShadow = '0 16px 40px rgba(0,0,0,0.25)'; }}
-                            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.12)'; }}
+                            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-10px) scale(1.03)'; e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.3)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 10px 30px rgba(0,0,0,0.15)'; }}
                         >
                             {/* Status Dot */}
                             {implemented && (
@@ -366,7 +376,7 @@ function IntegrationsPageContent() {
                                     textAlign: 'center', textTransform: 'uppercase',
                                     letterSpacing: '0.05em'
                                 }}>
-                                    Coming Soon
+                                    {t('integrations.coming_soon')}
                                 </div>
                             )}
 
@@ -384,21 +394,23 @@ function IntegrationsPageContent() {
 
                             {implemented && (
                                 <button style={{
-                                    marginTop: 10,
-                                    background: connected ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.2)',
-                                    border: 'none',
-                                    borderRadius: 8,
-                                    padding: '5px 16px',
-                                    fontSize: 12,
+                                    marginTop: 16,
+                                    background: 'rgba(255,255,255,0.15)',
+                                    backdropFilter: 'blur(5px)',
+                                    border: '1px solid rgba(255,255,255,0.2)',
+                                    borderRadius: 12,
+                                    padding: '8px 20px',
+                                    fontSize: 13,
                                     fontWeight: 800,
                                     color: '#fff',
                                     cursor: 'pointer',
-                                    display: 'flex', alignItems: 'center', gap: 6,
-                                    transition: 'all 0.15s',
+                                    display: 'flex', alignItems: 'center', gap: 8,
+                                    transition: 'all 0.2s',
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
                                 }}>
                                     {connected
-                                        ? <><Settings size={13} /> Settings</>
-                                        : <><Plus size={13} /> Add</>
+                                        ? <><Settings size={14} /> {t('integrations.settings')}</>
+                                        : <><Plus size={14} /> {t('integrations.add')}</>
                                     }
                                 </button>
                             )}
@@ -408,111 +420,117 @@ function IntegrationsPageContent() {
 
                 {/* Custom Webhook / Empty slot */}
                 <div style={{
-                    height: 160, borderRadius: 16, border: '2px dashed var(--border)',
+                    height: 180, borderRadius: 24, border: '2px dashed var(--border)',
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                     cursor: 'pointer', color: 'var(--text-muted)',
-                    transition: 'all 0.2s',
+                    transition: 'all 0.3s cubic-bezier(.16,1,.3,1)',
+                    background: 'rgba(255,255,255,0.02)'
                 }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)'; }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)'; e.currentTarget.style.background = 'rgba(59, 130, 246, 0.05)'; e.currentTarget.style.transform = 'translateY(-5px)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; e.currentTarget.style.transform = 'none'; }}
                 >
-                    <Plus size={24} />
-                    <div style={{ fontSize: 12, fontWeight: 700, marginTop: 8 }}>Add Website</div>
+                    <Plus size={32} />
+                    <div style={{ fontSize: 13, fontWeight: 700, marginTop: 12 }}>{t('integrations.add_website')}</div>
                 </div>
             </div>
 
-            {/* ── Connect Modal (OAuth Start) ─────────────── */}
-            {connectModal && (
-                <div
-                    style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(12px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                    onClick={e => { if (e.target === e.currentTarget && !connecting) setConnectModal(null); }}
-                >
-                    <div className="animate-in" style={{
-                        width: 440, background: 'var(--bg-main)', borderRadius: 24,
-                        border: '1px solid var(--border)', padding: '48px 40px',
-                        boxShadow: '0 40px 80px rgba(0,0,0,0.5)', textAlign: 'center',
-                    }}>
-                        {/* Brand icon */}
-                        {(() => {
-                            const source = SOURCES.find(s => s.id === connectModal);
-                            if (!source) return null;
-                            return (
-                                <div style={{
-                                    width: 80, height: 80, borderRadius: 20,
-                                    background: source.color,
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    fontSize: 36, color: '#fff', margin: '0 auto 24px',
-                                    boxShadow: '0 12px 32px rgba(0,0,0,0.2)',
-                                }}>
-                                    {source.iconText ? <span style={{ textTransform: 'uppercase', fontWeight: 900 }}>{source.iconText}</span> : source.icon}
-                                </div>
-                            );
-                        })()}
-
-                        <h2 style={{ fontSize: 22, fontWeight: 900, marginBottom: 8 }}>
-                            Connect {connectModal === 'instagram' ? 'Instagram' : 'Facebook'}
-                        </h2>
-                        <p style={{ color: 'var(--text-muted)', fontSize: 14, lineHeight: 1.6, marginBottom: 32 }}>
-                            You&#39;ll be redirected to Meta to authorize access.
-                            We&#39;ll request permissions for messaging, comments, and page management.
-                        </p>
-
-                        {/* Scopes preview */}
-                        <div style={{
-                            background: 'var(--bg-card)', borderRadius: 12, padding: '16px 20px',
-                            border: '1px solid var(--border)', marginBottom: 32, textAlign: 'left',
-                        }}>
-                            <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 12 }}>
-                                Permissions Required
+            <div
+                style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(16px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                onClick={e => { if (e.target === e.currentTarget && !connecting) setConnectModal(null); }}
+            >
+                <div className="animate-in" style={{
+                    width: 480, background: 'rgba(20, 24, 32, 0.8)',
+                    backdropFilter: 'blur(32px)', borderRadius: 32,
+                    border: '1px solid rgba(255, 255, 255, 0.1)', padding: '64px 48px',
+                    boxShadow: '0 40px 120px rgba(0,0,0,0.6)', textAlign: 'center',
+                    position: 'relative'
+                }}>
+                    <button
+                        onClick={() => setConnectModal(null)}
+                        style={{ position: 'absolute', top: 32, right: 32, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '50%', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-muted)' }}
+                    >
+                        <X size={20} />
+                    </button>
+                    {/* Brand icon */}
+                    {(() => {
+                        const source = SOURCES.find(s => s.id === connectModal);
+                        if (!source) return null;
+                        return (
+                            <div style={{
+                                width: 80, height: 80, borderRadius: 20,
+                                background: source.color,
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                fontSize: 36, color: '#fff', margin: '0 auto 24px',
+                                boxShadow: '0 12px 32px rgba(0,0,0,0.2)',
+                            }}>
+                                {source.iconText ? <span style={{ textTransform: 'uppercase', fontWeight: 900 }}>{source.iconText}</span> : source.icon}
                             </div>
-                            {[
-                                { icon: '💬', label: 'Read & send messages' },
-                                { icon: '📝', label: 'Manage comments' },
-                                { icon: '📄', label: 'Page metadata access' },
-                                { icon: '📊', label: 'Page engagement insights' },
-                            ].map((p, i) => (
-                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', fontSize: 13, color: 'var(--text-secondary)' }}>
-                                    <span>{p.icon}</span>
-                                    <span>{p.label}</span>
-                                    <Shield size={12} style={{ marginLeft: 'auto', opacity: 0.3 }} />
-                                </div>
-                            ))}
-                        </div>
+                        );
+                    })()}
 
-                        <div style={{ display: 'flex', gap: 12 }}>
-                            <button
-                                onClick={() => setConnectModal(null)}
-                                disabled={connecting}
-                                style={{
-                                    flex: 1, padding: '14px', background: 'var(--bg-card)',
-                                    border: '1px solid var(--border)', borderRadius: 12,
-                                    color: 'var(--text-secondary)', fontWeight: 700, fontSize: 14,
-                                    cursor: 'pointer',
-                                }}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={() => handleConnect(connectModal)}
-                                disabled={connecting}
-                                style={{
-                                    flex: 2, padding: '14px',
-                                    background: connectModal === 'instagram'
-                                        ? 'linear-gradient(45deg, #f09433, #dc2743, #bc1888)'
-                                        : '#1877F2',
-                                    border: 'none', borderRadius: 12,
-                                    color: '#fff', fontWeight: 800, fontSize: 14,
-                                    cursor: connecting ? 'wait' : 'pointer',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                                    opacity: connecting ? 0.7 : 1,
-                                }}
-                            >
-                                {connecting ? <Loader2 size={16} className="animate-spin" /> : <ExternalLink size={16} />}
-                                {connecting ? 'Redirecting...' : 'Connect with Meta'}
-                            </button>
+                    <h2 style={{ fontSize: 22, fontWeight: 900, marginBottom: 8 }}>
+                        {t('integrations.meta_connect_title', { name: connectModal === 'instagram' ? 'Instagram' : 'Facebook' })}
+                    </h2>
+                    <p style={{ color: 'var(--text-muted)', fontSize: 14, lineHeight: 1.6, marginBottom: 32 }}>
+                        {t('integrations.meta_connect_desc')}
+                    </p>
+
+                    {/* Scopes preview */}
+                    <div style={{
+                        background: 'var(--bg-card)', borderRadius: 12, padding: '16px 20px',
+                        border: '1px solid var(--border)', marginBottom: 32, textAlign: 'left',
+                    }}>
+                        <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 12 }}>
+                            {t('integrations.permissions_required')}
                         </div>
+                        {[
+                            { icon: '💬', label: t('integrations.perm_messages') },
+                            { icon: '📝', label: t('integrations.perm_comments') },
+                            { icon: '📄', label: t('integrations.perm_metadata') },
+                            { icon: '📊', label: t('integrations.perm_insights') },
+                        ].map((p, i) => (
+                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', fontSize: 13, color: 'var(--text-secondary)' }}>
+                                <span>{p.icon}</span>
+                                <span>{p.label}</span>
+                                <Shield size={12} style={{ marginLeft: 'auto', opacity: 0.3 }} />
+                            </div>
+                        ))}
+                    </div>
+
+                    <div style={{ display: 'flex', gap: 12 }}>
+                        <button
+                            onClick={() => setConnectModal(null)}
+                            disabled={connecting}
+                            style={{
+                                flex: 1, padding: '14px', background: 'var(--bg-card)',
+                                border: '1px solid var(--border)', borderRadius: 12,
+                                color: 'var(--text-secondary)', fontWeight: 700, fontSize: 14,
+                                cursor: 'pointer',
+                            }}
+                        >
+                            {t('integrations.cancel')}
+                        </button>
+                        <button
+                            onClick={() => handleConnect(connectModal)}
+                            disabled={connecting}
+                            style={{
+                                flex: 2, padding: '14px',
+                                background: connectModal === 'instagram'
+                                    ? 'linear-gradient(45deg, #f09433, #dc2743, #bc1888)'
+                                    : '#1877F2',
+                                border: 'none', borderRadius: 12,
+                                color: '#fff', fontWeight: 800, fontSize: 14,
+                                cursor: connecting ? 'wait' : 'pointer',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                                opacity: connecting ? 0.7 : 1,
+                            }}
+                        >
+                            {connecting ? <Loader2 size={16} className="animate-spin" /> : <ExternalLink size={16} />}
+                            {connecting ? t('integrations.redirecting') : t('integrations.connect_with_meta')}
+                        </button>
                     </div>
                 </div>
+            </div>
             )}
 
             {/* ── Telegram Connect Modal ─────────────── */}
@@ -537,7 +555,7 @@ function IntegrationsPageContent() {
                         </div>
 
                         <h2 style={{ fontSize: 22, fontWeight: 900, marginBottom: 8 }}>
-                            Connect Telegram Bot
+                            {t('integrations.tg_bot_title')}
                         </h2>
                         <div style={{ display: 'flex', gap: 8, marginBottom: 24, background: 'var(--bg-elevated)', padding: 4, borderRadius: 12 }}>
                             <button
@@ -550,7 +568,7 @@ function IntegrationsPageContent() {
                                     boxShadow: telegramTab === 'bot' ? '0 2px 8px rgba(0,0,0,0.1)' : 'none'
                                 }}
                             >
-                                Bot Token
+                                {t('integrations.tg_tab_bot')}
                             </button>
                             <button
                                 onClick={() => setTelegramTab('personal')}
@@ -562,17 +580,17 @@ function IntegrationsPageContent() {
                                     boxShadow: telegramTab === 'personal' ? '0 2px 8px rgba(0,0,0,0.1)' : 'none'
                                 }}
                             >
-                                Personal Account
+                                {t('integrations.tg_tab_personal')}
                             </button>
                         </div>
 
                         {telegramTab === 'bot' && (
                             <>
                                 <p style={{ color: 'var(--text-muted)', fontSize: 14, lineHeight: 1.6, marginBottom: 24 }}>
-                                    Enter your Telegram Bot Token below. You can get this from <a href="https://t.me/BotFather" target="_blank" rel="noreferrer" style={{ color: 'var(--accent)', textDecoration: 'underline' }}>@BotFather</a> in Telegram.
+                                    {t('integrations.tg_bot_token_desc')}
                                 </p>
                                 <div style={{ textAlign: 'left', marginBottom: 24 }}>
-                                    <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8 }}>Bot Token</label>
+                                    <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8 }}>{t('integrations.tg_tab_bot')}</label>
                                     <input
                                         type="text"
                                         value={telegramToken}
@@ -594,7 +612,7 @@ function IntegrationsPageContent() {
                                             flex: 1, padding: '14px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12,
                                             color: 'var(--text-secondary)', fontWeight: 700, fontSize: 14, cursor: 'pointer',
                                         }}
-                                    >Cancel</button>
+                                    >{t('integrations.cancel')}</button>
                                     <button
                                         onClick={async () => {
                                             if (!telegramToken.trim()) return;
@@ -618,7 +636,7 @@ function IntegrationsPageContent() {
                                             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: connecting || !telegramToken.trim() ? 0.7 : 1,
                                         }}
                                     >
-                                        {connecting ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />} Save Token
+                                        {connecting ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />} {t('integrations.tg_save_token')}
                                     </button>
                                 </div>
                             </>
@@ -629,10 +647,10 @@ function IntegrationsPageContent() {
                                 {telegramStep === 'phone' && (
                                     <>
                                         <p style={{ color: 'var(--text-muted)', fontSize: 14, lineHeight: 1.6, marginBottom: 24 }}>
-                                            Connect your personal Telegram account to allow the AI agent to reply to direct messages automatically. Enter your phone number with country code.
+                                            {t('integrations.tg_personal_desc')}
                                         </p>
                                         <div style={{ textAlign: 'left', marginBottom: 24 }}>
-                                            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8 }}>Phone Number</label>
+                                            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8 }}>{t('integrations.tg_phone_label')}</label>
                                             <input
                                                 type="text"
                                                 value={telegramPhone}
@@ -651,7 +669,7 @@ function IntegrationsPageContent() {
                                                 onClick={() => setConnectModal(null)}
                                                 disabled={connecting}
                                                 style={{ flex: 1, padding: '14px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, color: 'var(--text-secondary)', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
-                                            >Cancel</button>
+                                            >{t('integrations.cancel')}</button>
                                             <button
                                                 onClick={async () => {
                                                     if (!telegramPhone.trim()) return;
@@ -672,7 +690,7 @@ function IntegrationsPageContent() {
                                                 disabled={connecting || !telegramPhone.trim()}
                                                 style={{ flex: 2, padding: '14px', background: '#0088cc', border: 'none', borderRadius: 12, color: '#fff', fontWeight: 800, fontSize: 14, cursor: connecting || !telegramPhone.trim() ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: connecting || !telegramPhone.trim() ? 0.7 : 1 }}
                                             >
-                                                {connecting ? <Loader2 size={16} className="animate-spin" /> : 'Send Code'}
+                                                {connecting ? <Loader2 size={16} className="animate-spin" /> : t('integrations.tg_send_code')}
                                             </button>
                                         </div>
                                     </>
@@ -681,10 +699,10 @@ function IntegrationsPageContent() {
                                 {telegramStep === 'otp' && (
                                     <>
                                         <p style={{ color: 'var(--text-muted)', fontSize: 14, lineHeight: 1.6, marginBottom: 24 }}>
-                                            We sent a code to your Telegram app on <strong>{telegramPhone}</strong>. Enter it below.
+                                            {t('integrations.tg_otp_sent', { phone: telegramPhone })}
                                         </p>
                                         <div style={{ textAlign: 'left', marginBottom: 24 }}>
-                                            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8 }}>Login Code</label>
+                                            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8 }}>{t('integrations.tg_code_label')}</label>
                                             <input
                                                 type="text"
                                                 value={telegramOtp}
@@ -703,7 +721,7 @@ function IntegrationsPageContent() {
                                                 onClick={() => setTelegramStep('phone')}
                                                 disabled={connecting}
                                                 style={{ flex: 1, padding: '14px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, color: 'var(--text-secondary)', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
-                                            >Back</button>
+                                            >{t('integrations.tg_back')}</button>
                                             <button
                                                 onClick={async () => {
                                                     if (!telegramOtp.trim()) return;
@@ -714,7 +732,7 @@ function IntegrationsPageContent() {
                                                         if (res.status === '2fa_required') {
                                                             setTelegramStep('2fa');
                                                         } else if (res.status === 'connected') {
-                                                            setToast({ message: '✅ Phone connected successfully!', type: 'success' });
+                                                            setToast({ message: t('integrations.connected_succ', { name: 'Telegram' }), type: 'success' });
                                                             setConnectModal(null);
                                                             loadStatus();
                                                         } else {
@@ -729,7 +747,7 @@ function IntegrationsPageContent() {
                                                 disabled={connecting || telegramOtp.length < 4}
                                                 style={{ flex: 2, padding: '14px', background: '#0088cc', border: 'none', borderRadius: 12, color: '#fff', fontWeight: 800, fontSize: 14, cursor: connecting || telegramOtp.length < 4 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: connecting || telegramOtp.length < 4 ? 0.7 : 1 }}
                                             >
-                                                {connecting ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />} Verify
+                                                {connecting ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />} {t('integrations.tg_verify_btn')}
                                             </button>
                                         </div>
                                     </>
@@ -738,10 +756,10 @@ function IntegrationsPageContent() {
                                 {telegramStep === '2fa' && (
                                     <>
                                         <p style={{ color: 'var(--text-muted)', fontSize: 14, lineHeight: 1.6, marginBottom: 24 }}>
-                                            This account is protected with Two-Step Verification. Enter your password.
+                                            {t('integrations.tg_2fa_desc')}
                                         </p>
                                         <div style={{ textAlign: 'left', marginBottom: 24 }}>
-                                            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8 }}>Password</label>
+                                            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8 }}>{t('integrations.tg_pwd_label')}</label>
                                             <input
                                                 type="password"
                                                 value={telegramPassword}
@@ -760,7 +778,7 @@ function IntegrationsPageContent() {
                                                 onClick={() => setTelegramStep('otp')}
                                                 disabled={connecting}
                                                 style={{ flex: 1, padding: '14px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, color: 'var(--text-secondary)', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
-                                            >Back</button>
+                                            >{t('integrations.tg_back')}</button>
                                             <button
                                                 onClick={async () => {
                                                     if (!telegramPassword.trim()) return;
@@ -769,7 +787,7 @@ function IntegrationsPageContent() {
                                                         const api = await import('@/lib/api');
                                                         const res = await api.verifyTelegramOtp(tenantId, telegramPhone.trim(), telegramOtp.trim(), telegramPhoneHash, telegramPassword);
                                                         if (res.status === 'connected') {
-                                                            setToast({ message: '✅ Password accepted! Connected.', type: 'success' });
+                                                            setToast({ message: t('integrations.connected_succ', { name: 'Telegram' }), type: 'success' });
                                                             setConnectModal(null);
                                                             loadStatus();
                                                         } else {
@@ -784,7 +802,7 @@ function IntegrationsPageContent() {
                                                 disabled={connecting || !telegramPassword.trim()}
                                                 style={{ flex: 2, padding: '14px', background: '#0088cc', border: 'none', borderRadius: 12, color: '#fff', fontWeight: 800, fontSize: 14, cursor: connecting || !telegramPassword.trim() ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: connecting || !telegramPassword.trim() ? 0.7 : 1 }}
                                             >
-                                                {connecting ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />} Login
+                                                {connecting ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />} {t('integrations.tg_verify_btn')}
                                             </button>
                                         </div>
                                     </>
@@ -809,8 +827,11 @@ function IntegrationsPageContent() {
                     }}>
                         {/* Header */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
-                            <h2 style={{ fontSize: 22, fontWeight: 900 }}>
-                                {settingsModal === 'instagram' ? 'Instagram' : 'Facebook'} Settings
+                            <h2 style={{ fontSize: 24, fontWeight: 900, letterSpacing: '-0.02em', background: 'var(--gradient-premium)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                                {t('integrations.settings_title', {
+                                    name: settingsModal === 'instagram' ? 'Instagram' :
+                                        settingsModal === 'facebook' ? 'Facebook' : 'Telegram'
+                                })}
                             </h2>
                             <button
                                 onClick={() => { setSettingsModal(null); setHealthResult(null); }}
@@ -828,7 +849,7 @@ function IntegrationsPageContent() {
                         {/* Connected Accounts */}
                         <div style={{ marginBottom: 24 }}>
                             <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 12 }}>
-                                Connected Accounts
+                                {t('integrations.connected_accounts')}
                             </div>
                             {getConnectedAccounts(settingsModal).map((acc, i) => (
                                 <div key={i} style={{
@@ -870,26 +891,26 @@ function IntegrationsPageContent() {
                             border: '1px solid var(--border)', marginBottom: 24,
                         }}>
                             <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 16 }}>
-                                Connection Details
+                                {t('integrations.conn_details')}
                             </div>
                             {[
                                 {
-                                    label: 'Connected Since',
+                                    label: t('integrations.conn_since'),
                                     value: getConnectedAccounts(settingsModal)[0]?.created_at
                                         ? new Date(getConnectedAccounts(settingsModal)[0].created_at!).toLocaleDateString()
                                         : 'N/A'
                                 },
                                 {
-                                    label: 'Token Expires',
+                                    label: t('integrations.token_expires'),
                                     value: getConnectedAccounts(settingsModal)[0]?.token_expires_at
                                         ? new Date(getConnectedAccounts(settingsModal)[0].token_expires_at!).toLocaleDateString()
-                                        : 'Never'
+                                        : t('integrations.never')
                                 },
                                 {
-                                    label: 'Last Webhook',
+                                    label: t('integrations.last_webhook'),
                                     value: metaStatus?.last_event_at
                                         ? new Date(metaStatus.last_event_at).toLocaleString()
-                                        : 'No events yet'
+                                        : t('integrations.no_events')
                                 },
                             ].map((detail, i) => (
                                 <div key={i} style={{
@@ -911,7 +932,7 @@ function IntegrationsPageContent() {
                                 border: '1px solid var(--border)', marginBottom: 24,
                             }}>
                                 <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 12 }}>
-                                    Granted Permissions
+                                    {t('integrations.granted_perms')}
                                 </div>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                                     {getConnectedAccounts(settingsModal)[0].granted_scopes!.map((scope, i) => (
@@ -934,7 +955,7 @@ function IntegrationsPageContent() {
                         }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                                 <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                                    Webhook Health
+                                    {t('integrations.webhook_health')}
                                 </div>
                                 <button
                                     onClick={handleHealthCheck}
@@ -949,7 +970,7 @@ function IntegrationsPageContent() {
                                     }}
                                 >
                                     {healthLoading ? <Loader2 size={12} className="animate-spin" /> : <Activity size={12} />}
-                                    Test
+                                    {t('integrations.test')}
                                 </button>
                             </div>
                             {healthResult && (
@@ -992,7 +1013,10 @@ function IntegrationsPageContent() {
                             }}
                         >
                             {disconnecting ? <Loader2 size={16} className="animate-spin" /> : <Unplug size={16} />}
-                            {disconnecting ? 'Disconnecting...' : `Disconnect ${settingsModal === 'instagram' ? 'Instagram' : 'Facebook'}`}
+                            {disconnecting ? t('integrations.disconnecting') : t('integrations.disconnect_btn', {
+                                name: settingsModal === 'instagram' ? 'Instagram' :
+                                    settingsModal === 'facebook' ? 'Facebook' : 'Telegram'
+                            })}
                         </button>
                     </div>
                 </div>
@@ -1021,7 +1045,7 @@ function IntegrationsPageContent() {
                             </div>
                             <h2 style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>{activeIntegData.name}</h2>
                             <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 32 }}>
-                                {activeIntegData.desc} Receive messages from clients directly in your CRM and respond manually or via AI.
+                                {t(`integrations.channels.${activeIntegData.descKey || 'whatsapp'}`)} {t('integrations.how_it_works_generic')}
                             </p>
                             <div style={{ flex: 1 }} />
                             <button style={{
@@ -1029,7 +1053,7 @@ function IntegrationsPageContent() {
                                 borderRadius: 12, color: '#fff', fontWeight: 800, fontSize: 15, cursor: 'not-allowed',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
                             }} disabled>
-                                Not Available Yet
+                                {t('integrations.not_available_yet')}
                             </button>
                         </div>
 
@@ -1042,12 +1066,12 @@ function IntegrationsPageContent() {
                                 <X size={20} />
                             </button>
                             <div style={{ maxWidth: 500 }}>
-                                <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 24 }}>How it works</h3>
+                                <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 24 }}>{t('integrations.how_it_works')}</h3>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                                     {[
-                                        { title: 'Unlimited Messages', desc: 'No limits on incoming or outgoing messages through this channel.' },
-                                        { title: 'Full AI Automation', desc: 'AI agents can handle 100% of chats or handoff to humans.' },
-                                        { title: 'Rich Media Support', desc: 'Sync images, voice messages, and files directly to lead cards.' },
+                                        { title: t('integrations.unlimited_msg'), desc: t('integrations.unlimited_msg_desc') },
+                                        { title: t('integrations.full_ai_auto'), desc: t('integrations.full_ai_auto_desc') },
+                                        { title: t('integrations.media_support'), desc: t('integrations.media_support_desc') },
                                     ].map((f, i) => (
                                         <div key={i} style={{ display: 'flex', gap: 16 }}>
                                             <div style={{ width: 40, height: 40, borderRadius: 10, background: 'var(--bg-card)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)', flexShrink: 0 }}>

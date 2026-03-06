@@ -9,7 +9,8 @@ import asyncio
 import json
 
 from app.database import get_db
-from app.models import Notification
+from app.models import Notification, Tenant
+from app.api.routes.auth import get_current_tenant
 
 router = APIRouter(prefix="/api/notifications", tags=["Notifications"])
 
@@ -77,14 +78,14 @@ async def create_and_dispatch_notification(
 
 @router.get("", response_model=List[NotificationResponse])
 async def get_notifications(
-    tenant_id: str = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     limit: int = Query(50, ge=1, le=100),
     db: AsyncSession = Depends(get_db)
 ):
     """Get the latest notifications for a tenant."""
     query = (
         select(Notification)
-        .where(Notification.tenant_id == tenant_id)
+        .where(Notification.tenant_id == current_tenant.id)
         .order_by(desc(Notification.created_at))
         .limit(limit)
     )
@@ -99,14 +100,14 @@ async def get_notifications(
 @router.post("/{notification_id}/read")
 async def mark_notification_read(
     notification_id: str,
-    tenant_id: str = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db)
 ):
     """Mark a specific notification as read."""
     query = (
         update(Notification)
         .where(Notification.id == notification_id)
-        .where(Notification.tenant_id == tenant_id)
+        .where(Notification.tenant_id == current_tenant.id)
         .values(is_read=True)
     )
     await db.execute(query)
@@ -116,13 +117,13 @@ async def mark_notification_read(
 
 @router.post("/read-all")
 async def mark_all_read(
-    tenant_id: str = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db)
 ):
     """Mark all notifications as read."""
     query = (
         update(Notification)
-        .where(Notification.tenant_id == tenant_id)
+        .where(Notification.tenant_id == current_tenant.id)
         .where(Notification.is_read == False)
         .values(is_read=True)
     )
@@ -133,10 +134,10 @@ async def mark_all_read(
 from fastapi.responses import StreamingResponse
 
 @router.get("/stream")
-async def stream_notifications(request: Request, tenant_id: str = Query(...)):
+async def stream_notifications(request: Request, current_tenant: Tenant = Depends(get_current_tenant)):
     """Server-Sent Events endpoint for real-time notifications."""
     queue = asyncio.Queue(maxsize=100)
-    conns = get_tenant_connections(tenant_id)
+    conns = get_tenant_connections(str(current_tenant.id))
     conns.append(queue)
     
     async def event_generator():
@@ -155,7 +156,7 @@ async def stream_notifications(request: Request, tenant_id: str = Query(...)):
                     # Send a heartbeat every 15s to keep connection alive
                     yield ": heartbeat\n\n"
         finally:
-            if queue in active_connections.get(tenant_id, []):
-                active_connections[tenant_id].remove(queue)
+            if queue in active_connections.get(str(current_tenant.id), []):
+                active_connections[str(current_tenant.id)].remove(queue)
                 
     return StreamingResponse(event_generator(), media_type="text/event-stream")

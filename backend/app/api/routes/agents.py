@@ -5,7 +5,8 @@ from typing import Dict, Any, List
 from uuid import UUID
 
 from app.database import get_db
-from app.models import VoiceAgent, ChatAgent
+from app.models import VoiceAgent, ChatAgent, Tenant
+from app.api.routes.auth import get_current_tenant
 
 router = APIRouter(prefix="/api/agents", tags=["Agents"])
 
@@ -13,22 +14,22 @@ router = APIRouter(prefix="/api/agents", tags=["Agents"])
 
 @router.get("/voice")
 async def list_voice_agents(
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
-    tenant_id: UUID = Query(...)
 ):
     """List all voice agents for a tenant."""
-    res = await db.execute(select(VoiceAgent).where(VoiceAgent.tenant_id == tenant_id))
+    res = await db.execute(select(VoiceAgent).where(VoiceAgent.tenant_id == current_tenant.id))
     return {"status": "success", "data": res.scalars().all()}
 
 @router.post("/voice")
 async def create_voice_agent(
     payload: Dict[str, Any],
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
-    tenant_id: UUID = Query(...)
 ):
     """Create a new AI Voice Agent with SIP support."""
     new_agent = VoiceAgent(
-        tenant_id=tenant_id,
+        tenant_id=current_tenant.id,
         name=payload.get("name", "Sales Voice Agent"),
         voice_id=payload.get("voice_id", "alloy"),
         system_prompt=payload.get("system_prompt", "You are a helpful SDR."),
@@ -54,11 +55,11 @@ async def create_voice_agent(
 async def update_voice_agent(
     agent_id: UUID,
     payload: Dict[str, Any],
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
-    tenant_id: UUID = Query(...)
 ):
     """Update a Voice Agent's configuration including SIP."""
-    stmt = select(VoiceAgent).where(VoiceAgent.id == agent_id, VoiceAgent.tenant_id == tenant_id)
+    stmt = select(VoiceAgent).where(VoiceAgent.id == agent_id, VoiceAgent.tenant_id == current_tenant.id)
     result = await db.execute(stmt)
     agent = result.scalar_one_or_none()
     
@@ -85,11 +86,11 @@ async def update_voice_agent(
 @router.delete("/voice/{agent_id}")
 async def delete_voice_agent(
     agent_id: UUID,
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
-    tenant_id: UUID = Query(...)
 ):
     """Delete a Voice Agent."""
-    stmt = select(VoiceAgent).where(VoiceAgent.id == agent_id, VoiceAgent.tenant_id == tenant_id)
+    stmt = select(VoiceAgent).where(VoiceAgent.id == agent_id, VoiceAgent.tenant_id == current_tenant.id)
     result = await db.execute(stmt)
     agent = result.scalar_one_or_none()
     
@@ -105,22 +106,22 @@ async def delete_voice_agent(
 
 @router.get("/chat")
 async def list_chat_agents(
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
-    tenant_id: UUID = Query(...)
 ):
     """List all chat agents for a tenant."""
-    res = await db.execute(select(ChatAgent).where(ChatAgent.tenant_id == tenant_id))
+    res = await db.execute(select(ChatAgent).where(ChatAgent.tenant_id == current_tenant.id))
     return {"status": "success", "data": res.scalars().all()}
 
 @router.post("/chat")
 async def create_chat_agent(
     payload: Dict[str, Any],
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
-    tenant_id: UUID = Query(...)
 ):
     """Create a new AI Chat Agent."""
     new_agent = ChatAgent(
-        tenant_id=tenant_id,
+        tenant_id=current_tenant.id,
         name=payload.get("name", "DM Closer Agent"),
         system_prompt=payload.get("system_prompt", "You are a friendly Instagram closer."),
         settings=payload.get("settings", {})
@@ -134,11 +135,11 @@ async def create_chat_agent(
 async def update_chat_agent(
     agent_id: UUID,
     payload: Dict[str, Any],
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
-    tenant_id: UUID = Query(...)
 ):
     """Update a Chat Agent's configuration."""
-    stmt = select(ChatAgent).where(ChatAgent.id == agent_id, ChatAgent.tenant_id == tenant_id)
+    stmt = select(ChatAgent).where(ChatAgent.id == agent_id, ChatAgent.tenant_id == current_tenant.id)
     result = await db.execute(stmt)
     agent = result.scalar_one_or_none()
     
@@ -157,11 +158,11 @@ async def update_chat_agent(
 @router.delete("/chat/{agent_id}")
 async def delete_chat_agent(
     agent_id: UUID,
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
-    tenant_id: UUID = Query(...)
 ):
     """Delete a Chat Agent."""
-    stmt = select(ChatAgent).where(ChatAgent.id == agent_id, ChatAgent.tenant_id == tenant_id)
+    stmt = select(ChatAgent).where(ChatAgent.id == agent_id, ChatAgent.tenant_id == current_tenant.id)
     result = await db.execute(stmt)
     agent = result.scalar_one_or_none()
     
@@ -178,16 +179,16 @@ async def delete_chat_agent(
 @router.get("/{agent_id}")
 async def get_agent(
     agent_id: UUID,
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
-    tenant_id: UUID = Query(...)
 ):
     """Get agent configuration (tries both chat and voice)."""
-    v_res = await db.execute(select(VoiceAgent).where(VoiceAgent.id == agent_id, VoiceAgent.tenant_id == tenant_id))
+    v_res = await db.execute(select(VoiceAgent).where(VoiceAgent.id == agent_id, VoiceAgent.tenant_id == current_tenant.id))
     v = v_res.scalar_one_or_none()
     if v:
         return {"status": "success", "data": v, "type": "voice"}
         
-    c_res = await db.execute(select(ChatAgent).where(ChatAgent.id == agent_id, ChatAgent.tenant_id == tenant_id))
+    c_res = await db.execute(select(ChatAgent).where(ChatAgent.id == agent_id, ChatAgent.tenant_id == current_tenant.id))
     c = c_res.scalar_one_or_none()
     if c:
         return {"status": "success", "data": c, "type": "chat"}
@@ -198,8 +199,8 @@ async def get_agent(
 async def update_agent_prompt(
     agent_id: UUID,
     payload: Dict[str, Any],
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
-    tenant_id: UUID = Query(...)
 ):
     """Update agent prompt / instructions (mock implementation for either agent type)."""
     return {"status": "success", "message": "Prompt updated"}

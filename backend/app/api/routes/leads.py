@@ -6,20 +6,21 @@ from typing import Dict, Any, List
 from uuid import UUID
 
 from app.database import get_db
-from app.models import Lead, Pipeline, PipelineStage, SalesInteraction, Transaction
+from app.models import Lead, Pipeline, PipelineStage, SalesInteraction, Transaction, Tenant
+from app.api.routes.auth import get_current_tenant
 
 router = APIRouter(prefix="/api/leads", tags=["CRM Leads"])
 
 @router.get("")
 async def list_leads(
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db)
 ):
     """Get all leads for the Kanban board."""
     result = await db.execute(
         select(Lead)
         .options(selectinload(Lead.pipeline_stage))
-        .where(Lead.tenant_id == tenant_id)
+        .where(Lead.tenant_id == current_tenant.id)
         .order_by(Lead.created_at.desc())
     )
     leads = result.scalars().all()
@@ -28,12 +29,12 @@ async def list_leads(
 @router.post("")
 async def create_lead(
     payload: Dict[str, Any],
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new lead (manual or via API)."""
     new_lead = Lead(
-        tenant_id=tenant_id,
+        tenant_id=current_tenant.id,
         contact_info=payload.get("contact_info", {}),
         status=payload.get("status", "New"),
         probability_score=payload.get("probability_score", 0.0)
@@ -50,14 +51,14 @@ async def create_lead(
 
 @router.get("/pipelines")
 async def get_pipelines(
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db)
 ):
     """Grab pipeline configuration and stages."""
     result = await db.execute(
         select(Pipeline)
         .options(selectinload(Pipeline.stages))
-        .where(Pipeline.tenant_id == tenant_id)
+        .where(Pipeline.tenant_id == current_tenant.id)
     )
     pipelines = result.scalars().all()
     return {"status": "success", "data": pipelines}
@@ -65,12 +66,12 @@ async def get_pipelines(
 @router.post("/pipelines")
 async def seed_pipeline(
     payload: Dict[str, Any],
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db)
 ):
     """Seed or create a new pipeline with stages."""
     pipeline = Pipeline(
-        tenant_id=tenant_id,
+        tenant_id=current_tenant.id,
         name=payload.get("name", "Default Sales Pipeline"),
         is_default=payload.get("is_default", True)
     )
@@ -89,14 +90,14 @@ async def seed_pipeline(
 @router.get("/{lead_id}")
 async def get_lead(
     lead_id: UUID,
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db)
 ):
     """Get rich lead details, including interaction logs."""
     result = await db.execute(
         select(Lead)
         .options(selectinload(Lead.sales_interactions), selectinload(Lead.transactions))
-        .where(Lead.id == lead_id, Lead.tenant_id == tenant_id)
+        .where(Lead.id == lead_id, Lead.tenant_id == current_tenant.id)
     )
     lead = result.scalars().first()
     if not lead:
@@ -108,7 +109,7 @@ async def get_lead(
 async def update_lead_stage(
     lead_id: UUID,
     payload: Dict[str, Any],
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db)
 ):
     """Move lead between Kanban stages."""
@@ -126,7 +127,7 @@ async def update_lead_stage(
 
     await db.execute(
         update(Lead)
-        .where(Lead.id == lead_id, Lead.tenant_id == tenant_id)
+        .where(Lead.id == lead_id, Lead.tenant_id == current_tenant.id)
         .values(**update_vals)
     )
     await db.commit()
@@ -135,13 +136,13 @@ async def update_lead_stage(
 @router.delete("/{lead_id}")
 async def delete_lead(
     lead_id: UUID,
-    tenant_id: UUID = Query(...),
+    current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db)
 ):
     """Delete a lead from the CRM pipeline."""
     result = await db.execute(
         select(Lead)
-        .where(Lead.id == lead_id, Lead.tenant_id == tenant_id)
+        .where(Lead.id == lead_id, Lead.tenant_id == current_tenant.id)
     )
     lead = result.scalars().first()
     if not lead:
