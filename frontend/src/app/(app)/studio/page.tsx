@@ -31,7 +31,7 @@ export default function AgentStudioPage() {
     const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
     const initialAgentId = searchParams?.get('id');
 
-    const [agentId, setAgentId] = useState<string | null>(initialAgentId);
+    const [agentId, setAgentId] = useState<string | null>(initialAgentId || null);
     const [isLoading, setIsLoading] = useState(!!initialAgentId);
     const [step, setStep] = useState<'marketplace' | 'studio'>(initialAgentId ? 'studio' : 'marketplace');
 
