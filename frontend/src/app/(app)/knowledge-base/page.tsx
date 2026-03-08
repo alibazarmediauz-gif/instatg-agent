@@ -61,7 +61,7 @@ const PERSONAS = [
     { id: 'advisor', icon: '💡', name: 'Maslahatchi', desc: 'Strategik yordam. Mijozga to\'g\'ri yechim topishga yordam beradi.', tone: 'Ishonchli' },
 ];
 
-const STEP_LABELS = ['Shablon', 'Biznes', 'Shaxsiyat', 'Bilim bazasi', 'Platformalar', 'Tekshirish'];
+const STEP_LABELS = ['Shablon', 'Biznes', 'Shaxsiyat', 'O\'quv markazi', 'Platformalar', 'Tekshirish'];
 
 export default function KnowledgeBasePage() {
     const { tenantId } = useTenant();
@@ -200,6 +200,11 @@ export default function KnowledgeBasePage() {
                 <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'linear-gradient(135deg, #6366F1, #3B82F6)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}><Bot size={28} color="white" /></div>
                 <h2 style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>AI Agentingizni yarating</h2>
                 <p style={{ color: 'var(--text-secondary)', fontSize: 15, maxWidth: 500, margin: '0 auto' }}>Tayyor shablondan boshlang yoki noldan o'zingiz yarating. Har birAgent biznesingiz uchun moslashtiriladi.</p>
+                <div style={{ marginTop: 16 }}>
+                    <button onClick={() => setAgentActivated(true)} style={{ background: 'none', border: 'none', color: 'var(--accent)', fontSize: 13, fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}>
+                        Menda allaqachon agent bor — Boshqaruvga o'tish
+                    </button>
+                </div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
                 {TEMPLATES.map(t => (
@@ -278,8 +283,8 @@ export default function KnowledgeBasePage() {
 
     const renderStep3 = () => (
         <div style={{ maxWidth: 700, margin: '0 auto' }}>
-            <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 6 }}>Bilimlar bazasi</h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 32 }}>Agentga mahsulotlar, narxlar, FAQ ma'lumotlarini kiritish.</p>
+            <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 6 }}>O'quv markazi</h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 32 }}>Agentingizni o'qitish uchun mahsulotlar, narxlar va FAQ ma'lumotlarini yuklang.</p>
             <div style={{ ...cs, marginBottom: 24, textAlign: 'center' }} onDragOver={e => { e.preventDefault(); setDragOver(true); }} onDragLeave={() => setDragOver(false)} onDrop={onDrop}>
                 <input ref={fileInputRef} type="file" accept=".pdf,.docx,.doc,.txt,.md,.csv,.json,.xlsx,.xls" onChange={e => e.target.files?.[0] && handleUpload(e.target.files[0])} style={{ display: 'none' }} />
                 <Upload size={28} color="var(--accent)" style={{ marginBottom: 12 }} />
@@ -363,8 +368,8 @@ export default function KnowledgeBasePage() {
             <div style={{ padding: '32px 40px 0', borderBottom: '1px solid var(--border)', background: 'var(--bg-card)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
                     <div>
-                        <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 6 }}>AI Agent boshqaruvi</h1>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Bilimlar bazasi, sozlamalar va monitoring.</p>
+                        <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 6 }}>Agentlarni o'qitish markazi</h1>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Agent ko'nikmalari, o'quv ma'lumotlari va sifat nazorati.</p>
                     </div>
                     <div style={{ display: 'flex', gap: 10 }}>
                         <span style={{ padding: '6px 14px', borderRadius: 20, background: 'rgba(34,197,94,0.15)', color: '#22C55E', fontSize: 12, fontWeight: 600 }}>● Agent faol</span>

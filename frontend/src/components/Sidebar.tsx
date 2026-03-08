@@ -28,42 +28,21 @@ export default function Sidebar() {
 
     const navGroups = [
         {
-            label: '⌘ COMMAND & OBSERVABILITY',
+            label: '⌘ OPERATIONS',
             items: [
-                { href: '/dashboard', label: 'Control Center', icon: LayoutDashboard },
-                { href: '/action-queue', label: 'Action Queue (HITL)', icon: ShieldAlert },
+                { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+                { href: '/conversations', label: 'Inbox', icon: BotMessageSquare },
+                { href: '/agents', label: 'AI Agents', icon: Users },
+                { href: '/contacts', label: 'Leads', icon: Network },
             ],
         },
         {
-            label: '🤖 AGENT WORKFORCE',
+            label: '⚡️ SALES ENGINE',
             items: [
-                { href: '/agents', label: 'Agent Hub', icon: BotMessageSquare },
-                { href: '/logs', label: 'Execution Logs', icon: Activity },
-            ],
-        },
-        {
-            label: '⚡️ AUTOMATION & WORKFLOWS',
-            items: [
-                { href: '/orchestra', label: 'Playbook Builder', icon: Workflow },
-                { href: '/campaigns', label: 'Campaigns', icon: Megaphone },
-            ],
-        },
-        {
-            label: '🗄️ INTELLIGENCE & DATA',
-            items: [
-                { href: '/crm', label: 'CRM Sync', icon: Network },
-                { href: '/contacts', label: 'Contact Base', icon: Users },
-            ],
-        },
-        {
-            label: '⚙️ SYSTEM & GOVERNANCE',
-            items: [
-                { href: '/infrastructure', label: 'Messaging Infra', icon: Server },
-                { href: '/integrations', label: 'Tool Integrations', icon: Link2 },
-                { href: '/knowledge-base', label: 'Knowledge Base', icon: BookOpen },
-                { href: '/qa', label: 'AI Governance', icon: Shield },
+                { href: '/orchestra', label: 'Automation', icon: Workflow },
+                { href: '/knowledge-base', label: 'Training', icon: BookOpen },
                 { href: '/analytics', label: 'Analytics', icon: BarChart3 },
-                { href: '/admin', label: 'Admin Panel', icon: Settings },
+                { href: '/admin', label: 'Settings', icon: Settings },
             ],
         },
     ];

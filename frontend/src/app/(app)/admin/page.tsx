@@ -5,7 +5,7 @@ import {
     Users, Settings, Shield, Activity, Database, Key,
     Bell, Globe, Zap, ChevronRight, Plus, Edit2, Trash2,
     Check, AlertTriangle, Server, RefreshCw, Download,
-    Copy, Eye, EyeOff, Lock, Cpu, CheckCircle2
+    Copy, Eye, EyeOff, Lock, Cpu, CheckCircle2, ShieldAlert, Link2
 } from 'lucide-react';
 import { useTenant } from '@/lib/TenantContext';
 
@@ -23,6 +23,7 @@ const TABS = [
     { id: 'security', label: 'Security', icon: <Shield size={15} /> },
     { id: 'api', label: 'API Keys', icon: <Key size={15} /> },
     { id: 'system', label: 'System', icon: <Server size={15} /> },
+    { id: 'advanced', label: 'Advanced', icon: <Zap size={15} /> },
 ];
 
 export default function AdminPage() {
@@ -363,6 +364,83 @@ export default function AdminPage() {
                     </div>
                 </div>
             )}
+
+            {/* ── Tab: Advanced ────────────────────────────────────────── */}
+            {tab === 'advanced' && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 20 }}>
+                    <div style={{ gridColumn: '1 / -1', marginBottom: 8 }}>
+                        <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>Infrastructure & Observability</h3>
+                        <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>Developer-centric tools for system monitoring and deep-dive auditing.</p>
+                    </div>
+
+                    {[
+                        {
+                            href: '/infrastructure',
+                            label: 'System Infrastructure',
+                            desc: 'Monitor bot server clusters, rate limits, and node health.',
+                            icon: <Server size={20} color="var(--accent)" />,
+                            color: 'var(--accent)'
+                        },
+                        {
+                            href: '/integrations',
+                            label: 'API Integrations',
+                            desc: 'Manage raw tool connections and third-party API credentials.',
+                            icon: <Link2 size={20} color="var(--purple)" />,
+                            color: 'var(--purple)'
+                        },
+                        {
+                            href: '/monitoring',
+                            label: 'Execution Logs',
+                            desc: 'Raw machine logs of every AI decision and tool execution.',
+                            icon: <Activity size={20} color="var(--success)" />,
+                            color: 'var(--success)'
+                        },
+                        {
+                            href: '/qa',
+                            label: 'Safety Center',
+                            desc: 'Audit AI hallucinations, policy violations, and trust scores.',
+                            icon: <Shield size={20} color="var(--warning)" />,
+                            color: 'var(--warning)'
+                        },
+                        {
+                            href: '/action-queue',
+                            label: 'Human Review (HITL)',
+                            desc: 'The technical approval queue for AI-proposed actions.',
+                            icon: <ShieldAlert size={20} color="var(--danger)" />,
+                            color: 'var(--danger)'
+                        },
+                    ].map((tool) => (
+                        <a
+                            key={tool.href}
+                            href={tool.href}
+                            className="card"
+                            style={{
+                                padding: 24,
+                                textDecoration: 'none',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 16,
+                                transition: 'transform 0.2s, border-color 0.2s',
+                                border: '1px solid var(--border)'
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = tool.color; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'none'; }}
+                        >
+                            <div style={{ width: 44, height: 44, borderRadius: 12, background: `${tool.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                {tool.icon}
+                            </div>
+                            <div>
+                                <h4 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>{tool.label}</h4>
+                                <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>{tool.desc}</p>
+                            </div>
+                            <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: tool.color }}>
+                                Launch Module <ChevronRight size={14} />
+                            </div>
+                        </a>
+                    ))}
+                </div>
+            )}
+
             {/* ── Modals ─────────────────────────────────────────────── */}
 
             {showInviteModal && (

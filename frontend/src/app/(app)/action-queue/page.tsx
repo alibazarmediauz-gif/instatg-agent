@@ -59,14 +59,25 @@ export default function ActionQueue() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 24 }}>
                 <div>
                     <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <ShieldAlert size={28} color="var(--warning)" /> HITL Action Queue
+                        <ShieldAlert size={28} color="var(--warning)" /> Human Review & Approval
                     </h1>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>Triage inbox for pending AI actions that require human-in-the-loop approval.</p>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>Triage inbox for pending AI actions that require manual confirmation.</p>
                 </div>
                 <div style={{ display: 'flex', gap: 12 }}>
                     <div className="badge warning" style={{ padding: '8px 16px', fontSize: 13, gap: 8 }}>
-                        <Clock size={14} /> {queue.length} Pending
+                        <Clock size={14} /> {queue.length} Pending Approval
                     </div>
+                </div>
+            </div>
+
+            {/* UX Explainer Banner */}
+            <div style={{ background: 'rgba(245, 158, 11, 0.05)', border: '1px solid rgba(245, 158, 11, 0.1)', borderRadius: 12, padding: '16px 20px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 16 }}>
+                <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(245, 158, 11, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--warning)' }}>
+                    <ShieldAlert size={20} />
+                </div>
+                <div>
+                    <h4 style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>What is this page?</h4>
+                    <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0 }}>This is your **Safety Inbox**. When an AI agent wants to take a high-risk action (like sending a custom quote or deleting data), it stops and waits here for your approval.</p>
                 </div>
             </div>
 

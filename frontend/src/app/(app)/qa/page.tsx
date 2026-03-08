@@ -74,7 +74,7 @@ export default function AIGovernancePage() {
             <div style={{ padding: '24px 32px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                     <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <ShieldCheck size={24} color="var(--accent)" /> AI Agent Governance & Safety
+                        <ShieldCheck size={24} color="var(--accent)" /> Safety Monitor & Governance
                     </h1>
                     <p style={{ color: 'var(--text-secondary)', fontSize: 13, margin: 0 }}>
                         Platform-wide observability, security audits, and agent trust scoring.
@@ -86,6 +86,17 @@ export default function AIGovernancePage() {
                         <input type="text" placeholder="Search audit logs..." style={{ border: 'none', background: 'transparent', padding: '10px 8px', outline: 'none', fontSize: 13, color: 'var(--text-primary)', width: 200 }} />
                     </div>
                     <button className="btn btn-primary" style={{ gap: 8 }}><FileText size={16} /> Export Compliance Report</button>
+                </div>
+            </div>
+
+            {/* UX Explainer Banner */}
+            <div style={{ margin: '24px 32px 0', background: 'rgba(59, 130, 246, 0.05)', border: '1px solid rgba(59, 130, 246, 0.1)', borderRadius: 12, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16 }}>
+                <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(59, 130, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)' }}>
+                    <Shield size={20} />
+                </div>
+                <div>
+                    <h4 style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>What is this page?</h4>
+                    <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0 }}>This is your **AI Mission Control**. It monitors every decision made by your agents in real-time. If an agent "hallucinates" (makes up info) or breaks a policy, it is flagged here for review.</p>
                 </div>
             </div>
 

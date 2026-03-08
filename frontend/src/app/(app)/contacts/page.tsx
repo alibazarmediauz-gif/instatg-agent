@@ -5,7 +5,7 @@ import {
     Search, Plus, Filter, X, MoreHorizontal,
     Phone, Mail, MessageSquare, User,
     Star, ArrowUpRight, Loader2, Tag,
-    Calendar, Check, Edit2, Trash2, AtSign
+    Calendar, Check, Edit2, Trash2, AtSign, RefreshCw
 } from 'lucide-react';
 import { useTenant } from '@/lib/TenantContext';
 import { getLeads } from '@/lib/api';
@@ -122,7 +122,12 @@ export default function ContactsPage() {
             {/* ── Header ─────────────────────────────────────────── */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 32, flexWrap: 'wrap', gap: 16 }}>
                 <div>
-                    <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 6 }}>{t('nav.contacts')}</h1>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
+                        <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: '-0.02em', margin: 0 }}>{t('nav.contacts')}</h1>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(34,197,94,0.1)', color: 'var(--success)', padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, border: '1px solid rgba(34,197,94,0.2)' }}>
+                            <RefreshCw size={12} className="spin" /> amoCRM Active
+                        </div>
+                    </div>
                     <p style={{ color: 'var(--text-secondary)', fontSize: 13, margin: 0 }}>
                         {t('nav.contacts_desc')}
                     </p>

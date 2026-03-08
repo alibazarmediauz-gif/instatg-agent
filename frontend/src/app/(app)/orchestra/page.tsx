@@ -11,14 +11,14 @@ export default function OrchestraBuilder() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 24 }}>
                 <div>
                     <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <Workflow size={28} color="var(--accent)" /> Orchestra Playbooks
+                        <Workflow size={28} color="var(--accent)" /> Sales Automations
                     </h1>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>Design autonomous agent workflows combining reasoning, routing, and tool execution.</p>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>Design automated sales funnels, lead qualification flows, and follow-up sequences.</p>
                 </div>
                 <div style={{ display: 'flex', gap: 12 }}>
-                    <button className="btn btn-secondary">Load Template</button>
+                    <button className="btn btn-secondary">Templates</button>
                     <button className="btn btn-primary" style={{ gap: 8 }}>
-                        <Play size={14} /> Simulate Flow
+                        <Play size={14} /> Test Funnel
                     </button>
                 </div>
             </div>
@@ -45,7 +45,7 @@ export default function OrchestraBuilder() {
                             <div className="card" style={{ width: 320, padding: 16, border: '1px solid var(--accent)', boxShadow: '0 4px 30px rgba(59, 130, 246, 0.15)' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
                                     <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--accent)', textTransform: 'uppercase', display: 'flex', gap: 6, alignItems: 'center' }}>
-                                        <Zap size={14} /> Agent Reasoning
+                                        <Zap size={14} /> Intent Analysis
                                     </span>
                                     <span className="badge neutral">SDR_Sarah</span>
                                 </div>
@@ -86,9 +86,9 @@ export default function OrchestraBuilder() {
 
                                 <div className="card" style={{ width: '100%', padding: 16, borderLeft: '4px solid var(--warning)', background: 'rgba(245, 158, 11, 0.05)' }}>
                                     <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--warning)', textTransform: 'uppercase', marginBottom: 8, display: 'flex', gap: 6 }}>
-                                        <ShieldAlert size={14} /> HITL Approval
+                                        <ShieldAlert size={14} /> Action Approval
                                     </div>
-                                    <div style={{ fontSize: 13, color: 'var(--text-primary)' }}>Require human to approve outgoing enterprise quote.</div>
+                                    <div style={{ fontSize: 13, color: 'var(--text-primary)' }}>Require human to approve outgoing enterprise quote or sensitive actions.</div>
                                 </div>
                             </div>
 
@@ -112,7 +112,7 @@ export default function OrchestraBuilder() {
                 <div style={{ width: 320, display: 'flex', flexDirection: 'column', gap: 16 }}>
                     <div className="card" style={{ padding: 0 }}>
                         <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
-                            <h3 style={{ fontSize: 14, fontWeight: 700 }}>Node Inspector</h3>
+                            <h3 style={{ fontSize: 14, fontWeight: 700 }}>Step Configuration</h3>
                         </div>
                         <div style={{ padding: '20px' }}>
                             <div style={{ marginBottom: 16 }}>
@@ -138,13 +138,13 @@ export default function OrchestraBuilder() {
 
                     <div className="card" style={{ padding: 0, flex: 1, display: 'flex', flexDirection: 'column' }}>
                         <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
-                            <h3 style={{ fontSize: 14, fontWeight: 700 }}>Tool Library</h3>
+                            <h3 style={{ fontSize: 14, fontWeight: 700 }}>Automation Steps</h3>
                         </div>
                         <div style={{ padding: '12px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                            <div className="btn btn-secondary" style={{ display: 'flex', justifyContent: 'flex-start', border: '1px dashed var(--border-subtle)' }}><Plus size={14} style={{ marginRight: 8 }} /> Agent Reasoning</div>
-                            <div className="btn btn-secondary" style={{ display: 'flex', justifyContent: 'flex-start', border: '1px dashed var(--border-subtle)' }}><Plus size={14} style={{ marginRight: 8 }} /> Condition Branch</div>
-                            <div className="btn btn-secondary" style={{ display: 'flex', justifyContent: 'flex-start', border: '1px dashed var(--border-subtle)' }}><Plus size={14} style={{ marginRight: 8 }} /> amoCRM Tool</div>
-                            <div className="btn btn-secondary" style={{ display: 'flex', justifyContent: 'flex-start', border: '1px dashed var(--border-subtle)' }}><Plus size={14} style={{ marginRight: 8 }} /> HITL Approval</div>
+                            <div className="btn btn-secondary" style={{ display: 'flex', justifyContent: 'flex-start', border: '1px dashed var(--border-subtle)' }}><Plus size={14} style={{ marginRight: 8 }} /> Intent Analysis</div>
+                            <div className="btn btn-secondary" style={{ display: 'flex', justifyContent: 'flex-start', border: '1px dashed var(--border-subtle)' }}><Plus size={14} style={{ marginRight: 8 }} /> Split Branch</div>
+                            <div className="btn btn-secondary" style={{ display: 'flex', justifyContent: 'flex-start', border: '1px dashed var(--border-subtle)' }}><Plus size={14} style={{ marginRight: 8 }} /> CRM Command</div>
+                            <div className="btn btn-secondary" style={{ display: 'flex', justifyContent: 'flex-start', border: '1px dashed var(--border-subtle)' }}><Plus size={14} style={{ marginRight: 8 }} /> Manager Approval</div>
                         </div>
                     </div>
                 </div>
