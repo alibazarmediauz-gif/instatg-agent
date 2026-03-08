@@ -4,22 +4,19 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
     LayoutDashboard,
-    MessageSquare,
-    Mic,
     BookOpen,
     BarChart3,
     Settings,
     Zap,
     Link2,
     Workflow,
-    Headset,
     BotMessageSquare,
     Network,
     Megaphone,
-    CreditCard,
     ShieldAlert,
     Users,
-    Shield
+    Shield,
+    Activity
 } from 'lucide-react';
 
 import { useLanguage } from '@/lib/LanguageContext';
@@ -30,21 +27,41 @@ export default function Sidebar() {
 
     const navGroups = [
         {
-            label: null,
+            label: '⌘ COMMAND & OBSERVABILITY',
             items: [
-                { href: '/dashboard', label: t('nav.control_center'), icon: LayoutDashboard },
-                { href: '/crm', label: t('nav.crm'), icon: Network },
-                { href: '/contacts', label: t('nav.contacts'), icon: Users },
-                { href: '/prompts', label: t('nav.prompts'), icon: BookOpen },
-                { href: '/voice-agents', label: t('nav.voice_agents'), icon: Headset },
-                { href: '/chat-agents', label: t('nav.chat_agents'), icon: BotMessageSquare },
-                { href: '/campaigns', label: t('nav.campaigns'), icon: Megaphone },
-                { href: '/knowledge-base', label: t('nav.knowledge'), icon: BookOpen },
-                { href: '/analytics', label: t('nav.analytics'), icon: BarChart3 },
-                { href: '/billing', label: t('nav.billing'), icon: CreditCard },
-                { href: '/qa', label: t('nav.qa'), icon: ShieldAlert },
-                { href: '/integrations', label: t('nav.integrations'), icon: Link2 },
-                { href: '/admin', label: t('nav.admin'), icon: Shield },
+                { href: '/dashboard', label: 'Control Center', icon: LayoutDashboard },
+                { href: '/action-queue', label: 'Action Queue (HITL)', icon: ShieldAlert },
+            ],
+        },
+        {
+            label: '🤖 AGENT WORKFORCE',
+            items: [
+                { href: '/agents', label: 'Agent Hub', icon: BotMessageSquare },
+                { href: '/logs', label: 'Execution Logs', icon: Activity },
+            ],
+        },
+        {
+            label: '⚡️ AUTOMATION & WORKFLOWS',
+            items: [
+                { href: '/orchestra', label: 'Playbook Builder', icon: Workflow },
+                { href: '/campaigns', label: 'Campaigns', icon: Megaphone },
+            ],
+        },
+        {
+            label: '🗄️ INTELLIGENCE & DATA',
+            items: [
+                { href: '/crm', label: 'CRM Sync', icon: Network },
+                { href: '/contacts', label: 'Contact Base', icon: Users },
+            ],
+        },
+        {
+            label: '⚙️ SYSTEM & GOVERNANCE',
+            items: [
+                { href: '/integrations', label: 'Tool Integrations', icon: Link2 },
+                { href: '/knowledge-base', label: 'Knowledge Base', icon: BookOpen },
+                { href: '/qa', label: 'Quality Control', icon: Shield },
+                { href: '/analytics', label: 'Analytics', icon: BarChart3 },
+                { href: '/admin', label: 'Admin Panel', icon: Settings },
             ],
         },
     ];
@@ -69,7 +86,7 @@ export default function Sidebar() {
             <nav className="sidebar-nav" style={{ padding: '0 8px' }}>
                 {navGroups.map((group, gi) => (
                     <div key={gi}>
-                        {group.label && <div className="nav-group-label" style={{ paddingLeft: 12 }}>{group.label}</div>}
+                        {group.label && <div className="nav-group-label" style={{ paddingLeft: 12, fontSize: 10, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8, marginTop: 16 }}>{group.label}</div>}
                         {group.items.map((item) => {
                             const Icon = item.icon;
                             const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');

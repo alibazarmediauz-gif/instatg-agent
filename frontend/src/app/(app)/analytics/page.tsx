@@ -1,192 +1,171 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
-    BarChart3, TrendingUp, DollarSign, Activity,
-    Users, ArrowUpRight, ArrowDownRight, Target, PieChart as PieChartIcon,
-    Loader2
+    BarChart3, Activity, ShieldAlert, Zap, AlertTriangle,
+    PlayCircle, CheckCircle2, Crosshair, Users
 } from 'lucide-react';
-import {
-    AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-    PieChart, Pie, Cell, CartesianGrid, Legend, ComposedChart, Line
-} from 'recharts';
-import { useTenant } from '@/lib/TenantContext';
-import { getAnalyticsDashboard } from '@/lib/api';
-import { useLanguage } from '@/lib/LanguageContext';
 
-const DONUT_COLORS = ['#3b82f6', '#8b5cf6', '#22c55e', '#f59e0b'];
-
-export default function AnalyticsPage() {
-    const { tenantId } = useTenant();
-    const [loading, setLoading] = useState(true);
-    const [data, setData] = useState<any>(null);
-    const t = useLanguage().t;
-
-    const fetchAnalytics = async () => {
-        try {
-            const json = await getAnalyticsDashboard(tenantId, 7) as any;
-            if (json.status === 'success') {
-                setData(json);
-            }
-        } catch (error) {
-            console.error("Failed to fetch analytics:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchAnalytics();
-        const interval = setInterval(fetchAnalytics, 30000);
-        return () => clearInterval(interval);
-    }, [tenantId]);
-
-    if (loading || !data) {
-        return (
-            <div className="page-container animate-in">
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 400, color: 'var(--text-muted)' }}>
-                    <div style={{ textAlign: 'center' }}>
-                        <Loader2 className="animate-spin" size={32} color="var(--accent)" style={{ margin: '0 auto 16px' }} />
-                        <div>{t('analytics.loading')}</div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    const { kpis, revenueData, funnelData, performanceData, retentionData } = data;
+export default function ActionAnalyticsDashboard() {
+    const [timeRange, setTimeRange] = useState('7d');
 
     return (
-        <div className="page-container animate-in" style={{ padding: '24px 32px' }}>
-            <div style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <div className="page-container animate-in" style={{ padding: '24px 32px', height: '100vh', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 24 }}>
                 <div>
-                    <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 4 }}>{t('analytics.title')}</h1>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{t('analytics.subtitle')}</p>
+                    <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <BarChart3 size={28} color="var(--accent)" /> Action & Execution Analytics
+                    </h1>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>Deep observability into agent behavior, tool execution success, and human oversight.</p>
                 </div>
-                <div style={{ display: 'flex', gap: 12 }}>
-                    <select className="input" style={{ width: 140, background: 'var(--bg-elevated)', height: 36, fontSize: 13 }}>
-                        <option>{t('analytics.last_7')}</option>
-                        <option>{t('analytics.last_30')}</option>
-                        <option>{t('analytics.this_quarter')}</option>
-                    </select>
-                    <button className="btn btn-primary" style={{ height: 36 }}>{t('analytics.export_csv')}</button>
+                <div style={{ display: 'flex', gap: 8 }}>
+                    {['24h', '7d', '30d', 'All Time'].map(range => (
+                        <button
+                            key={range}
+                            className={`btn btn-sm ${timeRange === range ? 'btn-primary' : 'btn-secondary'}`}
+                            onClick={() => setTimeRange(range)}
+                        >
+                            {range}
+                        </button>
+                    ))}
                 </div>
             </div>
 
-            {/* ─── Top KPI Row (ROI Focus) ─── */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, marginBottom: 24 }}>
-                <AnalyticsCard title={t('analytics.total_revenue')} value={`$${kpis.total_revenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} trend="+14.2%" up={true} icon={<DollarSign size={18} />} color="#22c55e" />
-                <AnalyticsCard title={t('analytics.total_cost')} value={`$${kpis.total_cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} trend="+2.1%" up={false} icon={<Activity size={18} />} color="#ef4444" />
-                <AnalyticsCard title={t('analytics.campaign_roi')} value={`${kpis.roi.toFixed(1)}%`} trend="+410%" up={true} icon={<TrendingUp size={18} />} color="#3b82f6" />
-                <AnalyticsCard title={t('analytics.cost_per_lead')} value={`$${kpis.cpl.toFixed(2)}`} trend="-45%" up={true} icon={<Target size={18} />} color="#a855f7" />
+            {/* ─── Top KPI Row ─── */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24, marginBottom: 24 }}>
+                <AnalyticsCard label="Actions Executed" value="14,204" percent="+12%" positive icon={<PlayCircle size={16} />} color="var(--purple)" />
+                <AnalyticsCard label="Task Success Rate" value="96.8%" percent="+1.2%" positive icon={<CheckCircle2 size={16} />} color="var(--success)" />
+                <AnalyticsCard label="Human Takeover Rate" value="4.2%" percent="-0.5%" positive icon={<Users size={16} />} color="var(--warning)" />
+                <AnalyticsCard label="Avg Execution Latency" value="340ms" percent="-50ms" positive icon={<Zap size={16} />} color="var(--accent)" />
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 24, marginBottom: 24 }}>
-                {/* ─── Revenue & Cost Over Time (Composed Chart) ─── */}
-                <div className="card">
-                    <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 24 }}>{t('analytics.revenue_vs_cost')}</h3>
-                    <div style={{ height: 300 }}>
-                        <ResponsiveContainer width="100%" height="100%">
-                            <ComposedChart data={revenueData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                                <XAxis dataKey="name" stroke="#4a5568" fontSize={11} tickLine={false} axisLine={false} />
-                                <YAxis stroke="#4a5568" fontSize={11} tickLine={false} axisLine={false} />
-                                <Tooltip contentStyle={{ background: '#1c2230', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: 12 }} />
-                                <Legend wrapperStyle={{ fontSize: 12 }} />
-                                <Bar dataKey="voice" name={t('analytics.voice_rev')} stackId="a" fill="var(--accent)" radius={[0, 0, 4, 4]} />
-                                <Bar dataKey="chat" name={t('analytics.chat_rev')} stackId="a" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
-                                <Line type="monotone" dataKey="cost" name={t('analytics.compute_cost')} stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }} />
-                            </ComposedChart>
-                        </ResponsiveContainer>
+
+                {/* LEFT: Execution Volume / Tool Usage */}
+                <div className="card" style={{ padding: 24, background: 'var(--bg-elevated)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+                        <h3 style={{ fontSize: 14, fontWeight: 700 }}>Tool Usage Distribution</h3>
+                        <span className="badge neutral">Last 7 Days</span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                        <UsageBar label="amoCRM.update_lead" value={4201} max={5000} color="var(--accent)" />
+                        <UsageBar label="telegram.send_message" value={3840} max={5000} color="var(--purple)" />
+                        <UsageBar label="calendar.book_meeting" value={1204} max={5000} color="var(--success)" />
+                        <UsageBar label="billing.draft_proposal" value={482} max={5000} color="var(--warning)" />
+                        <UsageBar label="kb.search_objection" value={980} max={5000} color="var(--text-muted)" />
                     </div>
                 </div>
 
-                {/* ─── Regional Distribution ─── */}
-                <div className="card">
-                    <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 24 }}>{t('analytics.regional')}</h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                        {data.regionData?.map((r: any) => (
-                            <div key={r.city}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 6 }}>
-                                    <span style={{ fontWeight: 600 }}>{r.city}</span>
-                                    <span style={{ color: 'var(--text-muted)' }}>{r.leads} {t('analytics.leads')}</span>
-                                </div>
-                                <div style={{ height: 8, background: 'var(--bg-elevated)', borderRadius: 4, overflow: 'hidden' }}>
-                                    <div style={{ height: '100%', width: `${(r.leads / 450) * 100}%`, background: 'var(--accent)', borderRadius: 4 }} />
-                                </div>
-                            </div>
-                        ))}
+                {/* RIGHT: Agent Performance Leaderboard */}
+                <div className="card" style={{ padding: 24, background: 'var(--bg-elevated)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+                        <h3 style={{ fontSize: 14, fontWeight: 700 }}>Agent Success Matrix</h3>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                        <AgentLeader label="SDR_Sarah" success="98%" executions="8,204" />
+                        <AgentLeader label="Support_BotX" success="95%" executions="4,820" />
+                        <AgentLeader label="Closer_Mike" success="82%" executions="1,180" warning />
                     </div>
                 </div>
             </div>
 
-            {/* ─── Lead Source ROI & Performance ─── */}
-            <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 24 }}>
-                <div className="card">
-                    <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 24 }}>{t('analytics.lead_source')}</h3>
-                    <table className="data-table">
-                        <thead>
+            {/* BOTTOM: Quality Control & Anomalies */}
+            <div className="card" style={{ padding: 0, overflow: 'hidden', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+                <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', background: 'rgba(239, 68, 68, 0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <ShieldAlert size={16} /> Quality Control: Anomalies & Failed Executions
+                    </h3>
+                    <button className="btn btn-sm btn-outline" style={{ borderColor: 'var(--danger)', color: 'var(--danger)' }}>Export Audit Log</button>
+                </div>
+                <div style={{ padding: 0 }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
+                        <thead style={{ background: 'var(--bg-elevated)', borderBottom: '1px solid var(--border)' }}>
                             <tr>
-                                <th>{t('analytics.source')}</th>
-                                <th>{t('analytics.total_leads')}</th>
-                                <th>{t('analytics.conv')}</th>
-                                <th>{t('analytics.revenue')}</th>
+                                <th style={{ padding: '12px 20px', fontWeight: 700, color: 'var(--text-muted)' }}>Timestamp</th>
+                                <th style={{ padding: '12px 20px', fontWeight: 700, color: 'var(--text-muted)' }}>Agent</th>
+                                <th style={{ padding: '12px 20px', fontWeight: 700, color: 'var(--text-muted)' }}>Anomaly Type</th>
+                                <th style={{ padding: '12px 20px', fontWeight: 700, color: 'var(--text-muted)' }}>Details</th>
+                                <th style={{ padding: '12px 20px', fontWeight: 700, color: 'var(--text-muted)' }}>Severity</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {data.channelData?.map((c: any, i: number) => (
-                                <tr key={i}>
-                                    <td style={{ fontWeight: 600 }}>{c.source}</td>
-                                    <td>{c.leads.toLocaleString()}</td>
-                                    <td><span className={`badge ${c.conversion > 20 ? 'success' : 'warning'}`}>{c.conversion}%</span></td>
-                                    <td>${c.revenue.toLocaleString()}</td>
-                                </tr>
-                            ))}
+                            <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                                <td style={{ padding: '16px 20px', color: 'var(--text-secondary)' }}>Today, 10:42 AM</td>
+                                <td style={{ padding: '16px 20px', fontWeight: 600 }}>Closer_Mike</td>
+                                <td style={{ padding: '16px 20px' }}><span className="badge danger">Hallucination Risk</span></td>
+                                <td style={{ padding: '16px 20px', color: 'var(--text-secondary)' }}>Generated pricing tier not found in knowledge base.</td>
+                                <td style={{ padding: '16px 20px', color: 'var(--danger)', fontWeight: 700 }}>HIGH</td>
+                            </tr>
+                            <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                                <td style={{ padding: '16px 20px', color: 'var(--text-secondary)' }}>Yesterday, 14:12 PM</td>
+                                <td style={{ padding: '16px 20px', fontWeight: 600 }}>SDR_Sarah</td>
+                                <td style={{ padding: '16px 20px' }}><span className="badge warning">Tool Auth Failure</span></td>
+                                <td style={{ padding: '16px 20px', color: 'var(--text-secondary)' }}>Attempted to use `billing.draft_proposal` without write permissions.</td>
+                                <td style={{ padding: '16px 20px', color: 'var(--warning)', fontWeight: 700 }}>MEDIUM</td>
+                            </tr>
+                            <tr>
+                                <td style={{ padding: '16px 20px', color: 'var(--text-secondary)' }}>Yesterday, 09:05 AM</td>
+                                <td style={{ padding: '16px 20px', fontWeight: 600 }}>Support_BotX</td>
+                                <td style={{ padding: '16px 20px' }}><span className="badge neutral">Schema Mismatch</span></td>
+                                <td style={{ padding: '16px 20px', color: 'var(--text-secondary)' }}>Failed to parse CRM response due to missing dynamic field. Auto-recovered.</td>
+                                <td style={{ padding: '16px 20px', color: 'var(--text-muted)', fontWeight: 700 }}>LOW</td>
+                            </tr>
                         </tbody>
                     </table>
-                </div>
-
-                <div className="card">
-                    <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 24 }}>{t('analytics.retention')}</h3>
-                    <div style={{ height: 260 }}>
-                        <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={retentionData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                                <defs>
-                                    <linearGradient id="colorActive" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                                    </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                                <XAxis dataKey="month" stroke="#4a5568" fontSize={11} tickLine={false} axisLine={false} />
-                                <YAxis stroke="#4a5568" fontSize={11} tickLine={false} axisLine={false} />
-                                <Tooltip contentStyle={{ background: '#1c2230', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: 12 }} />
-                                <Area type="monotone" dataKey="active" name={t('analytics.active')} stroke="#3b82f6" fillOpacity={1} fill="url(#colorActive)" />
-                                <Area type="monotone" dataKey="recovered" name={t('analytics.recovered')} stroke="#22c55e" fill="none" />
-                            </AreaChart>
-                        </ResponsiveContainer>
-                    </div>
                 </div>
             </div>
         </div>
     );
 }
 
-function AnalyticsCard({ title, value, trend, up, icon, color }: any) {
+// Subcomponents
+
+function AnalyticsCard({ label, value, percent, positive, icon, color }: any) {
     return (
-        <div className="card" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: 12, borderTop: `3px solid ${color}` }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div style={{ width: 36, height: 36, borderRadius: 8, background: `${color}15`, color: color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="card" style={{ padding: 24, borderTop: `4px solid ${color}`, background: 'var(--bg-elevated)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+                <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>{label}</span>
+                <div style={{ padding: 6, background: `${color}15`, borderRadius: 8, color }}>
                     {icon}
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 700, color: up ? 'var(--success)' : 'var(--danger)', background: up ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', padding: '4px 8px', borderRadius: 12 }}>
-                    {up ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-                    {trend}
+            </div>
+            <div style={{ fontSize: 28, fontWeight: 900, marginBottom: 8, color: 'var(--text-primary)' }}>{value}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: positive ? 'var(--success)' : 'var(--danger)' }}>
+                {percent} <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>vs previous period</span>
+            </div>
+        </div>
+    );
+}
+
+function UsageBar({ label, value, max, color }: any) {
+    const width = `${(value / max) * 100}%`;
+    return (
+        <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 13 }}>
+                <span style={{ fontWeight: 600, fontFamily: 'monospace' }}>{label}</span>
+                <span style={{ color: 'var(--text-muted)' }}>{value.toLocaleString()}</span>
+            </div>
+            <div style={{ width: '100%', height: 8, background: 'rgba(255,255,255,0.05)', borderRadius: 4, overflow: 'hidden' }}>
+                <div style={{ width, height: '100%', background: color, borderRadius: 4 }} />
+            </div>
+        </div>
+    );
+}
+
+function AgentLeader({ label, success, executions, warning = false }: any) {
+    return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: warning ? 'rgba(245, 158, 11, 0.1)' : 'rgba(52, 211, 153, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {warning ? <AlertTriangle size={14} color="var(--warning)" /> : <CheckCircle2 size={14} color="var(--success)" />}
+                </div>
+                <div>
+                    <div style={{ fontSize: 14, fontWeight: 700 }}>{label}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{executions} actions executed</div>
                 </div>
             </div>
-            <div>
-                <h3 style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 600, marginBottom: 4 }}>{title}</h3>
-                <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.02em' }}>{value}</div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: warning ? 'var(--warning)' : 'var(--success)' }}>
+                {success}
             </div>
         </div>
     );
