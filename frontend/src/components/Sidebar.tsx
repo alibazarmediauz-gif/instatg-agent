@@ -16,7 +16,8 @@ import {
     ShieldAlert,
     Users,
     Shield,
-    Activity
+    Activity,
+    Server
 } from 'lucide-react';
 
 import { useLanguage } from '@/lib/LanguageContext';
@@ -57,6 +58,7 @@ export default function Sidebar() {
         {
             label: '⚙️ SYSTEM & GOVERNANCE',
             items: [
+                { href: '/infrastructure', label: 'Messaging Infra', icon: Server },
                 { href: '/integrations', label: 'Tool Integrations', icon: Link2 },
                 { href: '/knowledge-base', label: 'Knowledge Base', icon: BookOpen },
                 { href: '/qa', label: 'Quality Control', icon: Shield },
