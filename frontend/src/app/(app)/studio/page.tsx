@@ -75,6 +75,54 @@ export default function AgentStudioPage() {
         }
     }, [agentId]);
 
+    const [chatLog, setChatLog] = useState<{ role: 'user' | 'ai' | 'system', text: string }[]>([
+        { role: 'system', text: 'Sandbox Environment initialized. Agent loaded.' }
+    ]);
+    const [inputMsg, setInputMsg] = useState('');
+    const chatEndRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [chatLog]);
+
+    const handleSimulateSend = async () => {
+        if (!inputMsg.trim() || isSimulating) return;
+
+        const userMsg = inputMsg;
+        setChatLog(prev => [...prev, { role: 'user', text: userMsg }]);
+        setInputMsg('');
+        setIsSimulating(true);
+
+        try {
+            const response = await fetch('/api/agents/chat/simulate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: userMsg,
+                    system_prompt: systemPrompt,
+                    settings: { behavior_sliders: sliders },
+                    knowledge_ids: selectedKnowledge
+                })
+            });
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                if (data.execution_log) {
+                    data.execution_log.forEach((log: any) => {
+                        setChatLog(prev => [...prev, { role: 'system', text: log.text }]);
+                    });
+                }
+                setChatLog(prev => [...prev, { role: 'ai', text: data.reply }]);
+            } else {
+                setChatLog(prev => [...prev, { role: 'system', text: `Simulation error: ${data.message}` }]);
+            }
+        } catch (err) {
+            setChatLog(prev => [...prev, { role: 'system', text: 'Connection to simulation engine failed.' }]);
+        } finally {
+            setIsSimulating(false);
+        }
+    };
+
     const handleDeploy = async () => {
         setIsSaving(true);
         try {

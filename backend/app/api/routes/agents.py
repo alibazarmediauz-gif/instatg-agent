@@ -243,35 +243,29 @@ async def simulate_agent_response(
     # 3. Call AI with combined prompt
     final_prompt = f"{system_prompt}\n{behavior_instructions}"
     
-    from app.services.llm_router import generate_response as router_generate
-    from app.agents.claude_agent import SYSTEM_PROMPT_TEMPLATE
-    
-    full_system_prompt = SYSTEM_PROMPT_TEMPLATE.format(
-        business_name=current_tenant.name,
-        knowledge_context=knowledge_context or "No context found.",
-        master_prompt="",
-        custom_persona=f"\nSTUDIO MODE OVERRIDE:\n{final_prompt}"
-    )
-
+    # 3. Call REAL Agent logic for high-fidelity simulation
+    # We use a special 'sandbox' contact_id to avoid polluting real conversation memory
     try:
-        router_result = await router_generate(
-            message=user_message,
-            conversation_history=[{"role": "system", "content": full_system_prompt}],
-            mode="chat"
+        agent_resp = await ai_agent.generate_response(
+            tenant_id=str(current_tenant.id),
+            contact_id="studio_sandbox_session",
+            user_message=user_message,
+            business_name=current_tenant.name,
+            custom_persona=f"STUDIO_TEST_MODE: {system_prompt}\n{behavior_instructions}",
         )
-        # Parse like a real agent
-        parsed = ai_agent._parse_response(router_result["response"])
         
         return {
             "status": "success",
-            "reply": parsed.reply_text,
-            "metadata": parsed.metadata,
+            "reply": agent_resp.reply_text,
+            "metadata": agent_resp.metadata,
             "execution_log": [
                 {"role": "system", "text": "Simulation RAG search complete."},
-                {"role": "system", "text": f"Applied constraints: Length({length}%), Tone({tone}%)"}
+                {"role": "system", "text": f"Applied constraints: Length({length}%), Tone({tone}%)"},
+                {"role": "system", "text": "Enterprise logic applied to sandbox session."}
             ]
         }
     except Exception as e:
+        logger.error("simulation_failed", error=str(e))
         return {"status": "error", "message": str(e)}
 
 @router.put("/chat/{agent_id}")
