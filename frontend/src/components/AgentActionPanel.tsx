@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import {
     CheckCircle2, AlertTriangle, AlertCircle, Bot, Zap,
-    TerminalSquare, RotateCcw, Edit3, X, Play
+    TerminalSquare, RotateCcw, Edit3, X, Play, TrendingUp, ArrowRight
 } from 'lucide-react';
 
 export type ActionStatus = 'pending' | 'executing' | 'success' | 'failed' | 'requires_action';
@@ -17,6 +17,8 @@ export interface AgentActionProps {
     toolPayload: object;
     toolResult?: object;
     status: ActionStatus;
+    nextActionPredicted?: string;
+    businessImpact?: string;
     onRetry?: (id: string) => void;
     onOverride?: (id: string, newPayload: object) => void;
     onApprove?: (id: string) => void;
@@ -31,6 +33,8 @@ export default function AgentActionPanel({
     toolPayload,
     toolResult,
     status,
+    nextActionPredicted,
+    businessImpact,
     onRetry,
     onOverride,
     onApprove
@@ -146,6 +150,32 @@ export default function AgentActionPanel({
                             </pre>
                         </div>
                     </div>
+
+                    {/* Observability Section: Next Action & Business Impact */}
+                    {(nextActionPredicted || businessImpact) && (
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border-subtle)' }}>
+                            {businessImpact && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                    <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--success)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 6 }}>
+                                        <TrendingUp size={12} /> Business Impact
+                                    </span>
+                                    <div style={{ fontSize: 13, color: 'var(--text-primary)', background: 'rgba(52, 211, 153, 0.05)', padding: '8px 12px', border: '1px solid rgba(52, 211, 153, 0.2)', borderRadius: 6 }}>
+                                        {businessImpact}
+                                    </div>
+                                </div>
+                            )}
+                            {nextActionPredicted && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                    <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--purple)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 6 }}>
+                                        <ArrowRight size={12} /> Predicted Next Action
+                                    </span>
+                                    <div style={{ fontSize: 13, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.02)', padding: '8px 12px', border: '1px solid var(--border-subtle)', borderRadius: 6, fontStyle: 'italic' }}>
+                                        {nextActionPredicted}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     {/* Action Controls */}
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 16 }}>

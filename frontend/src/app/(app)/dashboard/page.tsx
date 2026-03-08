@@ -7,6 +7,7 @@ import {
     Activity, ShieldAlert, Cpu, Network, CheckCircle2,
     Clock, AlertTriangle, Bot, Zap, PlayCircle, BarChart
 } from 'lucide-react';
+import AgentActionPanel, { ActionStatus } from '@/components/AgentActionPanel';
 import { getAnalyticsDashboard } from '@/lib/api';
 
 export default function ControlCenter() {
@@ -14,12 +15,39 @@ export default function ControlCenter() {
     const { t } = useLanguage();
     const [loading, setLoading] = useState(true);
 
-    // Simulated real-time execution feed for the premium demo feel
+    // Simulated real-time execution feed mapping to the 7-Question Framework
     const [executionLogs, setExecutionLogs] = useState([
-        { id: 1, time: '10:42:01', agent: 'SDR_Sarah', action: 'Tool Call', detail: 'lookup_lead(id: 402)', status: 'Success', statusColor: 'var(--success)' },
-        { id: 2, time: '10:41:45', agent: 'SDR_Sarah', action: 'Reasoning', detail: 'Lead requested pricing, drafting enterprise proposal.', status: 'Executing', statusColor: 'var(--accent)' },
-        { id: 3, time: '10:40:12', agent: 'Support_BotX', action: 'Tool Call', detail: 'update_crm_status(id: 89, status: "resolved")', status: 'Success', statusColor: 'var(--success)' },
-        { id: 4, time: '10:38:50', agent: 'SDR_Sarah', action: 'Escalation', detail: 'Complex objection detected. Routing to human operator.', status: 'Escalated', statusColor: 'var(--warning)' },
+        {
+            id: 'log1',
+            agentName: 'SDR_Sarah',
+            timestamp: 'Just now',
+            reasoning: 'Gathering context on lead Acme Corp to personalize the outbound pitch.',
+            toolName: 'amocrm.lookup_lead',
+            toolPayload: { lead_id: 402 },
+            toolResult: { name: 'John Doe', stage: 'Prospect' },
+            status: 'success' as ActionStatus,
+            businessImpact: 'Context acquired for high-conversion pitching.'
+        },
+        {
+            id: 'log2',
+            agentName: 'SDR_Sarah',
+            timestamp: '1 min ago',
+            reasoning: 'Lead requested enterprise pricing. Generating draft.',
+            toolName: 'internal.draft_proposal',
+            toolPayload: { type: 'enterprise', target: 'John Doe' },
+            status: 'executing' as ActionStatus,
+            nextActionPredicted: 'Will pause and send to HITL Action Queue for manager approval.'
+        },
+        {
+            id: 'log3',
+            agentName: 'Support_BotX',
+            timestamp: '3 mins ago',
+            reasoning: 'Finished resolving the API rate limit ticket.',
+            toolName: 'zendesk.update_ticket',
+            toolPayload: { ticket_id: 89, status: 'resolved' },
+            status: 'success' as ActionStatus,
+            businessImpact: 'Ticket resolved automatically. Saved 15m of human agent time.'
+        }
     ]);
 
     const fetchDashboard = async () => {
@@ -82,35 +110,22 @@ export default function ControlCenter() {
                         </h3>
                         <span className="badge info" style={{ fontFamily: 'monospace', fontSize: 11 }}>TAILING...</span>
                     </div>
-                    <div style={{ padding: 0, overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                            <thead style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--border-subtle)', fontSize: 11, textTransform: 'uppercase', color: 'var(--text-muted)' }}>
-                                <tr>
-                                    <th style={{ padding: '12px 20px', fontWeight: 700 }}>Time</th>
-                                    <th style={{ padding: '12px 20px', fontWeight: 700 }}>Agent</th>
-                                    <th style={{ padding: '12px 20px', fontWeight: 700 }}>Type</th>
-                                    <th style={{ padding: '12px 20px', fontWeight: 700 }}>Payload / Details</th>
-                                    <th style={{ padding: '12px 20px', fontWeight: 700 }}>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {executionLogs.map((log) => (
-                                    <tr key={log.id} style={{ borderBottom: '1px solid var(--border-subtle)', fontFamily: 'monospace', fontSize: 12 }}>
-                                        <td style={{ padding: '16px 20px', color: 'var(--text-muted)' }}>{log.time}</td>
-                                        <td style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--text-primary)' }}><span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Bot size={14} color="var(--accent)" /> {log.agent}</span></td>
-                                        <td style={{ padding: '16px 20px' }}>
-                                            <span style={{
-                                                padding: '4px 8px', borderRadius: 4, fontSize: 10, fontWeight: 800,
-                                                background: log.action === 'Tool Call' ? 'rgba(168, 85, 247, 0.15)' : 'rgba(59, 130, 246, 0.15)',
-                                                color: log.action === 'Tool Call' ? 'var(--purple)' : 'var(--accent)'
-                                            }}>{log.action}</span>
-                                        </td>
-                                        <td style={{ padding: '16px 20px', color: 'var(--text-secondary)' }}>{log.detail}</td>
-                                        <td style={{ padding: '16px 20px', color: log.statusColor, fontWeight: 700 }}>{log.status}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                    <div style={{ padding: '16px 20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
+                        {executionLogs.map((log) => (
+                            <AgentActionPanel
+                                key={log.id}
+                                id={log.id}
+                                agentName={log.agentName}
+                                timestamp={log.timestamp}
+                                reasoning={log.reasoning}
+                                toolName={log.toolName}
+                                toolPayload={log.toolPayload}
+                                toolResult={log.toolResult}
+                                status={log.status}
+                                nextActionPredicted={log.nextActionPredicted}
+                                businessImpact={log.businessImpact}
+                            />
+                        ))}
                     </div>
                 </div>
 

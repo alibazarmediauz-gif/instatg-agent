@@ -18,7 +18,9 @@ const mockQueue = [
             subject: 'SalesAI Enterprise Proposal',
             body: 'Hi John,\n\nBased on your volume of 50k calls, we can offer our Enterprise tier at $0.02/call.\n\nLet me know if you would like me to send the contract.\n\nBest,\nSarah (AI)'
         },
-        status: 'requires_action' as ActionStatus
+        status: 'requires_action' as ActionStatus,
+        nextActionPredicted: 'Wait 2 days for reply. If no response, invoke tool: amocrm.create_task("Follow up on custom quote").',
+        businessImpact: 'Moves deal stage to "Proposal Sent". Expected MRR: $1,000.'
     },
     {
         id: 'q2',
@@ -161,6 +163,8 @@ export default function ActionQueue() {
                                     toolName={selectedItem.toolName}
                                     toolPayload={selectedItem.toolPayload}
                                     status={selectedItem.status}
+                                    nextActionPredicted={(selectedItem as any).nextActionPredicted}
+                                    businessImpact={(selectedItem as any).businessImpact}
                                     onOverride={handleOverride}
                                     onApprove={handleApprove}
                                 />
