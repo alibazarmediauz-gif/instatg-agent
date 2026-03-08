@@ -84,7 +84,8 @@ function FlowBuilder() {
             position: { x: Math.random() * 200 + 100, y: Math.random() * 200 + 100 },
             data: getInitialDataForType(type)
         };
-        setNodes((nds) => nds.concat(newNode));
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        setNodes((nds) => nds.concat(newNode as any));
     };
 
     const getInitialDataForType = (type: string) => {
