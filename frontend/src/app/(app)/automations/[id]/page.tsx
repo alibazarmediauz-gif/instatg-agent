@@ -20,7 +20,7 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { ArrowLeft, Save, Plus, MessageCircle, Zap, Clock, Sparkles } from 'lucide-react';
-import { customNodeTypes } from '@/components/automations/CustomNodes';
+import { customNodeTypes } from '@/components/automations/CustomNode';
 
 // Helper for generating new node IDs
 let id = 0;

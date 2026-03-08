@@ -12,13 +12,12 @@ import {
     Node,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { CustomNode } from './CustomNode';
+import { CustomNode, customNodeTypes } from './CustomNode';
 import { Sidebar } from './Sidebar';
+import { NodeProperties } from './NodeProperties';
 import { apiClient } from '@/lib/api';
 
-const nodeTypes = {
-    customNode: CustomNode,
-};
+const nodeTypes = customNodeTypes;
 
 const initialNodes: Node[] = [
     {
@@ -40,6 +39,28 @@ export const FlowBuilder = () => {
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
     const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+
+    const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
+        setSelectedNodeId(node.id);
+    }, []);
+
+    const onPaneClick = useCallback(() => {
+        setSelectedNodeId(null);
+    }, []);
+
+    const updateNodeData = useCallback((nodeId: string, newData: any) => {
+        setNodes((nds) =>
+            nds.map((node) => {
+                if (node.id === nodeId) {
+                    return { ...node, data: newData };
+                }
+                return node;
+            })
+        );
+    }, [setNodes]);
+
+    const selectedNode = nodes.find((n) => n.id === selectedNodeId);
 
     const onConnect = useCallback(
         (params: Connection) => setEdges((eds) => addEdge(params, eds)),
@@ -123,34 +144,40 @@ export const FlowBuilder = () => {
                 </button>
             </div>
 
-            <div style={{ display: 'flex', flexGrow: 1, height: 'calc(100vh - 150px)' }}>
-                <ReactFlowProvider>
-                    {/* Sidebar Area */}
-                    <div style={{ width: '280px', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column' }}>
-                        <Sidebar />
-                    </div>
+            <div style={{ display: 'flex', flexGrow: 1, height: 'calc(100vh - 150px)', overflow: 'hidden' }}>
+                <div style={{ width: '240px', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column' }}>
+                    <Sidebar />
+                </div>
 
-                    {/* Canvas Area */}
-                    <div style={{ flexGrow: 1, position: 'relative' }} ref={reactFlowWrapper}>
-                        <ReactFlow
-                            nodes={nodes}
-                            edges={edges}
-                            onNodesChange={onNodesChange}
-                            onEdgesChange={onEdgesChange}
-                            onConnect={onConnect}
-                            onInit={setReactFlowInstance}
-                            onDrop={onDrop}
-                            onDragOver={onDragOver}
-                            nodeTypes={nodeTypes}
-                            fitView
-                            minZoom={0.2}
-                            maxZoom={2}
-                        >
-                            <Background color="var(--border)" gap={24} size={2} />
-                            <Controls style={{ bottom: 20, right: 20, position: 'absolute' }} />
-                        </ReactFlow>
-                    </div>
-                </ReactFlowProvider>
+                <div style={{ flexGrow: 1, position: 'relative', background: 'var(--bg-elevated)' }} ref={reactFlowWrapper}>
+                    <ReactFlow
+                        nodes={nodes}
+                        edges={edges}
+                        onNodesChange={onNodesChange}
+                        onEdgesChange={onEdgesChange}
+                        onConnect={onConnect}
+                        onInit={setReactFlowInstance}
+                        onDrop={onDrop}
+                        onDragOver={onDragOver}
+                        onNodeClick={onNodeClick}
+                        onPaneClick={onPaneClick}
+                        nodeTypes={nodeTypes}
+                        fitView
+                        minZoom={0.2}
+                        maxZoom={2}
+                    >
+                        <Background color="var(--border)" gap={24} size={1} variant={'dots' as any} />
+                        <Controls position="bottom-right" style={{ display: 'flex', gap: 4 }} />
+                    </ReactFlow>
+                </div>
+
+                {selectedNodeId && (
+                    <NodeProperties
+                        node={selectedNode}
+                        onUpdate={updateNodeData}
+                        onClose={() => setSelectedNodeId(null)}
+                    />
+                )}
             </div>
         </div>
     );
