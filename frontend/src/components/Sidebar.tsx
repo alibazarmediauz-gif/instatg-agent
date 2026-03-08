@@ -61,7 +61,7 @@ export default function Sidebar() {
                 { href: '/infrastructure', label: 'Messaging Infra', icon: Server },
                 { href: '/integrations', label: 'Tool Integrations', icon: Link2 },
                 { href: '/knowledge-base', label: 'Knowledge Base', icon: BookOpen },
-                { href: '/qa', label: 'Quality Control', icon: Shield },
+                { href: '/qa', label: 'AI Governance', icon: Shield },
                 { href: '/analytics', label: 'Analytics', icon: BarChart3 },
                 { href: '/admin', label: 'Admin Panel', icon: Settings },
             ],
