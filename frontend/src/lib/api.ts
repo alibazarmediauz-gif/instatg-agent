@@ -25,7 +25,7 @@ function normalizeEndpoint(endpoint: string): string {
     return `/api${normalized}`;
 }
 
-async function apiClient<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
+export async function apiClient<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
     const { params, ...fetchOptions } = options;
     const normalizedEndpoint = normalizeEndpoint(endpoint);
 
