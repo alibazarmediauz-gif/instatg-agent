@@ -176,52 +176,53 @@ export default function PromptLibraryPage() {
                             ))}
                         </div>
                     </div>
-
-                    {/* Right: Editor */}
-                    {selectedPrompt ? (
-                        <div className="card" style={{ display: 'flex', flexDirection: 'column', padding: 0 }}>
-                            <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-elevated)' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                                    <h3 style={{ fontSize: 16, fontWeight: 700, fontFamily: 'monospace' }}>#{selectedPrompt.version_hash}</h3>
-                                    {selectedPrompt.is_active && <span className="badge success" style={{ gap: 4 }}><CheckCircle size={12} /> Production</span>}
-                                </div>
-                                <div style={{ display: 'flex', gap: 8 }}>
-                                    <button className="icon-btn" title="Duplicate" onClick={() => handleNewVersion(selectedPrompt.system_prompt)}><Copy size={14} /></button>
-                                    {!selectedPrompt.is_active && (
-                                        <button className="btn btn-secondary btn-sm" style={{ gap: 6 }} onClick={() => handleActivate(selectedPrompt.id)}><RotateCcw size={14} /> Promote to Active</button>
-                                    )}
-                                    <button className="btn btn-primary btn-sm" style={{ gap: 6 }} onClick={() => handleNewVersion(selectedPrompt.system_prompt, selectedPrompt.is_active)} disabled={saving}>
-                                        {saving ? <Loader2 className="animate-spin" size={14} /> : <Save size={14} />} Save as New Version
-                                    </button>
-                                </div>
-                            </div>
-                            <div style={{ padding: 20, flex: 1, display: 'flex', flexDirection: 'column' }}>
-                                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 8, display: 'block', padding: '16px 20px 0' }}>Master System Prompt</label>
-                                <textarea
-                                    value={selectedPrompt.system_prompt}
-                                    onChange={(e) => setSelectedPrompt({ ...selectedPrompt, system_prompt: e.target.value })}
-                                    style={{
-                                        flex: 1,
-                                        margin: '0 20px 20px',
-                                        background: 'transparent',
-                                        border: '1px solid var(--border)',
-                                        borderRadius: 8,
-                                        padding: 16,
-                                        color: 'var(--text-primary)',
-                                        fontSize: 14,
-                                        fontFamily: 'monospace',
-                                        resize: 'none',
-                                        outline: 'none'
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
-                            Select or create a prompt version.
-                        </div>
-                    )}
                 </div>
+
+                {/* Right: Editor */}
+                {selectedPrompt ? (
+                    <div className="card" style={{ display: 'flex', flexDirection: 'column', padding: 0 }}>
+                        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-elevated)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                <h3 style={{ fontSize: 16, fontWeight: 700, fontFamily: 'monospace' }}>#{selectedPrompt.version_hash}</h3>
+                                {selectedPrompt.is_active && <span className="badge success" style={{ gap: 4 }}><CheckCircle size={12} /> Production</span>}
+                            </div>
+                            <div style={{ display: 'flex', gap: 8 }}>
+                                <button className="icon-btn" title="Duplicate" onClick={() => handleNewVersion(selectedPrompt.system_prompt)}><Copy size={14} /></button>
+                                {!selectedPrompt.is_active && (
+                                    <button className="btn btn-secondary btn-sm" style={{ gap: 6 }} onClick={() => handleActivate(selectedPrompt.id)}><RotateCcw size={14} /> Promote to Active</button>
+                                )}
+                                <button className="btn btn-primary btn-sm" style={{ gap: 6 }} onClick={() => handleNewVersion(selectedPrompt.system_prompt, selectedPrompt.is_active)} disabled={saving}>
+                                    {saving ? <Loader2 className="animate-spin" size={14} /> : <Save size={14} />} Save as New Version
+                                </button>
+                            </div>
+                        </div>
+                        <div style={{ padding: 20, flex: 1, display: 'flex', flexDirection: 'column' }}>
+                            <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 8, display: 'block', padding: '16px 20px 0' }}>Master System Prompt</label>
+                            <textarea
+                                value={selectedPrompt.system_prompt}
+                                onChange={(e) => setSelectedPrompt({ ...selectedPrompt, system_prompt: e.target.value })}
+                                style={{
+                                    flex: 1,
+                                    margin: '0 20px 20px',
+                                    background: 'transparent',
+                                    border: '1px solid var(--border)',
+                                    borderRadius: 8,
+                                    padding: 16,
+                                    color: 'var(--text-primary)',
+                                    fontSize: 14,
+                                    fontFamily: 'monospace',
+                                    resize: 'none',
+                                    outline: 'none'
+                                }}
+                            />
+                        </div>
+                    </div>
+                ) : (
+                    <div className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
+                        Select or create a prompt version.
+                    </div>
+                )}
             </div>
-            );
+        </div>
+    );
 }
