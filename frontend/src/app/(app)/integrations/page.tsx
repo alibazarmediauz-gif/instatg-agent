@@ -182,7 +182,9 @@ export default function ToolIntegrationsManager() {
                                                 <td style={{ padding: '16px 20px' }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                                         <div className={`switch ${tool.requiresApproval ? 'active' : ''}`} style={{ background: tool.requiresApproval ? 'var(--danger)' : '' }} />
-                                                        {tool.requiresApproval && <AlertTriangle size={14} color="var(--danger)" title="Requires Approval" />}
+                                                        <span title="Requires Approval" style={{ display: 'flex' }}>
+                                                            {tool.requiresApproval && <AlertTriangle size={14} color="var(--danger)" />}
+                                                        </span>
                                                     </div>
                                                 </td>
                                                 <td style={{ padding: '16px 20px', textAlign: 'right' }}>
@@ -197,7 +199,7 @@ export default function ToolIntegrationsManager() {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
 

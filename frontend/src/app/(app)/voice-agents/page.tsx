@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import {
     PhoneCall, Activity, HeartPulse, BrainCircuit, Mic, PhoneOff, UserCheck, PlayCircle, BarChart3, Users, Volume2, ShieldAlert,
-    Target, Building, ArrowRight, Zap, Play, Settings
+    Target, Building, ArrowRight, Zap, Play, Settings, Headset
 } from 'lucide-react';
 import AgentActionPanel, { ActionStatus } from '@/components/AgentActionPanel';
 

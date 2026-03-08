@@ -63,7 +63,7 @@ export default function PromptLibraryPage() {
         if (!selectedAgentId) return;
         setSaving(true);
         try {
-            const data = await createPrompt(tenantId, {
+            const data = await createPrompt(tenantId, selectedAgentId, {
                 agent_id: selectedAgentId,
                 system_prompt: content,
                 is_active: isActive
