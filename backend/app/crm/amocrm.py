@@ -296,11 +296,11 @@ class AmoCRMClient:
 
     async def auto_create_lead_if_new(
         self,
-        tenant_id: str,
-        contact_name: str,
-        contact_username: str,
-        channel: str,
-        first_message: str,
+        name: str,
+        username: str = "",
+        phone: str = "",
+        channel: str = "other",
+        first_message: str = "",
     ) -> Optional[str]:
         """
         Create a lead automatically when a new contact writes.

@@ -170,12 +170,24 @@ async def list_manual_knowledge(current_tenant: Tenant = Depends(get_current_ten
 @router.post("/manual")
 async def create_manual_knowledge(data: ManualKnowledgeCreate, current_tenant: Tenant = Depends(get_current_tenant), db: AsyncSession = Depends(get_db)):
     from app.models import ManualKnowledge
+    from app.knowledge.uploader import ingest_manual_entry
+    
     new_kb = ManualKnowledge(tenant_id=current_tenant.id, question=data.question, answer=data.answer, media_url=data.media_url)
     db.add(new_kb)
     await db.commit()
+    await db.refresh(new_kb)
     
-    # Optional: Log to Pinecone here if you want it searchable immediately
-    # We will implement embedding inclusion later if needed.
+    # Index in Pinecone
+    try:
+        combined_text = f"Q: {data.question}\nA: {data.answer}"
+        await ingest_manual_entry(
+            tenant_id=str(current_tenant.id),
+            text=combined_text,
+            source="Training Hub (Manual Entry)",
+            entry_id=str(new_kb.id)
+        )
+    except Exception as e:
+        logger.warning("pinecone_manual_sync_failed", error=str(e))
     
     return {"status": "success", "id": str(new_kb.id)}
 
@@ -185,6 +197,14 @@ async def delete_manual_knowledge(item_id: UUID, current_tenant: Tenant = Depend
     result = await db.execute(select(ManualKnowledge).where(ManualKnowledge.id == item_id, ManualKnowledge.tenant_id == current_tenant.id))
     doc = result.scalar_one_or_none()
     if doc:
+        # Delete from Pinecone
+        try:
+            from app.knowledge.rag import get_pinecone_index
+            index = get_pinecone_index()
+            index.delete(ids=[f"manual_{item_id}"], namespace=str(current_tenant.id))
+        except Exception as e:
+            logger.warning("pinecone_delete_failed", error=str(e))
+            
         await db.delete(doc)
         await db.commit()
     return {"status": "deleted"}
@@ -198,16 +218,31 @@ class ObjectionCreate(BaseModel):
 @router.get("/objections")
 async def list_objections(current_tenant: Tenant = Depends(get_current_tenant), db: AsyncSession = Depends(get_db)):
     from app.models import ManualKnowledge
-    # We tag objections in the question field or use a dedicated column if exists (modeling as question/answer for now)
     result = await db.execute(select(ManualKnowledge).where(ManualKnowledge.tenant_id == current_tenant.id, ManualKnowledge.question.like("OBJECTION:%")))
     return {"objections": [{"id": str(k.id), "term": k.question.replace("OBJECTION:", ""), "response": k.answer} for k in result.scalars().all()]}
 
 @router.post("/objections")
 async def create_objection(data: ObjectionCreate, current_tenant: Tenant = Depends(get_current_tenant), db: AsyncSession = Depends(get_db)):
     from app.models import ManualKnowledge
+    from app.knowledge.uploader import ingest_manual_entry
+    
     new_kb = ManualKnowledge(tenant_id=current_tenant.id, question=f"OBJECTION:{data.objection}", answer=data.rebuttal)
     db.add(new_kb)
     await db.commit()
+    await db.refresh(new_kb)
+    
+    # Index in Pinecone
+    try:
+        combined_text = f"OBJECTION: {data.objection}\nHANDLING: {data.rebuttal}"
+        await ingest_manual_entry(
+            tenant_id=str(current_tenant.id),
+            text=combined_text,
+            source="Sales Objection Plate",
+            entry_id=str(new_kb.id)
+        )
+    except Exception as e:
+        logger.warning("pinecone_objection_sync_failed", error=str(e))
+        
     return {"status": "success", "id": str(new_kb.id)}
 
 # ─── AI Simulator (Testing Laboratory) ─────────────────────────────

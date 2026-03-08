@@ -227,6 +227,22 @@ class ClaudeAgent:
                 except Exception as e:
                     logger.error("frequent_question_tracking_failed", error=str(e), tenant=tenant_id)
 
+            # 11. Log to Enterprise Dashboard Execution Stream
+            try:
+                from app.models import AILog
+                async with async_session_factory() as db:
+                    ai_log = AILog(
+                        tenant_id=tenant_id,
+                        session_id=str(contact_id),
+                        prompt_snapshot=system_prompt[:500] + "...", # Snapshot for audit
+                        completion=agent_response.reply_text,
+                        token_usage=router_result.get("usage", {}).get("total_tokens", 0)
+                    )
+                    db.add(ai_log)
+                    await db.commit()
+            except Exception as e:
+                logger.error("ai_log_persistence_failed", error=str(e))
+
             logger.info(
                 "agent_response_generated",
                 tenant=tenant_id,
@@ -234,6 +250,7 @@ class ClaudeAgent:
                 sentiment=agent_response.sentiment,
                 lead_score=agent_response.lead_score,
                 sale_detected=agent_response.sale_detected,
+                confidence=agent_response.confidence
             )
 
             return agent_response
@@ -349,6 +366,31 @@ class ClaudeAgent:
             metadata=metadata,
         )
 
+
+    async def extract_json(self, text: str, keys: str) -> dict:
+        """
+        AI-powered data extraction from a message.
+        Example: extract_json("My name is John and my phone is 998901234567", "name, phone")
+        """
+        prompt = f"""Extract the following data keys from the text below: {keys}.
+        Text: "{text}"
+        
+        Return ONLY a raw JSON object. If a key is not found, use null or empty string.
+        Do not include any explanation or markdown blocks."""
+        
+        try:
+            from app.services.llm_router import generate_response as router_generate
+            result = await router_generate(message=prompt, mode="chat")
+            raw = result["response"]
+            # Try to find JSON in the raw output
+            import re
+            json_match = re.search(r'\{.*\}', raw, re.DOTALL)
+            if json_match:
+                return json.loads(json_match.group())
+            return json.loads(raw)
+        except Exception as e:
+            logger.error("json_extraction_failed", error=str(e))
+            return {}
 
 # Singleton instance
 agent = ClaudeAgent()

@@ -197,9 +197,31 @@ async def ingest_document(
             "status": "completed",
         }
 
-    except ValueError as e:
-        logger.error("ingestion_validation_error", error=str(e), filename=filename)
-        raise
+async def ingest_manual_entry(
+    tenant_id: str,
+    text: str,
+    source: str = "manual_entry",
+    entry_id: Optional[str] = None
+) -> str:
+    """
+    Ingests a single piece of text directly into Pinecone.
+    Used for Manual Q&A and Objections.
+    """
+    id_tag = entry_id or str(uuid.uuid4())
+    try:
+        embedding = await get_embedding(text)
+        vector = [{
+            "id": f"manual_{id_tag}",
+            "values": embedding,
+            "metadata": {
+                "text": text,
+                "source": source,
+                "tenant_id": str(tenant_id),
+                "is_manual": True
+            },
+        }]
+        await upsert_vectors(tenant_id, vector)
+        return id_tag
     except Exception as e:
-        logger.error("ingestion_error", error=str(e), tenant=tenant_id, filename=filename)
+        logger.error("manual_ingestion_error", error=str(e), tenant=tenant_id)
         raise

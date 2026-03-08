@@ -63,6 +63,7 @@ from app.api.routes.analytics import router as analytics_router
 from app.api.routes.telegram_webhooks import router as telegram_webhooks_router
 from app.api.routes.telegram_auth import router as telegram_auth_router
 from app.api.routes.quality_monitoring import router as quality_monitoring_router
+from app.channels.whatsapp import router as whatsapp_router
 
 logger = structlog.get_logger(__name__)
 
@@ -339,6 +340,7 @@ app.include_router(websockets_router)
 app.include_router(telegram_webhooks_router)
 app.include_router(telegram_auth_router)
 app.include_router(quality_monitoring_router)
+app.include_router(whatsapp_router)
 
 
 @app.get("/")

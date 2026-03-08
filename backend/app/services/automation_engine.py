@@ -16,8 +16,6 @@ async def process_automation_flow(tenant_id: str, message_text: str, platform: s
     """
     Checks if the incoming message triggers any active automation flow.
     If yes, executes the flow and returns True. If not, returns False.
-    
-    `send_message_func` should be an async callback: `async def func(text: str) -> None`
     """
     async with async_session_factory() as db:
         result = await db.execute(
@@ -27,98 +25,127 @@ async def process_automation_flow(tenant_id: str, message_text: str, platform: s
         automations = result.scalars().all()
         
     for auto in automations:
-        # Check trigger keyword exactly or loosely
+        triggered = False
         if auto.trigger_type == "keyword" and auto.trigger_keyword:
             if auto.trigger_keyword.lower() in message_text.lower():
-                # We found a matching automation
-                logger.info("automation_triggered", automation_id=str(auto.id), name=auto.name)
-                
-                # Execute asynchronously so we don't block the webhook
-                asyncio.create_task(execute_flow(auto.flow_data, send_message_func))
-                return True
+                triggered = True
+        elif auto.trigger_type == "platform" and auto.trigger_keyword == platform:
+            triggered = True
+            
+        if triggered:
+            logger.info("automation_triggered", automation_id=str(auto.id), name=auto.name)
+            # Execute synchronously to ensure we can return True correctly, 
+            # but nodes like 'delay' will still pause correctly within the task.
+            asyncio.create_task(execute_flow(
+                flow_data=auto.flow_data, 
+                tenant_id=tenant_id,
+                user_id=user_id,
+                message_text=message_text,
+                send_message_func=send_message_func
+            ))
+            return True
                 
     return False
 
-async def execute_flow(flow_data: Dict[str, Any], send_message_func):
+async def execute_flow(flow_data: Dict[str, Any], tenant_id: str, user_id: str, message_text: str, send_message_func):
     """
-    Traverses the React Flow node/edge graph from the trigger node and executes each block.
+    Traverses and executes visual automation blocks.
+    Context is carried through the flow for data extraction and CRM updates.
     """
     if not flow_data or "nodes" not in flow_data or "edges" not in flow_data:
-        logger.warning("automation_flow_invalid", error="Missing nodes/edges in JSON")
         return
 
-    nodes: List[Dict] = flow_data["nodes"]
-    edges: List[Dict] = flow_data["edges"]
-    
-    # Map nodes by ID for quick O(1) lookup
+    nodes = flow_data["nodes"]
+    edges = flow_data["edges"]
     node_map = {n["id"]: n for n in nodes}
-    
-    # Map edges by source node: source_id -> [target_id1, target_id2]
-    # For a linear sequence, there will just be one target.
     edge_map = {}
     for e in edges:
         src = e["source"]
-        tgt = e["target"]
-        if src not in edge_map:
-            edge_map[src] = []
-        edge_map[src].append(tgt)
-        
-    # 1. Find the Trigger Node (type: 'trigger')
+        if src not in edge_map: edge_map[src] = []
+        edge_map[src].append(e)
+
     trigger_node = next((n for n in nodes if n.get("type") == "trigger"), None)
-    if not trigger_node:
-        logger.warning("automation_flow_invalid", error="No trigger node found")
-        return
+    if not trigger_node: return
         
-    # 2. Traverse Graph
     current_node_id = trigger_node["id"]
-    
-    # Use a set to prevent infinite loops from cyclic edges 
     visited = set()
     
+    # State context to share between nodes
+    context = {"message": message_text, "extracted": {}}
+    
     while current_node_id:
-        if current_node_id in visited:
-            logger.warning("automation_circular_dependency", node_id=current_node_id)
-            break
-            
+        if current_node_id in visited: break
         visited.add(current_node_id)
+        
         node = node_map.get(current_node_id)
-        if not node:
-            break
-            
+        if not node: break
+        
         node_type = node.get("type")
         node_data = node.get("data", {})
         
-        # Execute Action based on node type
         try:
             if node_type == "message":
                 text = node_data.get("text", "")
-                if text:
-                    await send_message_func(text)
+                # Simple variable replacement
+                for k, v in context["extracted"].items():
+                    text = text.replace(f"{{{{{k}}}}}", str(v))
+                if text: await send_message_func(text)
                     
             elif node_type == "delay":
                 amount = int(node_data.get("amount", 1))
                 unit = node_data.get("unit", "minutes")
+                await asyncio.sleep(amount * 60 if unit == "minutes" else amount)
                 
-                seconds = amount * 60 if unit == "minutes" else amount * 3600
-                logger.info("automation_delay", seconds=seconds, node_id=current_node_id)
-                await asyncio.sleep(seconds)
-                
-            elif node_type == "aiStep":
-                # Fallback to AI agent dynamically.
-                # In robust versions, this injects specific system context to Claude.
-                prompt_text = node_data.get("prompt", "")
-                logger.info("automation_ai_handoff", prompt=prompt_text)
-                await send_message_func(f"(AI is taking over with context: {prompt_text})")
-        except Exception as e:
-            logger.error("automation_node_execution_error", node_id=current_node_id, error=str(e))
+            elif node_type == "crmUpdate":
+                field = node_data.get("field", "status")
+                value = node_data.get("value", "Qualified")
+                from app.crm.amocrm import get_crm_client
+                async with async_session_factory() as db:
+                    crm = await get_crm_client(tenant_id, db)
+                    if crm:
+                        # Find the lead ID for this user
+                        from app.models import Lead
+                        lead_res = await db.execute(select(Lead).where(Lead.tenant_id == tenant_id, Lead.phone == user_id))
+                        lead = lead_res.scalar_one_or_none()
+                        if lead:
+                            if field == "status":
+                                await crm.move_lead_to_stage(lead.id, value.lower())
+                            else:
+                                await crm.add_note(lead.id, f"Field Update: {field} -> {value}")
             
-        # Move to next node
-        next_nodes = edge_map.get(current_node_id, [])
-        if not next_nodes:
-             break # End of flow
-             
-        # For simplicity, we just take the first target path. 
-        # Future enhancements would evaluate conditional edges.
-        current_node_id = next_nodes[0]
+            elif node_type == "extractData":
+                keys = node_data.get("keys", "phone, name")
+                from app.agents.claude_agent import agent
+                # AI-powered extraction
+                extracted = await agent.extract_json(message_text, keys)
+                context["extracted"].update(extracted)
+                logger.info("data_extracted", data=extracted)
+
+            elif node_type == "aiStep":
+                prompt = node_data.get("prompt", "")
+                from app.agents.claude_agent import agent
+                resp = await agent.generate_response(tenant_id, user_id, message_text, custom_persona=prompt)
+                if resp.reply_text: await send_message_func(resp.reply_text)
+
+        except Exception as e:
+            logger.error("node_exec_error", node_id=current_node_id, error=str(e))
+            
+        # Decision logic for branching
+        next_edges = edge_map.get(current_node_id, [])
+        if not next_edges: break
         
-    logger.info("automation_flow_completed")
+        # Default to first path unless it's a condition node
+        next_node_id = next_edges[0]["target"]
+        
+        if node_type == "condition":
+            # Very basic condition parsing
+            condition_val = node_data.get("value", "").lower()
+            matching_edge = next((e for e in next_edges if e.get("label", "").lower() == condition_val), None)
+            if matching_edge:
+                next_node_id = matching_edge["target"]
+            elif "else" in [e.get("label", "").lower() for e in next_edges]:
+                next_node_id = next((e for e in next_edges if e.get("label", "").lower() == "else"))["target"]
+
+        current_node_id = next_node_id
+        
+    logger.info("automation_flow_completed", tenant=tenant_id, user=user_id)

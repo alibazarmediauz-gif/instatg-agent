@@ -156,8 +156,21 @@ async def _process_messaging_event(event: dict) -> None:
             type="info",
             link="/conversations"
         )
+        
+        # --- amoCRM SYNC ---
+        from app.database import async_session_factory
+        from app.crm.amocrm import get_crm_client
+        async with async_session_factory() as db:
+            crm = await get_crm_client(tenant_id, db)
+            if crm:
+                # Use sender_id for identification, but name is just a placeholder
+                await crm.auto_create_lead_if_new(
+                    name=f"IG User {sender_id[:6]}",
+                    phone=sender_id,
+                    channel="Instagram"
+                )
     except Exception as e:
-        logger.error("instagram_notification_error", error=str(e), tenant=tenant_id)
+        logger.error("instagram_sync_error", error=str(e), tenant=tenant_id)
 
     try:
         # Handle text message
@@ -199,9 +212,21 @@ async def _handle_text_message(
 ) -> None:
     """Handle incoming text DM and reply."""
     from app.services.automation_engine import process_automation_flow
+    from app.services.message_storage import storage
+    
+    # 1. Get/Create conversation and store incoming msg
+    convo_id = await storage.get_or_create_conversation(
+        tenant_id=tenant_id,
+        channel="instagram",
+        contact_id=sender_id,
+        contact_name=f"IG User {sender_id[:6]}"
+    )
+    await storage.store_message(convo_id, "user", text)
 
     async def _auto_reply(reply_text: str):
-        await _send_instagram_message(sender_id, reply_text, access_token)
+        success = await _send_instagram_message(sender_id, reply_text, access_token)
+        if success:
+            await storage.store_message(convo_id, "assistant", reply_text)
 
     handled = await process_automation_flow(
         tenant_id=tenant_id,
@@ -223,7 +248,7 @@ async def _handle_text_message(
     )
 
     if response.reply_text and not response.human_handoff:
-        await _send_instagram_message(sender_id, response.reply_text, access_token)
+        await _auto_reply(response.reply_text)
 
 
 async def _handle_attachment(

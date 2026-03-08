@@ -117,11 +117,13 @@ async def get_dashboard_stats(
             }
         )
 
-    # Build an analytics-style response expected by the frontend control center.
-    total_revenue = float(won * 500)  # simplistic revenue estimation
-    total_cost = float(total_messages * 0.5)  # assume $0.50 per message
+    # Merge with advanced Sales KPIs
+    from app.services.analytics_aggregator import get_sales_kpis
+    advanced_kpis = await get_sales_kpis(str(current_tenant.id))
+    
+    total_revenue = advanced_kpis["total_revenue"]
+    total_cost = float(total_messages * 0.5)
     roi = round(((total_revenue - total_cost) / total_cost * 100), 1) if total_cost > 0 else 0
-    cpl = round(total_cost / (total or 1), 2)
 
     return {
         "status": "success",
@@ -129,14 +131,15 @@ async def get_dashboard_stats(
             "total_revenue": total_revenue,
             "total_cost": total_cost,
             "roi": roi,
-            "cpl": cpl,
+            "cpl": round(total_cost / (total or 1), 2),
+            "conversion_rate": advanced_kpis["conversion_rate"],
+            "ai_efficiency": advanced_kpis["ai_efficiency"]
         },
-        # revenueData/channelData/regionData/funnelData mirror analytics.py structure
         "revenueData": [],
         "channelData": channel_data,
         "regionData": [],
         "funnelData": [
-            {"name": "Total Leads", "value": total},
+            {"name": "Total Leads", "value": advanced_kpis["total_leads"]},
             {"name": "Qualified", "value": active},
             {"name": "Quoted", "value": won},
             {"name": "Deals Won", "value": won},

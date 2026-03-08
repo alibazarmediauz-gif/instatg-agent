@@ -35,18 +35,29 @@ async def telegram_bot_webhook(
         text = message["text"]
         user_data = message.get("from", {})
 
+        contact_name = user_data.get("first_name", "Telegram User")
+        if user_data.get("last_name"):
+            contact_name += f" {user_data.get('last_name')}"
+
         logger.info("telegram_bot_message_received", tenant=tenant_id_str, chat_id=chat_id, text=text)
 
-        # 1. Identify or Create Lead
+        # 1. Identify or Create Lead & Conversation
+        from app.services.message_storage import storage
+        convo_id = await storage.get_or_create_conversation(
+            tenant_id=tenant_id_str,
+            channel="telegram",
+            contact_id=str(chat_id),
+            contact_name=contact_name
+        )
+        
+        # Store incoming message
+        await storage.store_message(convo_id, "user", text)
+
         lead_result = await db.execute(
             select(Lead).where(Lead.tenant_id == tenant_id, Lead.phone == str(chat_id))
         )
         lead = lead_result.scalar_one_or_none()
         
-        contact_name = user_data.get("first_name", "Telegram User")
-        if user_data.get("last_name"):
-            contact_name += f" {user_data.get('last_name')}"
-
         if not lead:
             lead = Lead(
                 tenant_id=tenant_id,
@@ -58,6 +69,20 @@ async def telegram_bot_webhook(
             db.add(lead)
             await db.commit()
             await db.refresh(lead)
+
+            # --- amoCRM SYNC ---
+            try:
+                from app.crm.amocrm import get_crm_client
+                crm = await get_crm_client(tenant_id_str, db)
+                if crm:
+                    await crm.auto_create_lead_if_new(
+                        phone=str(chat_id),
+                        name=contact_name,
+                        channel="Telegram", # Ensure 'channel' keyword is used
+                        first_message=text
+                    )
+            except Exception as e:
+                logger.error("amocrm_sync_failed", error=str(e))
 
         # 2. Setup Reply Function 
         # (needs the bot token cached in memory)
@@ -75,7 +100,10 @@ async def telegram_bot_webhook(
                     "chat_id": chat_id,
                     "text": reply_text
                 })
-                if res.status_code != 200:
+                if res.status_code == 200:
+                    # Store outgoing message
+                    await storage.store_message(convo_id, "assistant", reply_text)
+                else:
                     logger.error("telegram_bot_send_failed", response=res.text)
 
         # 3. Process with Automation Flow (which routes to AI Agent if needed)
