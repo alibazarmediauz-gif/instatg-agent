@@ -5,6 +5,7 @@ import {
     Bot, Plus, Settings, MessageSquare, Mic, Link2,
     ShieldAlert, Database, ChevronRight, Activity, Zap
 } from 'lucide-react';
+import Link from 'next/link';
 
 // Mock data to demonstrate the Unified Agent Hub
 const mockAgents = [
@@ -47,9 +48,9 @@ export default function UnifiedAgentHub() {
                     <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 4 }}>Agent Workforce Hub</h1>
                     <p style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Manage unified personas, assign channels, and set tool permissions.</p>
                 </div>
-                <button className="btn btn-primary" style={{ gap: 8 }}>
-                    <Plus size={14} /> Hire New Agent
-                </button>
+                <Link href="/studio" className="btn btn-primary" style={{ gap: 8, textDecoration: 'none' }}>
+                    <Plus size={14} /> Hire New Agent (Studio)
+                </Link>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: 24, flex: 1, minHeight: 0 }}>
