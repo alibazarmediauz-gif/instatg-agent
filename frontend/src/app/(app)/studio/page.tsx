@@ -44,6 +44,8 @@ export default function AgentStudioPage() {
 
     const [isSaving, setIsSaving] = useState(false);
     const [isSimulating, setIsSimulating] = useState(false);
+    const [activeTab, setActiveTab] = useState<'persona' | 'knowledge' | 'capabilities'>('persona');
+    const [selectedTemplate, setSelectedTemplate] = useState<MarketplaceTemplate | null>(null);
 
     // Fetch existing agent if ID is present
     useEffect(() => {
@@ -472,22 +474,6 @@ function SliderSetting({ label, left, right, value, onChange }: { label: string,
             </div>
         </div>
     );
-}
-return (
-    <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <span style={{ fontSize: 12, fontWeight: 600 }}>{label}</span>
-        </div>
-        <div style={{ position: 'relative', height: 4, background: 'var(--bg-elevated)', borderRadius: 2, marginBottom: 8 }}>
-            <div style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: `${value}%`, background: 'var(--accent)', borderRadius: 2 }} />
-            <div style={{ position: 'absolute', top: -4, left: `calc(${value}% - 6px)`, width: 12, height: 12, borderRadius: '50%', background: 'white', border: '2px solid var(--accent)', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }} />
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-muted)' }}>
-            <span>{left}</span>
-            <span>{right}</span>
-        </div>
-    </div>
-);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
