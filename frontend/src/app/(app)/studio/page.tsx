@@ -28,35 +28,93 @@ const MARKETPLACE_TEMPLATES: MarketplaceTemplate[] = [
 
 export default function AgentStudioPage() {
     const router = useRouter();
-    const [step, setStep] = useState<'marketplace' | 'studio'>('marketplace');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
-    const [activeTab, setActiveTab] = useState<'persona' | 'knowledge' | 'capabilities'>('persona');
+    const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+    const initialAgentId = searchParams?.get('id');
 
-    // Simulator State
-    const [chatLog, setChatLog] = useState<{ role: 'user' | 'ai' | 'system', text: string }[]>([
-        { role: 'system', text: 'Sandbox Environment initialized. Agent loaded.' }
-    ]);
-    const [inputMsg, setInputMsg] = useState('');
-    const chatEndRef = useRef<HTMLDivElement>(null);
+    const [agentId, setAgentId] = useState<string | null>(initialAgentId);
+    const [isLoading, setIsLoading] = useState(!!initialAgentId);
+    const [step, setStep] = useState<'marketplace' | 'studio'>(initialAgentId ? 'studio' : 'marketplace');
 
+    // State for Config
+    const [agentName, setAgentName] = useState('New Agent');
+    const [internalRole, setInternalRole] = useState('Sales');
+    const [systemPrompt, setSystemPrompt] = useState(`You are a highly efficient AI Sales Agent...`);
+    const [sliders, setSliders] = useState({ length: 50, tone: 65, aggressiveness: 50 });
+    const [selectedKnowledge, setSelectedKnowledge] = useState<string[]>([]);
+
+    const [isSaving, setIsSaving] = useState(false);
+    const [isSimulating, setIsSimulating] = useState(false);
+
+    // Fetch existing agent if ID is present
     useEffect(() => {
-        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [chatLog]);
+        if (agentId) {
+            const fetchAgent = async () => {
+                try {
+                    const res = await fetch(`/api/agents/${agentId}`);
+                    const data = await res.json();
+                    if (data.status === 'success') {
+                        const agent = data.data;
+                        setAgentName(agent.name);
+                        setInternalRole(agent.internal_role || 'Sales');
+                        setSystemPrompt(agent.system_prompt || '');
+                        if (agent.settings?.behavior_sliders) {
+                            setSliders(agent.settings.behavior_sliders);
+                        }
+                        if (agent.knowledge_documents) {
+                            setSelectedKnowledge(agent.knowledge_documents.map((d: any) => d.id));
+                        }
+                        setStep('studio');
+                    }
+                } catch (err) {
+                    console.error('Failed to load agent:', err);
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+            fetchAgent();
+        }
+    }, [agentId]);
 
-    const handleSimulateSend = () => {
-        if (!inputMsg.trim()) return;
-        setChatLog(prev => [...prev, { role: 'user', text: inputMsg }]);
-        const msg = inputMsg;
-        setInputMsg('');
+    const handleDeploy = async () => {
+        setIsSaving(true);
+        try {
+            const url = agentId ? `/api/agents/chat/${agentId}` : '/api/agents/chat';
+            const method = agentId ? 'PATCH' : 'POST';
 
-        setTimeout(() => {
-            setChatLog(prev => [...prev, { role: 'system', text: `[Tool Execution: amocrm.search_lead("${msg}")]` }]);
-            setTimeout(() => {
-                setChatLog(prev => [...prev, { role: 'ai', text: `I found the context. Based on your input, here is how the configured persona responds: I am ready to process your request.` }]);
-            }, 800);
-        }, 500);
+            const res = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: agentName,
+                    internal_role: internalRole,
+                    system_prompt: systemPrompt,
+                    settings: {
+                        behavior_sliders: sliders,
+                    },
+                    knowledge_ids: selectedKnowledge
+                })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                router.push('/agents');
+            }
+        } catch (err) {
+            alert('Failed to deploy agent');
+        } finally {
+            setIsSaving(false);
+        }
     };
+
+    if (isLoading) {
+        return (
+            <div className="page-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+                <div style={{ textAlign: 'center' }}>
+                    <Bot className="animate-bounce" size={48} color="var(--accent)" />
+                    <p style={{ marginTop: 16, color: 'var(--text-muted)' }}>Loading Persona Workspace...</p>
+                </div>
+            </div>
+        );
+    }
 
     if (step === 'marketplace') {
         return (
@@ -107,13 +165,15 @@ export default function AgentStudioPage() {
                     <button className="btn btn-ghost btn-sm" onClick={() => setStep('marketplace')}>←</button>
                     <div>
                         <h1 style={{ fontSize: 16, fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <Bot size={18} color="var(--accent)" /> Editing: {selectedTemplate?.name || 'New Agent'}
+                            <Bot size={18} color="var(--accent)" /> Editing: {agentName}
                         </h1>
                     </div>
                 </div>
                 <div style={{ display: 'flex', gap: 12 }}>
                     <span style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-muted)' }}><Eye size={14} /> Draft Saved</span>
-                    <button className="btn btn-primary" style={{ padding: '6px 16px' }} onClick={() => router.push('/agents')}>Deploy to Workforce</button>
+                    <button className="btn btn-primary" style={{ padding: '6px 16px' }} onClick={handleDeploy} disabled={isSaving}>
+                        {isSaving ? 'Deploying...' : 'Deploy to Workforce'}
+                    </button>
                 </div>
             </div>
 
@@ -142,11 +202,11 @@ export default function AgentStudioPage() {
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                                         <div>
                                             <label style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', marginBottom: 6, display: 'block' }}>Display Name</label>
-                                            <input type="text" className="input" defaultValue={selectedTemplate?.name} style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 8, color: 'white' }} />
+                                            <input type="text" className="input" value={agentName} onChange={e => setAgentName(e.target.value)} style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 8, color: 'white' }} />
                                         </div>
                                         <div>
                                             <label style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', marginBottom: 6, display: 'block' }}>Internal Role</label>
-                                            <input type="text" className="input" defaultValue={selectedTemplate?.role} style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 8, color: 'white' }} />
+                                            <input type="text" className="input" value={internalRole} onChange={e => setInternalRole(e.target.value)} style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 8, color: 'white' }} />
                                         </div>
                                     </div>
                                 </div>
@@ -157,7 +217,8 @@ export default function AgentStudioPage() {
                                         <button className="btn btn-sm btn-ghost" style={{ fontSize: 11 }}><SparklesIcon /> AI Generate</button>
                                     </div>
                                     <textarea className="input" style={{ width: '100%', height: 180, padding: 16, background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text-primary)', fontFamily: 'monospace', fontSize: 13, lineHeight: 1.6, resize: 'vertical' }}
-                                        defaultValue={`You are a highly efficient ${selectedTemplate?.name}. Your primary goal is to qualify leads, gather budget and timeline information, and ultimately schedule a meeting. You must maintain a professional yet eager tone. Do not hallucinate pricing.`}
+                                        value={systemPrompt}
+                                        onChange={e => setSystemPrompt(e.target.value)}
                                     />
                                     <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8 }}>Use {"{{"}variables{"}}"} to inject dynamic CRM context.</p>
                                 </div>
@@ -165,9 +226,9 @@ export default function AgentStudioPage() {
                                 <div>
                                     <h3 style={{ fontSize: 14, fontWeight: 800, marginBottom: 16 }}>Behavioral Sliders</h3>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                        <SliderSetting label="Response Length" left="Concise" right="Detailed" value={30} />
-                                        <SliderSetting label="Tone of Voice" left="Professional" right="Casual / Emoji" value={65} />
-                                        <SliderSetting label="Sales Aggressiveness" left="Consultative" right="Hard Close" value={50} />
+                                        <SliderSetting label="Response Length" left="Concise" right="Detailed" value={sliders.length} onChange={v => setSliders({ ...sliders, length: v })} />
+                                        <SliderSetting label="Tone of Voice" left="Professional" right="Casual / Emoji" value={sliders.tone} onChange={v => setSliders({ ...sliders, tone: v })} />
+                                        <SliderSetting label="Sales Aggressiveness" left="Consultative" right="Hard Close" value={sliders.aggressiveness} onChange={v => setSliders({ ...sliders, aggressiveness: v })} />
                                     </div>
                                 </div>
                             </div>
@@ -192,14 +253,14 @@ export default function AgentStudioPage() {
                                                 <FileText size={16} color="var(--purple)" />
                                                 <span style={{ fontSize: 13, fontWeight: 600 }}>Objection_Handling_2024.pdf</span>
                                             </div>
-                                            <span style={{ fontSize: 11, padding: '2px 8px', background: 'var(--bg-card)', borderRadius: 12 }}>2.4 MB</span>
+                                            <div className="switch active" />
                                         </div>
                                         <div style={{ padding: '12px 16px', background: 'var(--bg-elevated)', borderRadius: 8, border: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                                 <Globe size={16} color="#10b981" />
                                                 <span style={{ fontSize: 13, fontWeight: 600 }}>Crawl: docs.example.com</span>
                                             </div>
-                                            <span style={{ fontSize: 11, padding: '2px 8px', background: 'var(--bg-card)', borderRadius: 12 }}>Synced 2h ago</span>
+                                            <div className="switch active" />
                                         </div>
                                     </div>
                                 </div>
@@ -300,6 +361,11 @@ export default function AgentStudioPage() {
                                 )}
                             </div>
                         ))}
+                        {isSimulating && (
+                            <div style={{ alignSelf: 'flex-start', background: 'var(--bg-elevated)', padding: '10px 14px', borderRadius: '16px 16px 16px 4px', fontSize: 11, color: 'var(--text-muted)' }}>
+                                Agent is thinking...
+                            </div>
+                        )}
                         <div ref={chatEndRef} />
                     </div>
 
@@ -313,10 +379,12 @@ export default function AgentStudioPage() {
                                 onChange={e => setInputMsg(e.target.value)}
                                 onKeyDown={e => e.key === 'Enter' && handleSimulateSend()}
                                 style={{ flex: 1, padding: '12px 16px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 24, fontSize: 13 }}
+                                disabled={isSimulating}
                             />
                             <button
                                 className="btn btn-primary"
                                 onClick={handleSimulateSend}
+                                disabled={isSimulating}
                                 style={{ width: 44, height: 44, padding: 0, borderRadius: '50%', justifyContent: 'center' }}
                             >
                                 <Send size={16} />
@@ -333,13 +401,20 @@ export default function AgentStudioPage() {
 }
 
 // Helper Components
-function SliderSetting({ label, left, right, value }: { label: string, left: string, right: string, value: number }) {
+function SliderSetting({ label, left, right, value, onChange }: { label: string, left: string, right: string, value: number, onChange: (v: number) => void }) {
     return (
         <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                 <span style={{ fontSize: 12, fontWeight: 600 }}>{label}</span>
+                <span style={{ fontSize: 10, color: 'var(--accent)' }}>{value}%</span>
             </div>
-            <div style={{ position: 'relative', height: 4, background: 'var(--bg-elevated)', borderRadius: 2, marginBottom: 8 }}>
+            <div style={{ position: 'relative', height: 4, background: 'var(--bg-elevated)', borderRadius: 2, marginBottom: 8, cursor: 'pointer' }}
+                onClick={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const percent = Math.round(((e.clientX - rect.left) / rect.width) * 100);
+                    onChange(Math.max(0, Math.min(100, percent)));
+                }}
+            >
                 <div style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: `${value}%`, background: 'var(--accent)', borderRadius: 2 }} />
                 <div style={{ position: 'absolute', top: -4, left: `calc(${value}% - 6px)`, width: 12, height: 12, borderRadius: '50%', background: 'white', border: '2px solid var(--accent)', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }} />
             </div>
@@ -349,6 +424,22 @@ function SliderSetting({ label, left, right, value }: { label: string, left: str
             </div>
         </div>
     );
+}
+return (
+    <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <span style={{ fontSize: 12, fontWeight: 600 }}>{label}</span>
+        </div>
+        <div style={{ position: 'relative', height: 4, background: 'var(--bg-elevated)', borderRadius: 2, marginBottom: 8 }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: `${value}%`, background: 'var(--accent)', borderRadius: 2 }} />
+            <div style={{ position: 'absolute', top: -4, left: `calc(${value}% - 6px)`, width: 12, height: 12, borderRadius: '50%', background: 'white', border: '2px solid var(--accent)', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }} />
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-muted)' }}>
+            <span>{left}</span>
+            <span>{right}</span>
+        </div>
+    </div>
+);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

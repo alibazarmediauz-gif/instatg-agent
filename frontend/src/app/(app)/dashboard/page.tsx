@@ -5,7 +5,8 @@ import { useTenant } from '@/lib/TenantContext';
 import { useLanguage } from '@/lib/LanguageContext';
 import {
     Activity, ShieldAlert, Cpu, Network, CheckCircle2,
-    Clock, AlertTriangle, Bot, Zap, PlayCircle, BarChart
+    Clock, AlertTriangle, Bot, Zap, PlayCircle, BarChart,
+    Instagram, MessageSquare, Database, Phone, ArrowRight
 } from 'lucide-react';
 import AgentActionPanel, { ActionStatus } from '@/components/AgentActionPanel';
 import { getAnalyticsDashboard } from '@/lib/api';
@@ -50,8 +51,35 @@ export default function ControlCenter() {
         }
     ]);
 
+    const [integrations, setIntegrations] = useState({
+        telegram: true,
+        instagram: true,
+        amocrm: false,
+        telephony: false
+    });
+
     const fetchDashboard = async () => {
-        setLoading(false);
+        try {
+            const res = await fetch('/api/integrations/crm-status');
+            const data = await res.json();
+            setIntegrations(prev => ({
+                ...prev,
+                amocrm: data.connected || false
+            }));
+
+            // Check for voice agents to set telephony status
+            const voiceRes = await fetch('/api/agents/voice');
+            const voiceData = await voiceRes.json();
+            setIntegrations(prev => ({
+                ...prev,
+                telephony: (voiceData.data && voiceData.data.length > 0)
+            }));
+
+        } catch (error) {
+            console.error('Dashboard sync failed:', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
@@ -81,6 +109,26 @@ export default function ControlCenter() {
                 <div className="status-badge" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', background: 'rgba(52, 211, 153, 0.1)', color: 'var(--success)', borderRadius: 24, fontWeight: 700, fontSize: 12 }}>
                     <div className="status-dot animate-pulse" style={{ background: 'var(--success)', width: 8, height: 8 }} />
                     ALL SYSTEMS NOMINAL
+                </div>
+            </div>
+
+            {/* ─── Integrated Setup Wizard (Main Screen Prominence) ─── */}
+            <div className="card" style={{ marginBottom: 32, padding: 24, background: 'var(--gradient-premium)', border: 'none', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', right: -50, top: -50, width: 200, height: 200, background: 'rgba(255,255,255,0.05)', borderRadius: '50%', filter: 'blur(40px)' }} />
+
+                <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                        <h2 style={{ fontSize: 22, fontWeight: 900, color: 'white', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <Zap size={24} fill="white" /> Activate Your AI Sales Department
+                        </h2>
+                        <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: 14 }}>Connect your channels to start automating sales conversations and lead capture.</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: 12 }}>
+                        <QuickLink ch="Telegram" ok={integrations.telegram} icon={<MessageSquare size={14} />} />
+                        <QuickLink ch="Instagram" ok={integrations.instagram} icon={<Instagram size={14} />} />
+                        <QuickLink ch="amoCRM" ok={integrations.amocrm} icon={<Database size={14} />} />
+                        <QuickLink ch="Telephony" ok={integrations.telephony} icon={<Phone size={14} />} />
+                    </div>
                 </div>
             </div>
 
@@ -228,6 +276,28 @@ function HealthRow({ label, status, ok, color, icon }: any) {
                 {label}
             </span>
             <span style={{ fontWeight: 700, color: icon ? color : (ok ? 'var(--success)' : color), fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{status}</span>
+        </div>
+    );
+}
+
+function QuickLink({ ch, ok, icon }: { ch: string, ok: boolean, icon: any }) {
+    return (
+        <div style={{
+            background: 'rgba(255,255,255,0.1)',
+            padding: '8px 16px',
+            borderRadius: 12,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            border: ok ? '1px solid rgba(52, 211, 153, 0.3)' : '1px solid rgba(255,255,255,0.1)',
+            minWidth: 140
+        }}>
+            <div style={{ color: ok ? '#34d399' : 'white' }}>{icon}</div>
+            <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: 'white', lineHeight: 1 }}>{ch}</div>
+                <div style={{ fontSize: 9, fontWeight: 700, color: ok ? '#34d399' : 'rgba(255,255,255,0.5)', marginTop: 2 }}>{ok ? 'CONNECTED' : 'OFFLINE'}</div>
+            </div>
+            {!ok && <ArrowRight size={12} color="white" />}
         </div>
     );
 }

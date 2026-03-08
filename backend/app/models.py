@@ -373,6 +373,11 @@ class KnowledgeDocument(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     tenant = relationship("Tenant", back_populates="knowledge_documents")
+    chat_agents = relationship(
+        "ChatAgent",
+        secondary="agent_knowledge_association",
+        back_populates="knowledge_documents"
+    )
 
 
 class CRMLead(Base):
@@ -478,13 +483,25 @@ class ChatAgent(Base):
     id = Column(UUID(), primary_key=True, default=uuid.uuid4)
     tenant_id = Column(UUID(), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False)
     name = Column(String(255), nullable=False)
+    internal_role = Column(String(255), nullable=True) # Added for Studio
     system_prompt = Column(Text, nullable=True)
-    settings = Column(JSON, nullable=True)
+    settings = Column(JSON, nullable=True) # {behavior_sliders: {length: 50, tone: 50, aggressiveness: 50}, tools: ["amoCRM", "Calendly"]}
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     tenant = relationship("Tenant", back_populates="chat_agents")
+    # Association with knowledge documents
+    knowledge_documents = relationship(
+        "KnowledgeDocument",
+        secondary="agent_knowledge_association",
+        back_populates="chat_agents"
+    )
+
+class AgentKnowledgeAssociation(Base):
+    __tablename__ = "agent_knowledge_association"
+    agent_id = Column(UUID(), ForeignKey("chat_agents.id", ondelete="CASCADE"), primary_key=True)
+    document_id = Column(UUID(), ForeignKey("knowledge_documents.id", ondelete="CASCADE"), primary_key=True)
 
 class IVRFlow(Base):
     __tablename__ = "ivr_flows"

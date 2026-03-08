@@ -195,12 +195,121 @@ async def get_agent(
         
     raise HTTPException(status_code=404, detail="Agent not found")
 
-@router.put("/{agent_id}/prompt-version")
-async def update_agent_prompt(
+@router.post("/chat/simulate")
+async def simulate_agent_response(
+    payload: Dict[str, Any],
+    current_tenant: Tenant = Depends(get_current_tenant),
+):
+    """
+    Real-time sandbox simulation for the Agent Studio.
+    Does NOT store messages in Redis/DB.
+    """
+    from app.agents.claude_agent import agent as ai_agent
+    
+    # Extract config from payload (unsaved draft from Studio)
+    user_message = payload.get("message", "Hello")
+    system_prompt = payload.get("system_prompt", "")
+    behavior_settings = payload.get("settings", {})
+    knowledge_ids = payload.get("knowledge_ids", []) # IDs of documents to "lock" to
+    
+    # 1. Build Behavioral Instructions from Sliders
+    # length: 1-100, tone: 1-100, aggressiveness: 1-100
+    sliders = behavior_settings.get("behavior_sliders", {})
+    length = sliders.get("length", 50)
+    tone = sliders.get("tone", 50)
+    aggressiveness = sliders.get("aggressiveness", 50)
+    
+    behavior_instructions = "\nBEHAVIORAL CONSTRAINTS:\n"
+    if length < 30: behavior_instructions += "- Keep responses very short and one-sentence if possible.\n"
+    elif length > 70: behavior_instructions += "- Provide detailed, thorough explanations.\n"
+    
+    if tone > 70: behavior_instructions += "- Use casual language and occasional relevant emojis (e.g. 🚀, 😊).\n"
+    elif tone < 30: behavior_instructions += "- Maintain a strictly formal, corporate tone. No emojis.\n"
+    
+    if aggressiveness > 70: behavior_instructions += "- Push for the sale or booking aggressively. Use scarcity/urgency.\n"
+    
+    # 2. Retrieve Knowledge Context (Filtered by IDs if provided)
+    knowledge_context = ""
+    try:
+        from app.knowledge.rag import rag_search
+        # In simulation, we can pass filter if rag_search supports it. 
+        # For now, we search generally and log simulation.
+        results = await rag_search(str(current_tenant.id), user_message, top_k=5)
+        if results:
+            knowledge_context = "\n\n".join([f"[Source: {r['source']}]\n{r['text']}" for r in results])
+    except Exception as e:
+        print(f"Simulation RAG failed: {e}")
+
+    # 3. Call AI with combined prompt
+    final_prompt = f"{system_prompt}\n{behavior_instructions}"
+    
+    from app.services.llm_router import generate_response as router_generate
+    from app.agents.claude_agent import SYSTEM_PROMPT_TEMPLATE
+    
+    full_system_prompt = SYSTEM_PROMPT_TEMPLATE.format(
+        business_name=current_tenant.name,
+        knowledge_context=knowledge_context or "No context found.",
+        master_prompt="",
+        custom_persona=f"\nSTUDIO MODE OVERRIDE:\n{final_prompt}"
+    )
+
+    try:
+        router_result = await router_generate(
+            message=user_message,
+            conversation_history=[{"role": "system", "content": full_system_prompt}],
+            mode="chat"
+        )
+        # Parse like a real agent
+        parsed = ai_agent._parse_response(router_result["response"])
+        
+        return {
+            "status": "success",
+            "reply": parsed.reply_text,
+            "metadata": parsed.metadata,
+            "execution_log": [
+                {"role": "system", "text": "Simulation RAG search complete."},
+                {"role": "system", "text": f"Applied constraints: Length({length}%), Tone({tone}%)"}
+            ]
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@router.put("/chat/{agent_id}")
+async def update_chat_agent_config(
     agent_id: UUID,
     payload: Dict[str, Any],
     current_tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
 ):
-    """Update agent prompt / instructions (mock implementation for either agent type)."""
-    return {"status": "success", "message": "Prompt updated"}
+    """
+    Save full agent configuration from Studio (Persona, Knowledge Documents, Tools).
+    """
+    from app.models import ChatAgent, KnowledgeDocument
+    stmt = select(ChatAgent).where(ChatAgent.id == agent_id, ChatAgent.tenant_id == current_tenant.id)
+    result = await db.execute(stmt)
+    agent = result.scalar_one_or_none()
+    
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+        
+    # Standard fields
+    if "name" in payload: agent.name = payload["name"]
+    if "system_prompt" in payload: agent.system_prompt = payload["system_prompt"]
+    if "internal_role" in payload: agent.internal_role = payload["internal_role"]
+    if "settings" in payload: agent.settings = payload["settings"]
+    if "is_active" in payload: agent.is_active = payload["is_active"]
+    
+    # Knowledge Associations
+    if "knowledge_ids" in payload:
+        # Clear existing
+        agent.knowledge_documents = []
+        ids = payload["knowledge_ids"]
+        if ids:
+            k_stmt = select(KnowledgeDocument).where(KnowledgeDocument.id.in_(ids), KnowledgeDocument.tenant_id == current_tenant.id)
+            k_res = await db.execute(k_stmt)
+            agent.knowledge_documents = list(k_res.scalars().all())
+
+    await db.commit()
+    await db.refresh(agent)
+    
+    return {"status": "success", "data": agent}

@@ -32,6 +32,7 @@ export default function Sidebar() {
             items: [
                 { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
                 { href: '/conversations', label: 'Inbox', icon: BotMessageSquare },
+                { href: '/integrations', label: 'Integrations', icon: Link2 },
                 { href: '/agents', label: 'AI Agents', icon: Users },
                 { href: '/contacts', label: 'Leads', icon: Network },
             ],
