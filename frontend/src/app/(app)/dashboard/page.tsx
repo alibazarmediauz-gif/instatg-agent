@@ -9,7 +9,7 @@ import {
     Instagram, MessageSquare, Database, Phone, ArrowRight
 } from 'lucide-react';
 import AgentActionPanel, { ActionStatus } from '@/components/AgentActionPanel';
-import { getAnalyticsDashboard } from '@/lib/api';
+import { getAnalyticsDashboard, apiClient } from '@/lib/api';
 
 export default function ControlCenter() {
     const { tenantId } = useTenant();
