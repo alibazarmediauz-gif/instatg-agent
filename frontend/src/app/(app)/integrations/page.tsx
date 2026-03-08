@@ -105,13 +105,31 @@ function IntegrationsPageContent() {
         try {
             setLoading(true);
             const api = await import('@/lib/api');
-            const status = await api.getMetaIntegrationStatus(tenantId) as MetaStatus;
-            setMetaStatus(status);
 
-            const tgAccount = await api.getTelegramAccount(tenantId);
-            setTelegramAccount(tgAccount);
+            // Load Meta status
+            try {
+                const status = await api.getMetaIntegrationStatus(tenantId) as MetaStatus;
+                setMetaStatus(status);
+            } catch (metaErr) {
+                console.warn('Meta status load failed:', metaErr);
+                setMetaStatus({
+                    facebook: { connected: false, status: 'disconnected', count: 0, accounts: [] },
+                    instagram: { connected: false, status: 'disconnected', count: 0, accounts: [] },
+                    last_event_at: null,
+                });
+            }
+
+            // Load Telegram status separately
+            try {
+                const tgAccount = await api.getTelegramAccount(tenantId);
+                // getTelegramAccount returns { connected: false, ... } when no account
+                setTelegramAccount(tgAccount?.connected ? tgAccount : null);
+            } catch (tgErr) {
+                console.warn('Telegram status load failed:', tgErr);
+                setTelegramAccount(null);
+            }
         } catch {
-            // Fallback if API unavailable
+            // Total failure fallback
             setMetaStatus({
                 facebook: { connected: false, status: 'disconnected', count: 0, accounts: [] },
                 instagram: { connected: false, status: 'disconnected', count: 0, accounts: [] },
@@ -185,6 +203,11 @@ function IntegrationsPageContent() {
     };
 
     const handleConnect = async (provider: string) => {
+        // Telegram has its own modal — don't redirect to Meta OAuth
+        if (provider === 'telegram') {
+            setConnectModal('telegram');
+            return;
+        }
         setConnecting(true);
         try {
             // Direct redirect to backend OAuth endpoint
@@ -434,103 +457,104 @@ function IntegrationsPageContent() {
                 </div>
             </div>
 
-            <div
-                style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(16px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                onClick={e => { if (e.target === e.currentTarget && !connecting) setConnectModal(null); }}
-            >
-                <div className="animate-in" style={{
-                    width: 480, background: 'rgba(20, 24, 32, 0.8)',
-                    backdropFilter: 'blur(32px)', borderRadius: 32,
-                    border: '1px solid rgba(255, 255, 255, 0.1)', padding: '64px 48px',
-                    boxShadow: '0 40px 120px rgba(0,0,0,0.6)', textAlign: 'center',
-                    position: 'relative'
-                }}>
-                    <button
-                        onClick={() => setConnectModal(null)}
-                        style={{ position: 'absolute', top: 32, right: 32, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '50%', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-muted)' }}
-                    >
-                        <X size={20} />
-                    </button>
-                    {/* Brand icon */}
-                    {(() => {
-                        const source = SOURCES.find(s => s.id === connectModal);
-                        if (!source) return null;
-                        return (
-                            <div style={{
-                                width: 80, height: 80, borderRadius: 20,
-                                background: source.color,
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                fontSize: 36, color: '#fff', margin: '0 auto 24px',
-                                boxShadow: '0 12px 32px rgba(0,0,0,0.2)',
-                            }}>
-                                {source.iconText ? <span style={{ textTransform: 'uppercase', fontWeight: 900 }}>{source.iconText}</span> : source.icon}
-                            </div>
-                        );
-                    })()}
-
-                    <h2 style={{ fontSize: 22, fontWeight: 900, marginBottom: 8 }}>
-                        {t('integrations.meta_connect_title', { name: connectModal === 'instagram' ? 'Instagram' : 'Facebook' })}
-                    </h2>
-                    <p style={{ color: 'var(--text-muted)', fontSize: 14, lineHeight: 1.6, marginBottom: 32 }}>
-                        {t('integrations.meta_connect_desc')}
-                    </p>
-
-                    {/* Scopes preview */}
-                    <div style={{
-                        background: 'var(--bg-card)', borderRadius: 12, padding: '16px 20px',
-                        border: '1px solid var(--border)', marginBottom: 32, textAlign: 'left',
+            {(connectModal === 'instagram' || connectModal === 'facebook') && (
+                <div
+                    style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(16px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    onClick={e => { if (e.target === e.currentTarget && !connecting) setConnectModal(null); }}
+                >
+                    <div className="animate-in" style={{
+                        width: 480, background: 'rgba(20, 24, 32, 0.8)',
+                        backdropFilter: 'blur(32px)', borderRadius: 32,
+                        border: '1px solid rgba(255, 255, 255, 0.1)', padding: '64px 48px',
+                        boxShadow: '0 40px 120px rgba(0,0,0,0.6)', textAlign: 'center',
+                        position: 'relative'
                     }}>
-                        <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 12 }}>
-                            {t('integrations.permissions_required')}
-                        </div>
-                        {[
-                            { icon: '💬', label: t('integrations.perm_messages') },
-                            { icon: '📝', label: t('integrations.perm_comments') },
-                            { icon: '📄', label: t('integrations.perm_metadata') },
-                            { icon: '📊', label: t('integrations.perm_insights') },
-                        ].map((p, i) => (
-                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', fontSize: 13, color: 'var(--text-secondary)' }}>
-                                <span>{p.icon}</span>
-                                <span>{p.label}</span>
-                                <Shield size={12} style={{ marginLeft: 'auto', opacity: 0.3 }} />
-                            </div>
-                        ))}
-                    </div>
-
-                    <div style={{ display: 'flex', gap: 12 }}>
                         <button
                             onClick={() => setConnectModal(null)}
-                            disabled={connecting}
-                            style={{
-                                flex: 1, padding: '14px', background: 'var(--bg-card)',
-                                border: '1px solid var(--border)', borderRadius: 12,
-                                color: 'var(--text-secondary)', fontWeight: 700, fontSize: 14,
-                                cursor: 'pointer',
-                            }}
+                            style={{ position: 'absolute', top: 32, right: 32, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '50%', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-muted)' }}
                         >
-                            {t('integrations.cancel')}
+                            <X size={20} />
                         </button>
-                        <button
-                            onClick={() => handleConnect(connectModal)}
-                            disabled={connecting}
-                            style={{
-                                flex: 2, padding: '14px',
-                                background: connectModal === 'instagram'
-                                    ? 'linear-gradient(45deg, #f09433, #dc2743, #bc1888)'
-                                    : '#1877F2',
-                                border: 'none', borderRadius: 12,
-                                color: '#fff', fontWeight: 800, fontSize: 14,
-                                cursor: connecting ? 'wait' : 'pointer',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                                opacity: connecting ? 0.7 : 1,
-                            }}
-                        >
-                            {connecting ? <Loader2 size={16} className="animate-spin" /> : <ExternalLink size={16} />}
-                            {connecting ? t('integrations.redirecting') : t('integrations.connect_with_meta')}
-                        </button>
+                        {/* Brand icon */}
+                        {(() => {
+                            const source = SOURCES.find(s => s.id === connectModal);
+                            if (!source) return null;
+                            return (
+                                <div style={{
+                                    width: 80, height: 80, borderRadius: 20,
+                                    background: source.color,
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    fontSize: 36, color: '#fff', margin: '0 auto 24px',
+                                    boxShadow: '0 12px 32px rgba(0,0,0,0.2)',
+                                }}>
+                                    {source.iconText ? <span style={{ textTransform: 'uppercase', fontWeight: 900 }}>{source.iconText}</span> : source.icon}
+                                </div>
+                            );
+                        })()}
+
+                        <h2 style={{ fontSize: 22, fontWeight: 900, marginBottom: 8 }}>
+                            {t('integrations.meta_connect_title', { name: connectModal === 'instagram' ? 'Instagram' : 'Facebook' })}
+                        </h2>
+                        <p style={{ color: 'var(--text-muted)', fontSize: 14, lineHeight: 1.6, marginBottom: 32 }}>
+                            {t('integrations.meta_connect_desc')}
+                        </p>
+
+                        {/* Scopes preview */}
+                        <div style={{
+                            background: 'var(--bg-card)', borderRadius: 12, padding: '16px 20px',
+                            border: '1px solid var(--border)', marginBottom: 32, textAlign: 'left',
+                        }}>
+                            <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 12 }}>
+                                {t('integrations.permissions_required')}
+                            </div>
+                            {[
+                                { icon: '💬', label: t('integrations.perm_messages') },
+                                { icon: '📝', label: t('integrations.perm_comments') },
+                                { icon: '📄', label: t('integrations.perm_metadata') },
+                                { icon: '📊', label: t('integrations.perm_insights') },
+                            ].map((p, i) => (
+                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', fontSize: 13, color: 'var(--text-secondary)' }}>
+                                    <span>{p.icon}</span>
+                                    <span>{p.label}</span>
+                                    <Shield size={12} style={{ marginLeft: 'auto', opacity: 0.3 }} />
+                                </div>
+                            ))}
+                        </div>
+
+                        <div style={{ display: 'flex', gap: 12 }}>
+                            <button
+                                onClick={() => setConnectModal(null)}
+                                disabled={connecting}
+                                style={{
+                                    flex: 1, padding: '14px', background: 'var(--bg-card)',
+                                    border: '1px solid var(--border)', borderRadius: 12,
+                                    color: 'var(--text-secondary)', fontWeight: 700, fontSize: 14,
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                {t('integrations.cancel')}
+                            </button>
+                            <button
+                                onClick={() => connectModal && handleConnect(connectModal)}
+                                disabled={connecting}
+                                style={{
+                                    flex: 2, padding: '14px',
+                                    background: connectModal === 'instagram'
+                                        ? 'linear-gradient(45deg, #f09433, #dc2743, #bc1888)'
+                                        : '#1877F2',
+                                    border: 'none', borderRadius: 12,
+                                    color: '#fff', fontWeight: 800, fontSize: 14,
+                                    cursor: connecting ? 'wait' : 'pointer',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                                    opacity: connecting ? 0.7 : 1,
+                                }}
+                            >
+                                {connecting ? <Loader2 size={16} className="animate-spin" /> : <ExternalLink size={16} />}
+                                {connecting ? t('integrations.redirecting') : t('integrations.connect_with_meta')}
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
             )}
 
             {/* ── Telegram Connect Modal ─────────────── */}

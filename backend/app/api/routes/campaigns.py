@@ -106,7 +106,9 @@ async def get_campaign_stats(
         "status": "success", 
         "data": {
             "total_contacts": campaign.total_contacts,
-            "completed_contacts": campaign.completed_contacts,
+            "called": campaign.called,
+            "connected": campaign.connected,
+            "conversions": campaign.conversions,
             "success_rate": campaign.success_rate
         }
     }

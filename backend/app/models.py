@@ -116,6 +116,9 @@ class Tenant(Base):
     id = Column(UUID(), primary_key=True, default=uuid.uuid4)
     name = Column(String(255), nullable=False)
     owner_email = Column(String(255), nullable=False, unique=True)
+    # Auth fields
+    hashed_password = Column(String(255), nullable=True)
+    
     owner_telegram_chat_id = Column(String(100), nullable=True)
     ai_persona = Column(Text, nullable=True, default="")
     master_prompt = Column(Text, nullable=True, default="")
@@ -530,6 +533,7 @@ class Campaign(Base):
     
     total_contacts = Column(Integer, default=0)
     called = Column(Integer, default=0)           # Contacts processed (renamed for clarity but kept called for consistency with UI)
+    connected = Column(Integer, default=0)        # Contacts who answered (human)
     conversions = Column(Integer, default=0)
     success_rate = Column(Float, default=0.0)
     

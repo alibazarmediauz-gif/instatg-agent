@@ -87,10 +87,10 @@ class Settings(BaseSettings):
     daily_report_hour: int = 9
     daily_report_timezone: str = "Asia/Tashkent"
 
-    # --- Supabase Auth ---
-    supabase_url: str = ""
-    supabase_anon_key: str = ""
-    supabase_service_role_key: str = ""
+    # --- Supabase Auth (Removed) ---
+    # supabase_url: str = ""
+    # supabase_anon_key: str = ""
+    # supabase_service_role_key: str = ""
 
     @field_validator("database_url", mode="before")
     @classmethod

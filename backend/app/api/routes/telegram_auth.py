@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from typing import Dict, Any
 import httpx
 import structlog
@@ -40,7 +40,7 @@ async def connect_telegram_bot(
         bot_username = bot_data.get("username")
 
         # 2. Set the Webhook to point to our production app
-        webhook_url = f"{settings.public_base_url}/api/webhooks/telegram"
+        webhook_url = f"{settings.public_base_url}/api/webhooks/telegram/bot/{tenant_id}"
         webhook_res = await client.post(
             f"https://api.telegram.org/bot{token}/setWebhook",
             json={"url": webhook_url, "allowed_updates": ["message", "edited_message", "callback_query"]}

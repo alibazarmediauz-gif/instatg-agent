@@ -110,6 +110,28 @@ async def telegram_bot_webhook(
         return {"status": "error", "message": str(e)}
 
 @router.post("/bot")
-async def telegram_bot_webhook_legacy(request: Request):
-    """Fallback for non-parameterized webhook if needed."""
-    return {"status": "ok"}
+async def telegram_bot_webhook_legacy(request: Request, db: AsyncSession = Depends(get_db)):
+    """Fallback for non-parameterized webhook — auto-discover tenant from active bots."""
+    try:
+        data = await request.json()
+        if "message" not in data or "text" not in data["message"]:
+            return {"status": "ok"}
+
+        # Try to find any active bot that matches
+        # (Since we can't determine tenant from URL, try all active bots)
+        if len(active_bots) == 1:
+            tenant_id_str = list(active_bots.keys())[0]
+            from uuid import UUID
+            return await telegram_bot_webhook(UUID(tenant_id_str), request, db)
+
+        logger.warning("telegram_webhook_no_tenant", bot_count=len(active_bots))
+        return {"status": "ok", "message": "No tenant_id in webhook URL"}
+    except Exception as e:
+        logger.error("telegram_legacy_webhook_error", error=str(e))
+        return {"status": "ok"}
+
+
+@router.post("")
+async def telegram_bot_webhook_root(request: Request, db: AsyncSession = Depends(get_db)):
+    """Root webhook path — same auto-discovery fallback."""
+    return await telegram_bot_webhook_legacy(request, db)

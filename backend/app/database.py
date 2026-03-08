@@ -9,17 +9,9 @@ import os
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import declarative_base
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+from app.config import settings
 
-if not DATABASE_URL:
-    raise RuntimeError("DATABASE_URL not set")
-
-if DATABASE_URL.startswith("postgresql://"):
-    DATABASE_URL = DATABASE_URL.replace(
-        "postgresql://",
-        "postgresql+asyncpg://",
-        1,
-    )
+DATABASE_URL = settings.database_url
 
 engine = create_async_engine(
     DATABASE_URL,
@@ -50,50 +42,87 @@ async def get_db():
 
 async def init_db() -> None:
     """Create all tables on startup and add any missing columns."""
+    from sqlalchemy import inspect, text
+    import app.models  # Ensure models are registered with Base.metadata
+
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
+        def get_columns(table_name):
+            # Inspector doesn't work directly with async connection in all versions
+            # So we use a sync helper via run_sync if needed, or simple PRAGMA/query
+            pass
+
         # ── Safe column migration (idempotent) ──────────────────────
-        # create_all doesn't ALTER existing tables to add new columns.
-        # These statements safely add them if they don't exist yet.
-        migrations = [
-            # telegram_accounts — Bot OAuth fields
-            "ALTER TABLE telegram_accounts ALTER COLUMN phone_number DROP NOT NULL",
-            "ALTER TABLE telegram_accounts ADD COLUMN IF NOT EXISTS telegram_user_id VARCHAR(100)",
-            "ALTER TABLE telegram_accounts ADD COLUMN IF NOT EXISTS access_token TEXT",
-            "ALTER TABLE telegram_accounts ADD COLUMN IF NOT EXISTS username VARCHAR(255)",
-            # instagram_accounts — ALL columns that may be missing
-            "ALTER TABLE instagram_accounts ADD COLUMN IF NOT EXISTS username VARCHAR(255)",
-            "ALTER TABLE instagram_accounts ADD COLUMN IF NOT EXISTS token_expires_at TIMESTAMPTZ",
-            "ALTER TABLE instagram_accounts ADD COLUMN IF NOT EXISTS granted_scopes JSONB",
-            "ALTER TABLE instagram_accounts ADD COLUMN IF NOT EXISTS connection_status VARCHAR(50) DEFAULT 'connected'",
-            "ALTER TABLE instagram_accounts ADD COLUMN IF NOT EXISTS last_webhook_at TIMESTAMPTZ",
-            "ALTER TABLE instagram_accounts ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW()",
-            "ALTER TABLE instagram_accounts ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW()",
-            # facebook_accounts — ALL columns that may be missing
-            "ALTER TABLE facebook_accounts ADD COLUMN IF NOT EXISTS page_name VARCHAR(255)",
-            "ALTER TABLE facebook_accounts ADD COLUMN IF NOT EXISTS token_expires_at TIMESTAMPTZ",
-            "ALTER TABLE facebook_accounts ADD COLUMN IF NOT EXISTS granted_scopes JSONB",
-            "ALTER TABLE facebook_accounts ADD COLUMN IF NOT EXISTS connection_status VARCHAR(50) DEFAULT 'connected'",
-            "ALTER TABLE facebook_accounts ADD COLUMN IF NOT EXISTS instagram_business_id VARCHAR(100)",
-            "ALTER TABLE facebook_accounts ADD COLUMN IF NOT EXISTS ig_username VARCHAR(255)",
-            "ALTER TABLE facebook_accounts ADD COLUMN IF NOT EXISTS last_webhook_at TIMESTAMPTZ",
-            "ALTER TABLE facebook_accounts ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW()",
-            "ALTER TABLE facebook_accounts ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW()",
-            # event_logs — ALL columns
-            "ALTER TABLE event_logs ADD COLUMN IF NOT EXISTS page_id VARCHAR(100)",
-            "ALTER TABLE event_logs ADD COLUMN IF NOT EXISTS sender_id VARCHAR(100)",
-            "ALTER TABLE event_logs ADD COLUMN IF NOT EXISTS ig_user_id VARCHAR(100)",
-            "ALTER TABLE event_logs ADD COLUMN IF NOT EXISTS processed BOOLEAN DEFAULT FALSE",
-            "ALTER TABLE event_logs ADD COLUMN IF NOT EXISTS error_message TEXT",
-            "ALTER TABLE event_logs ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW()",
-        ]
-        from sqlalchemy import text
-        for sql in migrations:
+        # We manually check for column existence before adding.
+        
+        async def add_column_if_missing(table, column, type_definition):
             try:
-                await conn.execute(text(sql))
-            except Exception:
-                pass  # Column already exists or table doesn't exist yet
+                # Dialect-specific check
+                if engine.dialect.name == "sqlite":
+                    check_sql = f"PRAGMA table_info({table})"
+                    res = await conn.execute(text(check_sql))
+                    columns = [row[1] for row in res.fetchall()]
+                else:
+                    # PostgreSQL / Generic
+                    check_sql = f"SELECT column_name FROM information_schema.columns WHERE table_name='{table}' AND column_name='{column}'"
+                    res = await conn.execute(text(check_sql))
+                    columns = [row[0] for row in res.fetchall()]
+                
+                if column not in columns:
+                    await conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {type_definition}"))
+                    print(f"Added column {column} to {table}")
+            except Exception as e:
+                print(f"Migration error for {table}.{column}: {e}")
+
+        # Define migrations: (table, column, type)
+        migrations = [
+            # telegram_accounts
+            ("telegram_accounts", "telegram_user_id", "VARCHAR(100)"),
+            ("telegram_accounts", "access_token", "TEXT"),
+            ("telegram_accounts", "username", "VARCHAR(255)"),
+            
+            # instagram_accounts
+            ("instagram_accounts", "username", "VARCHAR(255)"),
+            ("instagram_accounts", "token_expires_at", "TIMESTAMPTZ" if engine.dialect.name != "sqlite" else "DATETIME"),
+            ("instagram_accounts", "granted_scopes", "JSONB" if engine.dialect.name != "sqlite" else "JSON"),
+            ("instagram_accounts", "connection_status", "VARCHAR(50) DEFAULT 'connected'"),
+            ("instagram_accounts", "last_webhook_at", "TIMESTAMPTZ" if engine.dialect.name != "sqlite" else "DATETIME"),
+            ("instagram_accounts", "created_at", "TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP" if engine.dialect.name != "sqlite" else "DATETIME DEFAULT CURRENT_TIMESTAMP"),
+            ("instagram_accounts", "updated_at", "TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP" if engine.dialect.name != "sqlite" else "DATETIME DEFAULT CURRENT_TIMESTAMP"),
+            
+            # facebook_accounts
+            ("facebook_accounts", "page_name", "VARCHAR(255)"),
+            ("facebook_accounts", "token_expires_at", "TIMESTAMPTZ" if engine.dialect.name != "sqlite" else "DATETIME"),
+            ("facebook_accounts", "granted_scopes", "JSONB" if engine.dialect.name != "sqlite" else "JSON"),
+            ("facebook_accounts", "connection_status", "VARCHAR(50) DEFAULT 'connected'"),
+            ("facebook_accounts", "instagram_business_id", "VARCHAR(100)"),
+            ("facebook_accounts", "ig_username", "VARCHAR(255)"),
+            ("facebook_accounts", "last_webhook_at", "TIMESTAMPTZ" if engine.dialect.name != "sqlite" else "DATETIME"),
+            ("facebook_accounts", "created_at", "TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP" if engine.dialect.name != "sqlite" else "DATETIME DEFAULT CURRENT_TIMESTAMP"),
+            ("facebook_accounts", "updated_at", "TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP" if engine.dialect.name != "sqlite" else "DATETIME DEFAULT CURRENT_TIMESTAMP"),
+            
+            # event_logs
+            ("event_logs", "page_id", "VARCHAR(100)"),
+            ("event_logs", "sender_id", "VARCHAR(100)"),
+            ("event_logs", "ig_user_id", "VARCHAR(100)"),
+            ("event_logs", "processed", "BOOLEAN DEFAULT FALSE"),
+            ("event_logs", "error_message", "TEXT"),
+            ("event_logs", "created_at", "TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP" if engine.dialect.name != "sqlite" else "DATETIME DEFAULT CURRENT_TIMESTAMP"),
+
+            # campaigns
+            ("campaigns", "connected", "INTEGER DEFAULT 0"),
+        ]
+
+        # SQLite does not support ALTER COLUMN well, so we skip the phone_number DROP NOT NULL for SQLite
+        if engine.dialect.name != "sqlite":
+             try:
+                 await conn.execute(text("ALTER TABLE telegram_accounts ALTER COLUMN phone_number DROP NOT NULL"))
+             except Exception:
+                 pass
+
+        for table, col, type_def in migrations:
+            await add_column_if_missing(table, col, type_def)
 
 
 async def close_db() -> None:
