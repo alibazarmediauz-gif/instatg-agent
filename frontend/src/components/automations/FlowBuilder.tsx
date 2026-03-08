@@ -14,6 +14,7 @@ import {
 import '@xyflow/react/dist/style.css';
 import { CustomNode } from './CustomNode';
 import { Sidebar } from './Sidebar';
+import { apiClient } from '@/lib/api';
 
 const nodeTypes = {
     customNode: CustomNode,
@@ -86,9 +87,8 @@ export const FlowBuilder = () => {
     const handleSave = async () => {
         setIsSaving(true);
         try {
-            const res = await fetch('/api/automations', {
+            const data = await apiClient<any>('/api/automations', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     name: `Workflow ${new Date().toLocaleTimeString()}`,
                     is_active: true,
@@ -96,7 +96,6 @@ export const FlowBuilder = () => {
                     flow_data: { nodes, edges }
                 })
             });
-            const data = await res.json();
             if (data.status === 'success') {
                 alert('Automation workflow saved successfully.');
             }

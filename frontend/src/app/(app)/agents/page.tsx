@@ -6,6 +6,7 @@ import {
     ShieldAlert, Database, ChevronRight, Activity, Zap
 } from 'lucide-react';
 import Link from 'next/link';
+import { apiClient } from '@/lib/api';
 
 export default function UnifiedAgentHub() {
     const [agents, setAgents] = useState<any[]>([]);
@@ -14,13 +15,10 @@ export default function UnifiedAgentHub() {
 
     const fetchAgents = async () => {
         try {
-            const [chatRes, voiceRes] = await Promise.all([
-                fetch('/api/agents/chat'),
-                fetch('/api/agents/voice')
+            const [chatData, voiceData] = await Promise.all([
+                apiClient<any>('/api/agents/chat'),
+                apiClient<any>('/api/agents/voice')
             ]);
-
-            const chatData = await chatRes.json();
-            const voiceData = await voiceRes.json();
 
             const allAgents = [
                 ...(chatData.data || []).map((a: any) => ({ ...a, type: 'chat' })),

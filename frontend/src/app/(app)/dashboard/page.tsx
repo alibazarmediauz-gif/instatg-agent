@@ -60,16 +60,14 @@ export default function ControlCenter() {
 
     const fetchDashboard = async () => {
         try {
-            const res = await fetch('/api/integrations/crm-status');
-            const data = await res.json();
+            const data = await apiClient<any>('/api/integrations/crm-status');
             setIntegrations(prev => ({
                 ...prev,
                 amocrm: data.connected || false
             }));
 
             // Check for voice agents to set telephony status
-            const voiceRes = await fetch('/api/agents/voice');
-            const voiceData = await voiceRes.json();
+            const voiceData = await apiClient<any>('/api/agents/voice');
             setIntegrations(prev => ({
                 ...prev,
                 telephony: (voiceData.data && voiceData.data.length > 0)

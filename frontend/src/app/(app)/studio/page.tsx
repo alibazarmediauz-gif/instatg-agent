@@ -9,6 +9,7 @@ import {
     Lock, Terminal, Send
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { apiClient } from '@/lib/api';
 
 interface MarketplaceTemplate {
     id: string;
@@ -52,8 +53,7 @@ export default function AgentStudioPage() {
         if (agentId) {
             const fetchAgent = async () => {
                 try {
-                    const res = await fetch(`/api/agents/${agentId}`);
-                    const data = await res.json();
+                    const data = await apiClient<any>(`/api/agents/${agentId}`);
                     if (data.status === 'success') {
                         const agent = data.data;
                         setAgentName(agent.name);
@@ -96,9 +96,8 @@ export default function AgentStudioPage() {
         setIsSimulating(true);
 
         try {
-            const response = await fetch('/api/agents/chat/simulate', {
+            const data = await apiClient<any>('/api/agents/chat/simulate', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     message: userMsg,
                     system_prompt: systemPrompt,
@@ -106,7 +105,6 @@ export default function AgentStudioPage() {
                     knowledge_ids: selectedKnowledge
                 })
             });
-            const data = await response.json();
 
             if (data.status === 'success') {
                 if (data.execution_log) {
@@ -131,22 +129,22 @@ export default function AgentStudioPage() {
             const url = agentId ? `/api/agents/chat/${agentId}` : '/api/agents/chat';
             const method = agentId ? 'PATCH' : 'POST';
 
-            const res = await fetch(url, {
+            const data = await apiClient<any>(url, {
                 method,
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     name: agentName,
                     internal_role: internalRole,
                     system_prompt: systemPrompt,
-                    settings: {
-                        behavior_sliders: sliders,
-                    },
+                    settings: { behavior_sliders: sliders },
                     knowledge_ids: selectedKnowledge
                 })
             });
-            const data = await res.json();
+
             if (data.status === 'success') {
-                router.push('/agents');
+                alert('Agent configuration deployed to workforce.');
+                if (data.data?.id) setAgentId(data.data.id);
+            } else {
+                alert('Failed to deploy agent: ' + (data.message || 'Unknown error'));
             }
         } catch (err) {
             alert('Failed to deploy agent');
